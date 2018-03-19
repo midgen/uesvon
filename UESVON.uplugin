@@ -1,0 +1,23 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "UESVON",
+	"Description": "",
+	"Category": "Other",
+	"CreatedBy": "Chris Ashworth",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "UESVON",
+			"Type": "Developer",
+			"LoadingPhase": "Default"
+		}
+	]
+}
