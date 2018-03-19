@@ -28,22 +28,21 @@ void ASVONManager::Generate()
 	{
 		uint_fast32_t x, y, z;
 		morton3D_64_decode(i, x, y, z);
-		myNodes[i].myPosition.X = myOrigin.X - myExtent.X + (x * myVoxelSize);
-		myNodes[i].myPosition.Y = myOrigin.Y - myExtent.Y + (y * myVoxelSize);
-		myNodes[i].myPosition.Z = myOrigin.Z - myExtent.Z + (z * myVoxelSize);
+		myNodes[i].myPosition.X = myOrigin.X - myExtent.X + (x * myVoxelSize) + (myVoxelSize * 0.5f);
+		myNodes[i].myPosition.Y = myOrigin.Y - myExtent.Y + (y * myVoxelSize) + (myVoxelSize * 0.5f);
+		myNodes[i].myPosition.Z = myOrigin.Z - myExtent.Z + (z * myVoxelSize) + (myVoxelSize * 0.5f);
 		GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Red, TEXT("Morton: - " + FString::FromInt(i) + ":" + FString::FromInt(x) + ":" + FString::FromInt(y) + ":" + FString::FromInt(z)));
 
-
-
+		// Rasterize the volume (placeholder)
 		UWorld* CurrentWorld = GetWorld();
-
-		//CurrentWorld->Blockte
 		if (CurrentWorld->OverlapBlockingTestByChannel(myNodes[i].myPosition, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(myVoxelSize * 0.5f))))
 		{
 			myNodes[i].myIsBlocked = true;
+			DrawDebugBox(CurrentWorld, myNodes[i].myPosition, FVector(myVoxelSize * 0.5f), FQuat::Identity, myNodes[i].myIsBlocked ? FColor::Red : FColor::White, true, -1.f, 0, myNodes[i].myIsBlocked ? 6.0f : 4.0f);
 		}
 
-		DrawDebugBox(CurrentWorld, myNodes[i].myPosition, FVector(myVoxelSize * 0.5f), FQuat::Identity, myNodes[i].myIsBlocked ? FColor::Red : FColor::White, true, -1.f, myNodes[i].myIsBlocked ? 2 : 1, 1.0f);
+		// Debug draw (needs to be faster)
+		
 		//DrawDebugSphere(CurrentWorld, myNodes[i].myPosition, myVoxelSize * 0.5f, 8, myNodes[i].myIsBlocked ? FColor::Red : FColor::White, true, -1.f, 0,0.f);
 	}
 }
@@ -54,19 +53,15 @@ void ASVONManager::BeginPlay()
 	Super::BeginPlay();
 
 	FBox bounds = myBoundsVolume->GetComponentsBoundingBox(true);
-	FVector origin, extent;
-	bounds.GetCenterAndExtents(origin, extent);
+	bounds.GetCenterAndExtents(myOrigin, myExtent);
 
-	myOrigin = origin;
-	myExtent = extent;
-	
 	int32 dimX, dimY, dimZ;
 
-	myVoxelSize = (extent.X / FMath::Pow(2, myVoxelPower)) * 2.0f;
+	myVoxelSize = (myExtent.X / FMath::Pow(2, myVoxelPower)) * 2.0f;
 
 	dimX = FMath::Pow(2, myVoxelPower);
-	dimY = FMath::Pow(2, myVoxelPower);
-	dimZ = FMath::Pow(2, myVoxelPower);
+	dimY = dimX;
+	dimZ = dimX;
 
 	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Red, TEXT("Voxels - " + FString::FromInt(dimX) + ":" + FString::FromInt(dimY) + ":" + FString::FromInt(dimZ) + ":"));
 
