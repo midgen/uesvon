@@ -14,14 +14,25 @@ class UESVON_API ASVONManager : public AActor
 	GENERATED_BODY()
 
 public:
-	static const uint8 NUM_LAYERS = 2;
+
+	static const uint8 NUM_LAYERS = 4;
 
 private:
+	//TArray<SVONNode> myLayer0;
+	//TArray<SVONNode> myLayer1;
+	//TArray<SVONNode> myLayer2;
+	//TArray<SVONNode> myLayer3;
+
 	TArray<SVONNode> myLayers[NUM_LAYERS];
+
 	TArray<SVONLeafNode> myLeafNodes;
 	TSet<uint_fast64_t> myBlockedIndices;
 
-	void Allocate();
+	FColor myLayerColors[NUM_LAYERS] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Magenta  };
+	FColor myLinkColors[NUM_LAYERS] = { FColor::Cyan, FColor::Green, FColor::Purple, FColor::Turquoise };
+
+	void AllocateLayerNodes();
+	void AllocateLeafNodes();
 
 	void FirstPassRasterize();
 	void RasterizeLayer(uint8 aLayer);
@@ -29,12 +40,15 @@ private:
 
 	void Generate();
 
+	TArray<SVONNode>& GetLayer(uint8 aLayer);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
 
+	bool GetNodePosition(uint8 aLayer, uint_fast64_t aIndex, FVector& oPosition);
 	SVONNode& GetNodeAt(uint8 aLayer, uint_fast32_t aX, uint_fast32_t aY, uint_fast32_t aZ);
 
 	// Called every frame
