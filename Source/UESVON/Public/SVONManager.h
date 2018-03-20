@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "SVONNode.h"
+#include "SVONLeafNode.h"
 #include "SVONManager.generated.h"
 
 UCLASS()
@@ -12,11 +13,19 @@ class UESVON_API ASVONManager : public AActor
 {
 	GENERATED_BODY()
 
+public:
+	static const uint8 NUM_LAYERS = 2;
+
 private:
-	TArray<SVONNode> myNodes;
+	TArray<SVONNode> myLayers[NUM_LAYERS];
+	TArray<SVONLeafNode> myLeafNodes;
+	TSet<uint_fast64_t> myBlockedIndices;
 
+	void Allocate();
 
-	void Allocate(const int32 x, const int32 y, const int32 z);
+	void FirstPassRasterize();
+	void RasterizeLayer(uint8 aLayer);
+	void RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex);
 
 	void Generate();
 
@@ -26,7 +35,7 @@ protected:
 
 public:	
 
-	SVONNode& GetNodeAt(uint_fast32_t x, uint_fast32_t y, uint_fast32_t z);
+	SVONNode& GetNodeAt(uint8 aLayer, uint_fast32_t aX, uint_fast32_t aY, uint_fast32_t aZ);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -41,8 +50,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	TEnumAsByte<ECollisionChannel> myCollisionChannel;
 
-		float myVoxelSize;
+
+	// Voxel dimensions. 0 is leaf node.
+	float myVoxelSize[NUM_LAYERS];
+	uint32 myLayerSize[NUM_LAYERS];
 
 	FVector myOrigin;
 	FVector myExtent;
+
+
 };
