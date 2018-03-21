@@ -12,8 +12,13 @@ struct UESVON_API SVONNode
 
 	SVONLink myNeighbours[6];
 
-	SVONNode() 
-	{ 
-		myPosition = FVector(0.0f); 
-	}
+	SVONNode(uint8 aLayer) : 
+		myPosition(FVector(0.f)),
+		myParent(SVONLink(aLayer, 0, 0)),
+		myFirstChild(SVONLink(aLayer, 0, 0)) {}
+
+	SVONNode() :
+		myPosition(FVector(0.f)),
+		myParent(SVONLink(0, 0, 0)),
+		myFirstChild(SVONLink(0, 0, 0)) {}
 };

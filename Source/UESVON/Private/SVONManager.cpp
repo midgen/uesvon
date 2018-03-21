@@ -16,7 +16,12 @@ void ASVONManager::AllocateLayerNodes()
 {
 	for (int i = 0; i < NUM_LAYERS; i++)
 	{
-		GetLayer(i).AddDefaulted(FMath::Pow(myLayerSize[i], 3));
+		GetLayer(i).Reserve(FMath::Pow(myLayerSize[i], 3));
+		for (int j = 0; j < FMath::Pow(myLayerSize[i], 3); j++)
+		{
+			GetLayer(i).Emplace(i);
+		}
+		
 	}
 	
 	myBlockedIndices.Empty();
@@ -42,23 +47,15 @@ void ASVONManager::Generate()
 		RasterizeLayer(i);
 	}
 
+	for (int i = NUM_LAYERS; i >= 0; i--)
+	{
+		BuildNeighbourLinks(i);
+	}
 }
 
 TArray<SVONNode>& ASVONManager::GetLayer(uint8 aLayer)
 {
-
 	return myLayers[aLayer];
-	//switch (aLayer)
-	//{
-	//case 0: return myLayer0;
-	//	break;
-	//case 1: return myLayer1;
-	//	break;
-	//case 2: return myLayer2;
-	//	break;
-	//}
-
-	//return myLayer0;
 }
 
 void ASVONManager::FirstPassRasterize()
@@ -70,22 +67,16 @@ void ASVONManager::FirstPassRasterize()
 		FVector position;	//= myOrigin - myExtent + FVector(x * myVoxelSize[1], y * myVoxelSize[1], z * myVoxelSize[1]) + FVector(myVoxelSize[1] * 0.5f);
 		GetNodePosition(1, i, position);
 
-		// Rasterize the volume (placeholder)
-
 		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(myVoxelSize[1] * 0.5f))))
 		{
 			myBlockedIndices.Add(i);
-			//DrawDebugBox(GetWorld(), position, FVector(myVoxelSize[1] * 0.5f), FQuat::Identity, FColor::White, true, -1.f, 0, 6.0f );
+
 		}
 		else
 		{
-			//DrawDebugBox(GetWorld(), position, FVector(myVoxelSize[1] * 0.5f), FQuat::Identity, FColor::White, true, -1.f, 0, 6.0f);
 			
 		}
-		//DrawDebugString(CurrentWorld, position, FString::FromInt(i), nullptr, FColor::White, -1, false);
 	}
-
-
 }
 
 void ASVONManager::RasterizeLayer(uint8 aLayer)
@@ -94,10 +85,6 @@ void ASVONManager::RasterizeLayer(uint8 aLayer)
 
 	for (uint_fast64_t i = 0; i < GetLayer(aLayer).Num(); i++)
 	{
-		//uint_fast32_t x, y, z;
-		//morton3D_64_decode(i, x, y, z);
-		//myLayers[aLayer][i].myPosition = myOrigin - myExtent + FVector(x * myVoxelSize[aLayer], y * myVoxelSize[aLayer], z * myVoxelSize[aLayer]) + FVector(myVoxelSize[aLayer] * 0.5f);
-
 		GetNodePosition(aLayer, i, GetLayer(aLayer)[i].myPosition);
 
 		// Rasterize the volume (placeholder)
@@ -111,19 +98,30 @@ void ASVONManager::RasterizeLayer(uint8 aLayer)
 				RasterizeLeafNode(leafOrigin, leafIndex);
 				leafIndex++;
 			}
+
 			if (aLayer < NUM_LAYERS - 1)
 			{
 				GetLayer(aLayer)[i].myParent.myLayerIndex = aLayer + 1;
 				GetLayer(aLayer)[i].myParent.myNodeIndex = i >> 3;
 				FVector parentPosition;
 				GetNodePosition(aLayer + 1, i >> 3, parentPosition);
-				DrawDebugDirectionalArrow(GetWorld(), GetLayer(aLayer)[i].myPosition, parentPosition, 20.0f, myLinkColors[aLayer], true, -1.f, 0, (aLayer + 1) * 10.0f);
+				DrawDebugDirectionalArrow(GetWorld(), GetLayer(aLayer)[i].myPosition, parentPosition, 50.0f, FColor::Cyan, true, -1.f, 0, 10.0f);
+
+				// If we're a first child
+				if (i % 8 == 0)
+				{
+					DrawDebugDirectionalArrow(GetWorld(), parentPosition, GetLayer(aLayer)[i].myPosition, 50.0f, FColor::Purple, true, -1.f, 0, 20.0f);
+					GetNodeFromLink(GetLayer(aLayer)[i].myParent).myFirstChild = SVONLink(aLayer, i, 99);
+				}
 			}
+
 		}
-
-
-		//DrawDebugString(CurrentWorld, GetLayer(aLayer)[i].myPosition, FString::FromInt(GetLayer(aLayer)[i].myParent.myNodeIndex), nullptr, myLayerColors[aLayer], -1, false);
 	}
+}
+
+void ASVONManager::BuildNeighbourLinks(uint aLayer)
+{
+
 }
 
 void ASVONManager::RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex)
@@ -151,6 +149,11 @@ void ASVONManager::RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex)
 		}
 		//DrawDebugString(GetWorld(), position, FString::FromInt(i), nullptr, FColor::Red, -1, false);
 	}
+}
+
+SVONNode& ASVONManager::GetNodeFromLink(SVONLink& aLink)
+{
+	return GetLayer(aLink.GetLayerIndex())[aLink.GetNodeIndex()];
 }
 
 // Called when the game starts or when spawned

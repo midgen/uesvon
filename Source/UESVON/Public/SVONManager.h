@@ -28,15 +28,18 @@ private:
 	TArray<SVONLeafNode> myLeafNodes;
 	TSet<uint_fast64_t> myBlockedIndices;
 
-	FColor myLayerColors[NUM_LAYERS] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Magenta  };
-	FColor myLinkColors[NUM_LAYERS] = { FColor::Cyan, FColor::Green, FColor::Purple, FColor::Turquoise };
+	FColor myLayerColors[5] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Black, FColor::White };
+	FColor myLinkColors[5] = { FColor::Cyan, FColor::Blue, FColor::Turquoise, FColor::Emerald, FColor::White};
 
 	void AllocateLayerNodes();
 	void AllocateLeafNodes();
 
 	void FirstPassRasterize();
 	void RasterizeLayer(uint8 aLayer);
+	void BuildNeighbourLinks(uint aLayer);
 	void RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex);
+
+	SVONNode& GetNodeFromLink(SVONLink& aLink) ;
 
 	void Generate();
 
