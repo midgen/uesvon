@@ -36,7 +36,7 @@ private:
 
 	void FirstPassRasterize();
 	void RasterizeLayer(uint8 aLayer);
-	void BuildNeighbourLinks(uint aLayer);
+	void BuildNeighbourLinks(uint8 aLayer);
 	void RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex);
 
 	SVONNode& GetNodeFromLink(SVONLink& aLink) ;
@@ -51,7 +51,7 @@ protected:
 
 public:	
 
-	bool GetNodePosition(uint8 aLayer, uint_fast64_t aIndex, FVector& oPosition);
+	bool GetNodePosition(uint8 aLayer, uint_fast64_t aCode, FVector& oPosition);
 	SVONNode& GetNodeAt(uint8 aLayer, uint_fast32_t aX, uint_fast32_t aY, uint_fast32_t aZ);
 
 	// Called every frame

@@ -6,6 +6,7 @@
 struct UESVON_API SVONNode
 {
 	FVector myPosition;
+	uint_fast64_t myCode;
 	
 	SVONLink myParent;
 	SVONLink myFirstChild;
