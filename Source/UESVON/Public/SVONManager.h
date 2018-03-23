@@ -67,7 +67,7 @@ private:
 	void BuildNeighbourLinks(uint8 aLayer);
 	void RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex);
 
-	bool IsAnyMemberBlocked(uint8 aLayer, uint_fast64_t aCode);
+	bool IsAnyMemberBlocked(uint8 aLayer, uint_fast64_t aCode, uint_fast64_t aThisParentIndex);
 
 	SVONNode& GetNodeFromLink(SVONLink& aLink) ;
 

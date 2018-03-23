@@ -81,46 +81,52 @@ void ASVONManager::RasterizeLayer(uint8 aLayer)
 			// If we know this is blocked, from our first pass
 			if (myBlockedIndices.Contains(i >> 3))
 			{
-
+				// Add a node
 				index = GetLayer(aLayer).Emplace();
+				SVONNode& node = GetLayer(aLayer)[index];
 
 				// Set my code and position
-				GetLayer(aLayer)[index].myCode = (i);
-				GetNodePosition(aLayer, GetLayer(aLayer)[index].myCode, GetLayer(aLayer)[index].myPosition);
+				node.myCode = (i);
+				GetNodePosition(aLayer, node.myCode, node.myPosition);
 
 				// Debug shizzle
 				if (myShowMortonCodes) { 
-					DrawDebugString(GetWorld(), GetLayer(aLayer)[index].myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false); 
+					DrawDebugString(GetWorld(), node.myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false); 
 				}
 				if (myShowVoxels) {
-					DrawDebugBox(GetWorld(), GetLayer(aLayer)[index].myPosition, FVector(myVoxelSize[aLayer] * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+					DrawDebugBox(GetWorld(), node.myPosition, FVector(myVoxelSize[aLayer] * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
 				}
 				
 				// Rasterize my leaf nodes
-				FVector leafOrigin = GetLayer(aLayer)[index].myPosition - (FVector(myVoxelSize[aLayer]) * 0.5f);
+				FVector leafOrigin = node.myPosition - (FVector(myVoxelSize[aLayer]) * 0.5f);
 				RasterizeLeafNode(leafOrigin, leafIndex);
+
+				node.myFirstChildIndex = leafIndex;
 				leafIndex++;
 			}
 		}
 	}
 	else 
-	{		
+	{	
+		int nodeCounter = 0;
 		for (int32 i = 0; i < FMath::Pow(myLayerSize[aLayer],3); i++)
 		{
 
-			if (IsAnyMemberBlocked(aLayer, i))
+			if (IsAnyMemberBlocked(aLayer, i, nodeCounter))
 			{
 				int32 index = GetLayer(aLayer).Emplace();
+				nodeCounter++;
+				SVONNode& node = GetLayer(aLayer)[index];
 
-				GetLayer(aLayer)[index].myCode = i;
-				GetNodePosition(aLayer, i, GetLayer(aLayer)[index].myPosition);
-				GetLayer(aLayer)[index].myFirstChild.SetLayerIndex(aLayer - 1);
-				GetLayer(aLayer)[index].myFirstChild.SetNodeIndex(i);
+				node.myCode = i;
+				GetNodePosition(aLayer, i, node.myPosition);
+				//node.myFirstChild.SetLayerIndex(aLayer - 1);
+				
 				if (myShowVoxels) {
-					DrawDebugBox(GetWorld(), GetLayer(aLayer)[index].myPosition, FVector(myVoxelSize[aLayer] * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+					DrawDebugBox(GetWorld(), node.myPosition, FVector(myVoxelSize[aLayer] * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
 				}
 				if (myShowMortonCodes) {
-					DrawDebugString(GetWorld(), GetLayer(aLayer)[index].myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
+					DrawDebugString(GetWorld(), node.myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
 				}
 				
 			}
@@ -130,17 +136,23 @@ void ASVONManager::RasterizeLayer(uint8 aLayer)
 }
 
 // Check if any nodes within this node's parent is blocked
-bool ASVONManager::IsAnyMemberBlocked(uint8 aLayer, uint_fast64_t aCode)
+bool ASVONManager::IsAnyMemberBlocked(uint8 aLayer, uint_fast64_t aCode, uint_fast64_t aThisParentIndex)
 {
 	int32 parentCode = aCode >> 3;
+	bool isBlocked = false;
 	for (int32 i = 0; i < GetLayer(aLayer - 1).Num(); i++)
 	{
-		if (GetLayer(aLayer - 1)[i].myCode >> 3 >> 3 == parentCode)
+		SVONNode& node = GetLayer(aLayer - 1)[i];
+		if (node.myCode >> 3 >> 3 == parentCode)
 		{
-			return true;
+			if ((node.myCode >> 3) == aCode) {
+				node.myParentIndex = aThisParentIndex;
+			}
+			
+			isBlocked =  true;
 		}
 	}
-	return false;
+	return isBlocked;
 }
 
 void ASVONManager::BuildNeighbourLinks(uint8 aLayer)
