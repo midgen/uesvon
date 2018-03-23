@@ -28,7 +28,7 @@ private:
 	TArray<SVONLeafNode> myLeafNodes;
 	TSet<uint_fast64_t> myBlockedIndices;
 
-	FColor myLayerColors[5] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Black, FColor::White };
+	FColor myLayerColors[5] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Blue, FColor::Turquoise };
 	FColor myLinkColors[5] = { FColor::Cyan, FColor::Blue, FColor::Turquoise, FColor::Emerald, FColor::White};
 
 	void AllocateLayerNodes();
@@ -38,6 +38,8 @@ private:
 	void RasterizeLayer(uint8 aLayer);
 	void BuildNeighbourLinks(uint8 aLayer);
 	void RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex);
+
+	bool IsAnyMemberBlocked(uint8 aLayer, uint_fast64_t aCode);
 
 	SVONNode& GetNodeFromLink(SVONLink& aLink) ;
 

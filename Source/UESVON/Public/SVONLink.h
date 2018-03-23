@@ -10,7 +10,7 @@ struct UESVON_API SVONLink
 	uint_fast32_t myNodeIndex;
 	uint8 mySubnodeIndex;
 
-	SVONLink() : myLayerIndex(0),
+	SVONLink() : myLayerIndex(255),
 		myNodeIndex(0),
 		mySubnodeIndex(0) {}
 
@@ -27,5 +27,7 @@ struct UESVON_API SVONLink
 
 	uint8 GetSubnodeIndex() const { return mySubnodeIndex; }
 	void SetSubnodeIndex(const uint8 aSubnodeIndex) { mySubnodeIndex = aSubnodeIndex; }
+
+	bool IsValid() const { return myLayerIndex < 255; }
 
 };
