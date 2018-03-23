@@ -86,11 +86,16 @@ void ASVONManager::RasterizeLayer(uint8 aLayer)
 
 				// Set my code and position
 				GetLayer(aLayer)[index].myCode = (i);
-
 				GetNodePosition(aLayer, GetLayer(aLayer)[index].myCode, GetLayer(aLayer)[index].myPosition);
-				DrawDebugString(GetWorld(), GetLayer(aLayer)[index].myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
-				DrawDebugBox(GetWorld(), GetLayer(aLayer)[index].myPosition, FVector(myVoxelSize[aLayer] * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
 
+				// Debug shizzle
+				if (myShowMortonCodes) { 
+					DrawDebugString(GetWorld(), GetLayer(aLayer)[index].myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false); 
+				}
+				if (myShowVoxels) {
+					DrawDebugBox(GetWorld(), GetLayer(aLayer)[index].myPosition, FVector(myVoxelSize[aLayer] * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+				}
+				
 				// Rasterize my leaf nodes
 				FVector leafOrigin = GetLayer(aLayer)[index].myPosition - (FVector(myVoxelSize[aLayer]) * 0.5f);
 				RasterizeLeafNode(leafOrigin, leafIndex);
@@ -111,8 +116,13 @@ void ASVONManager::RasterizeLayer(uint8 aLayer)
 				GetNodePosition(aLayer, i, GetLayer(aLayer)[index].myPosition);
 				GetLayer(aLayer)[index].myFirstChild.SetLayerIndex(aLayer - 1);
 				GetLayer(aLayer)[index].myFirstChild.SetNodeIndex(i);
-				DrawDebugBox(GetWorld(), GetLayer(aLayer)[index].myPosition, FVector(myVoxelSize[aLayer] * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
-				DrawDebugString(GetWorld(), GetLayer(aLayer)[index].myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
+				if (myShowVoxels) {
+					DrawDebugBox(GetWorld(), GetLayer(aLayer)[index].myPosition, FVector(myVoxelSize[aLayer] * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+				}
+				if (myShowMortonCodes) {
+					DrawDebugString(GetWorld(), GetLayer(aLayer)[index].myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
+				}
+				
 			}
 		}
 	}
@@ -155,7 +165,10 @@ void ASVONManager::RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex)
 		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(leafVoxelSize * 0.5f))))
 		{
 			myLeafNodes[aLeafIndex].SetNodeAt(x,y,z);
-			DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, 6.0f);
+			if (myShowVoxels) {
+				DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, 6.0f);
+			}
+			
 		}
 	}
 }

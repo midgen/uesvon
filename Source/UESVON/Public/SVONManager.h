@@ -17,11 +17,39 @@ public:
 
 	static const uint8 NUM_LAYERS = 4;
 
+
+	bool GetNodePosition(uint8 aLayer, uint_fast64_t aCode, FVector& oPosition);
+	SVONNode& GetNodeAt(uint8 aLayer, uint_fast32_t aX, uint_fast32_t aY, uint_fast32_t aZ);
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	// Sets default values for this actor's properties
+	ASVONManager();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+		ASVONBoundsVolume* myBoundsVolume;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+		uint8 myVoxelPower;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+		TEnumAsByte<ECollisionChannel> myCollisionChannel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+		bool myShowMortonCodes = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+		bool myShowVoxels = false;
+
+	// Voxel dimensions. 0 is leaf node.
+	float myVoxelSize[NUM_LAYERS];
+	uint32 myLayerSize[NUM_LAYERS];
+
+	FVector myOrigin;
+	FVector myExtent;
+
+
 private:
-	//TArray<SVONNode> myLayer0;
-	//TArray<SVONNode> myLayer1;
-	//TArray<SVONNode> myLayer2;
-	//TArray<SVONNode> myLayer3;
+
+	
 
 	TArray<SVONNode> myLayers[NUM_LAYERS];
 
@@ -51,31 +79,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-
-	bool GetNodePosition(uint8 aLayer, uint_fast64_t aCode, FVector& oPosition);
-	SVONNode& GetNodeAt(uint8 aLayer, uint_fast32_t aX, uint_fast32_t aY, uint_fast32_t aZ);
-
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Sets default values for this actor's properties
-	ASVONManager();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		ASVONBoundsVolume* myBoundsVolume;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
-		uint8 myVoxelPower;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
-	TEnumAsByte<ECollisionChannel> myCollisionChannel;
-
-
-	// Voxel dimensions. 0 is leaf node.
-	float myVoxelSize[NUM_LAYERS];
-	uint32 myLayerSize[NUM_LAYERS];
-
-	FVector myOrigin;
-	FVector myExtent;
 
 
 };
