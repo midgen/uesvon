@@ -15,7 +15,7 @@ class UESVON_API ASVONManager : public AActor
 
 public:
 
-	static const uint8 NUM_LAYERS = 4;
+	static const uint8 NUM_LAYERS = 5;
 
 
 	bool GetNodePosition(uint8 aLayer, uint_fast64_t aCode, FVector& oPosition);
@@ -58,10 +58,8 @@ private:
 	TArray<SVONLeafNode> myLeafNodes;
 	TSet<uint_fast64_t> myBlockedIndices;
 
-	FColor myLayerColors[5] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Blue, FColor::Turquoise };
-	FColor myLinkColors[5] = { FColor::Cyan, FColor::Blue, FColor::Turquoise, FColor::Emerald, FColor::White};
+	FColor myLayerColors[7] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Blue, FColor::Turquoise, FColor::Cyan, FColor::Emerald };
 
-	void AllocateLayerNodes();
 	void AllocateLeafNodes();
 
 	void FirstPassRasterize();

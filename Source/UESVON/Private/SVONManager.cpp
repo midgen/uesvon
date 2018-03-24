@@ -12,11 +12,6 @@ ASVONManager::ASVONManager()
 
 }
 
-void ASVONManager::AllocateLayerNodes()
-{
-	myBlockedIndices.Empty();
-}
-
 void ASVONManager::AllocateLeafNodes()
 {
 	myLeafNodes.Empty();
@@ -26,8 +21,8 @@ void ASVONManager::AllocateLeafNodes()
 
 void ASVONManager::Generate()
 {
-	AllocateLayerNodes();
-
+	myBlockedIndices.Empty();
+	
 	FirstPassRasterize();
 
 	AllocateLeafNodes();
@@ -68,7 +63,7 @@ void ASVONManager::FirstPassRasterize()
 
 void ASVONManager::RasterizeLayer(uint8 aLayer)
 {
-	uint_fast64_t leafIndex = 0;
+	int32 leafIndex = 0;
 
 	// Layer 0 is a special case
 	if (aLayer == 0)
@@ -89,7 +84,7 @@ void ASVONManager::RasterizeLayer(uint8 aLayer)
 				node.myCode = (i);
 				GetNodePosition(aLayer, node.myCode, node.myPosition);
 
-				// Debug shizzle
+				// Debug stuff
 				if (myShowMortonCodes) { 
 					DrawDebugString(GetWorld(), node.myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false); 
 				}
