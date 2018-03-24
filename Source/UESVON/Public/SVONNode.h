@@ -11,22 +11,22 @@ struct UESVON_API SVONNode
 	//SVONLink myParent;
 	//SVONLink myFirstChild;
 
-	uint_fast32_t myParentIndex;
-	uint_fast32_t myFirstChildIndex;
+	int32 myParentIndex;
+	int32 myFirstChildIndex;
 
 	SVONLink myNeighbours[6];
 
 	SVONNode(uint8 aLayer) :
 		myPosition(FVector(0.f)),
-		myParentIndex(0),
-		myFirstChildIndex(0) {}
+		myParentIndex(-1),
+		myFirstChildIndex(-1) {}
 		//myParent(SVONLink(aLayer, 0, 0)),
 		//myFirstChild(SVONLink(aLayer, 0, 0)) {}
 
 	SVONNode() :
 		myPosition(FVector(0.f)),
-		myParentIndex(0),
-		myFirstChildIndex(0) {}
+		myParentIndex(-1),
+		myFirstChildIndex(-1) {}
 		//myParent(SVONLink(0, 0, 0)),
 		//myFirstChild(SVONLink(0, 0, 0)) {}
 };

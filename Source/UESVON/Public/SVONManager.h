@@ -38,6 +38,8 @@ public:
 		bool myShowMortonCodes = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 		bool myShowVoxels = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+		bool myShowLinks = false;
 
 	// Voxel dimensions. 0 is leaf node.
 	float myVoxelSize[NUM_LAYERS];
@@ -67,7 +69,7 @@ private:
 	void BuildNeighbourLinks(uint8 aLayer);
 	void RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex);
 
-	bool IsAnyMemberBlocked(uint8 aLayer, uint_fast64_t aCode, uint_fast64_t aThisParentIndex);
+	bool IsAnyMemberBlocked(uint8 aLayer, uint_fast64_t aCode, uint_fast64_t aThisParentIndex, int32& oFirstChildIndex);
 
 	SVONNode& GetNodeFromLink(SVONLink& aLink) ;
 
