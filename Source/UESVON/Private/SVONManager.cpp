@@ -8,7 +8,7 @@
 ASVONManager::ASVONManager()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 }
 
@@ -38,14 +38,25 @@ void ASVONManager::Generate()
 	}
 }
 
-TArray<SVONNode>& ASVONManager::GetLayer(uint8 aLayer)
+TArray<SVONNode>& ASVONManager::GetLayer(layerindex aLayer)
 {
 	return myLayers[aLayer];
 }
 
+int32 ASVONManager::GetLayerSize(layerindex aLayer)
+{
+	return FMath::Pow(2, myVoxelPower) / (aLayer > 0 ? 2 * aLayer : 1);
+}
+
+int32 ASVONManager::GetNodesInLayer(layerindex aLayer)
+{
+	return FMath::Pow(GetLayerSize(aLayer), 3); 
+}
+
 void ASVONManager::FirstPassRasterize()
 {
-	for (uint_fast64_t i = 0; i < FMath::Pow(myLayerSize[1], 3); i++)
+	int32 numNodes = GetNodesInLayer(1);
+	for (int32 i = 0; i < numNodes; i++)
 	{
 		FVector position;
 		GetNodePosition(1, i, position);
@@ -61,15 +72,16 @@ void ASVONManager::FirstPassRasterize()
 	});
 }
 
-void ASVONManager::RasterizeLayer(uint8 aLayer)
+void ASVONManager::RasterizeLayer(layerindex aLayer)
 {
-	int32 leafIndex = 0;
+	nodeindex leafIndex = 0;
 
 	// Layer 0 is a special case
 	if (aLayer == 0)
 	{
 		// Run through all our coordinates
-		for(uint32 i = 0; i < FMath::Pow(myLayerSize[aLayer], 3); i++)
+		int32 numNodes = GetNodesInLayer(aLayer);
+		for(int32 i = 0; i < numNodes; i++)
 		{
 			int index = (i);
 
@@ -104,7 +116,8 @@ void ASVONManager::RasterizeLayer(uint8 aLayer)
 	else 
 	{	
 		int nodeCounter = 0;
-		for (int32 i = 0; i < FMath::Pow(myLayerSize[aLayer],3); i++)
+		int32 numNodes = GetNodesInLayer(aLayer);
+		for (int32 i = 0; i < numNodes; i++)
 		{
 			int firstChildIndex = -1;
 			if (IsAnyMemberBlocked(aLayer, i, nodeCounter, firstChildIndex))
@@ -137,7 +150,7 @@ void ASVONManager::RasterizeLayer(uint8 aLayer)
 }
 
 // Check if any nodes within this node's parent is blocked
-bool ASVONManager::IsAnyMemberBlocked(uint8 aLayer, uint_fast64_t aCode, uint_fast64_t aThisParentIndex, int32& oFirstChildIndex)
+bool ASVONManager::IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodeindex aThisParentIndex, nodeindex& oFirstChildIndex)
 {
 	int32 parentCode = aCode >> 3;
 	bool isBlocked = false;
@@ -159,12 +172,12 @@ bool ASVONManager::IsAnyMemberBlocked(uint8 aLayer, uint_fast64_t aCode, uint_fa
 	return isBlocked;
 }
 
-void ASVONManager::BuildNeighbourLinks(uint8 aLayer)
+void ASVONManager::BuildNeighbourLinks(layerindex aLayer)
 {
 
 }
 
-void ASVONManager::RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex)
+void ASVONManager::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)
 {
 	for (int i = 0; i < 64; i++)
 	{
@@ -191,6 +204,12 @@ void ASVONManager::RasterizeLeafNode(FVector& aOrigin, uint_fast64_t aLeafIndex)
 
 
 
+bool ASVONManager::SetNeighbour(const layerindex aLayer, const nodeindex aArrayIndex, const dir aDirection)
+{
+	return false;
+	//GetLayer(aLayer)[aArrayIndex]
+}
+
 SVONNode& ASVONManager::GetNodeFromLink(SVONLink& aLink)
 {
 	return GetLayer(aLink.GetLayerIndex())[aLink.GetNodeIndex()];
@@ -210,10 +229,10 @@ void ASVONManager::BeginPlay()
 	myVoxelSize[3] = myVoxelSize[2] * 2.0f;
 
 
-	myLayerSize[0] = FMath::Pow(2, myVoxelPower);
-	myLayerSize[1] = myLayerSize[0] / 2;
-	myLayerSize[2] = myLayerSize[1] / 2;
-	myLayerSize[3] = myLayerSize[2] / 2;
+	//myLayerSize[0] = FMath::Pow(2, myVoxelPower);
+	//myLayerSize[1] = myLayerSize[0] / 2;
+	//myLayerSize[2] = myLayerSize[1] / 2;
+	//myLayerSize[3] = myLayerSize[2] / 2;
 
 
 	Generate();
@@ -221,7 +240,7 @@ void ASVONManager::BeginPlay()
 	
 }
 
-bool ASVONManager::GetNodePosition(uint8 aLayer, uint_fast64_t aCode, FVector& oPosition)
+bool ASVONManager::GetNodePosition(layerindex aLayer, mortoncode aCode, FVector& oPosition)
 {
 	if (aLayer > NUM_LAYERS)
 	{
@@ -233,7 +252,7 @@ bool ASVONManager::GetNodePosition(uint8 aLayer, uint_fast64_t aCode, FVector& o
 	return true;
 }
 
-SVONNode& ASVONManager::GetNodeAt(uint8 aLayer, uint_fast32_t aX, uint_fast32_t aY, uint_fast32_t aZ)
+SVONNode& ASVONManager::GetNodeAt(layerindex aLayer, posint aX, posint aY, posint aZ)
 {
 	uint_fast64_t index = 0;
 	morton3D_64_decode(index, aX, aY, aZ);
