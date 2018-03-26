@@ -53,7 +53,7 @@ public:
 		bool myShowLinks = false;
 
 	// Voxel dimensions. 0 is leaf node.
-	float myVoxelSize[NUM_LAYERS];
+	//float myVoxelSize[NUM_LAYERS];
 	//uint32 myLayerSize[NUM_LAYERS];
 
 	FVector myOrigin;
@@ -85,6 +85,7 @@ private:
 
 	TArray<SVONNode>& GetLayer(layerindex aLayer);
 
+	float GetVoxelSize(layerindex aLayer);
 	int32 GetLayerSize(layerindex aLayer);
 	int32 GetNodesInLayer(layerindex aLayer);
 

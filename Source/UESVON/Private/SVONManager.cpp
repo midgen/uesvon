@@ -43,6 +43,11 @@ TArray<SVONNode>& ASVONManager::GetLayer(layerindex aLayer)
 	return myLayers[aLayer];
 }
 
+float ASVONManager::GetVoxelSize(layerindex aLayer)
+{
+	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1.0f));
+}
+
 int32 ASVONManager::GetLayerSize(layerindex aLayer)
 {
 	return FMath::Pow(2, myVoxelPower) / (aLayer > 0 ? 2 * aLayer : 1);
@@ -61,7 +66,7 @@ void ASVONManager::FirstPassRasterize()
 		FVector position;
 		GetNodePosition(1, i, position);
 
-		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(myVoxelSize[1] * 0.5f))))
+		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(1) * 0.5f))))
 		{
 			myBlockedIndices.Add(i);
 		}
@@ -101,11 +106,11 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 					DrawDebugString(GetWorld(), node.myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false); 
 				}
 				if (myShowVoxels) {
-					DrawDebugBox(GetWorld(), node.myPosition, FVector(myVoxelSize[aLayer] * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+					DrawDebugBox(GetWorld(), node.myPosition, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
 				}
 				
 				// Rasterize my leaf nodes
-				FVector leafOrigin = node.myPosition - (FVector(myVoxelSize[aLayer]) * 0.5f);
+				FVector leafOrigin = node.myPosition - (FVector(GetVoxelSize(aLayer) * 0.5f));
 				RasterizeLeafNode(leafOrigin, leafIndex);
 
 				node.myFirstChildIndex = leafIndex;
@@ -113,7 +118,7 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 			}
 		}
 	}
-	else 
+	else if(GetLayer(aLayer -1).Num() > 1)
 	{	
 		int nodeCounter = 0;
 		int32 numNodes = GetNodesInLayer(aLayer);
@@ -137,7 +142,7 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 					DrawDebugDirectionalArrow(GetWorld(), node.myPosition, GetLayer(aLayer - 1)[node.myFirstChildIndex].myPosition, 20.0f, myLayerColors[aLayer], true, -1.f, 0, 20.0f);
 				}
 				if (myShowVoxels) {
-					DrawDebugBox(GetWorld(), node.myPosition, FVector(myVoxelSize[aLayer] * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+					DrawDebugBox(GetWorld(), node.myPosition, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
 				}
 				if (myShowMortonCodes) {
 					DrawDebugString(GetWorld(), node.myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
@@ -184,7 +189,7 @@ void ASVONManager::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)
 
 		uint_fast32_t x, y, z;
 		morton3D_64_decode(i, x, y, z);
-		float leafVoxelSize = myVoxelSize[0] * 0.25f;
+		float leafVoxelSize = GetVoxelSize(0) * 0.25f;
 		FVector position = aOrigin + FVector(x * leafVoxelSize, y * leafVoxelSize, z * leafVoxelSize) + FVector(leafVoxelSize * 0.5f);
 
 		if (i == 0)
@@ -223,10 +228,10 @@ void ASVONManager::BeginPlay()
 	FBox bounds = myBoundsVolume->GetComponentsBoundingBox(true);
 	bounds.GetCenterAndExtents(myOrigin, myExtent);
 
-	myVoxelSize[0] = (myExtent.X / FMath::Pow(2, myVoxelPower)) *2.0f;
-	myVoxelSize[1] = myVoxelSize[0] * 2.0f;
-	myVoxelSize[2] = myVoxelSize[1] * 2.0f;
-	myVoxelSize[3] = myVoxelSize[2] * 2.0f;
+	//myVoxelSize[0] = (myExtent.X / FMath::Pow(2, myVoxelPower)) * (2.0f * aLayer + 1) ;
+	//myVoxelSize[1] = myVoxelSize[0] * 2.0f;
+	//myVoxelSize[2] = myVoxelSize[1] * 2.0f;
+	//myVoxelSize[3] = myVoxelSize[2] * 2.0f;
 
 
 	//myLayerSize[0] = FMath::Pow(2, myVoxelPower);
@@ -246,9 +251,10 @@ bool ASVONManager::GetNodePosition(layerindex aLayer, mortoncode aCode, FVector&
 	{
 		return false;
 	}
+	float voxelSize = GetVoxelSize(aLayer);
 	uint_fast32_t x, y, z;
 	morton3D_64_decode(aCode, x, y, z);
-	oPosition = myOrigin - myExtent + FVector(x * myVoxelSize[aLayer], y * myVoxelSize[aLayer], z * myVoxelSize[aLayer]) + FVector(myVoxelSize[aLayer] * 0.5f);
+	oPosition = myOrigin - myExtent + FVector(x * voxelSize, y * voxelSize, z * voxelSize) + FVector(voxelSize * 0.5f);
 	return true;
 }
 
