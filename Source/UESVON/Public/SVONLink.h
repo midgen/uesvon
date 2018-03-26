@@ -29,5 +29,6 @@ struct UESVON_API SVONLink
 	void SetSubnodeIndex(const uint8 aSubnodeIndex) { mySubnodeIndex = aSubnodeIndex; }
 
 	bool IsValid() const { return myLayerIndex < 255; }
+	void SetInvalid() { myLayerIndex = 255; }
 
 };

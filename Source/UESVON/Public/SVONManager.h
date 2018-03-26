@@ -21,7 +21,16 @@ class UESVON_API ASVONManager : public AActor
 
 public:
 
-	static const uint8 NUM_LAYERS = 6;
+	//static const uint8 NUM_LAYERS = 6;
+
+	const FIntVector dirs[6] = {
+		FIntVector(1,0,0),
+		FIntVector(-1,0,0),
+		FIntVector(0,1,0),
+		FIntVector(0,-1,0),
+		FIntVector(0,0,1),
+		FIntVector(0,0,-1)
+	};
 
 
 	bool GetNodePosition(layerindex aLayer, mortoncode aCode, FVector& oPosition);
@@ -45,7 +54,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 		bool myShowVoxels = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
-		bool myShowLinks = false;
+		bool myShowParentChildLinks = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+		bool myShowNeighbourLinks = false;
 
 	FVector myOrigin;
 	FVector myExtent;
@@ -66,6 +77,8 @@ private:
 	void FirstPassRasterize();
 	void RasterizeLayer(layerindex aLayer);
 	void BuildNeighbourLinks(layerindex aLayer);
+	void BuildNeighbourLinksForNode(layerindex aLayer, SVONNode& aNode, nodeindex aIndex);	
+	bool FindLinkInParentDirection(layerindex aLayer, nodeindex aIndex, uint8 aDir);
 	void RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex);
 
 	bool SetNeighbour(const layerindex aLayer, const nodeindex aArrayIndex, const dir aDirection);
@@ -80,6 +93,7 @@ private:
 
 	float GetVoxelSize(layerindex aLayer);
 	int32 GetNodesInLayer(layerindex aLayer);
+	int32 GetNodesPerSide(layerindex aLayer);
 
 protected:
 	// Called when the game starts or when spawned

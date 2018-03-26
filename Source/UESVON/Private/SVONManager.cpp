@@ -49,7 +49,7 @@ void ASVONManager::Generate()
 	}
 
 	// Now traverse down, adding neighbour links
-	for (int i = myNumLayers; i >= 0; i--)
+	for (int i = myNumLayers - 1; i >= 0; i--)
 	{
 		BuildNeighbourLinks(i);
 	}
@@ -77,6 +77,11 @@ float ASVONManager::GetVoxelSize(layerindex aLayer)
 int32 ASVONManager::GetNodesInLayer(layerindex aLayer)
 {
 	return FMath::Pow(FMath::Pow(2, (myVoxelPower - (aLayer))), 3);
+}
+
+int32 ASVONManager::GetNodesPerSide(layerindex aLayer)
+{
+	return FMath::Pow(2, (myVoxelPower - (aLayer)));
 }
 
 void ASVONManager::FirstPassRasterize()
@@ -139,6 +144,7 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 			}
 		}
 	}
+	// Deal with the other layers
 	else if(GetLayer(aLayer -1).Num() > 1)
 	{	
 		int nodeCounter = 0;
@@ -146,12 +152,15 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 		for (int32 i = 0; i < numNodes; i++)
 		{
 			int firstChildIndex = -1;
+			// Do we have any blocking children, or siblings?
+			// Remember we must have 8 children per parent
 			if (IsAnyMemberBlocked(aLayer, i, nodeCounter, firstChildIndex))
 			{
+				// Add a node
 				int32 index = GetLayer(aLayer).Emplace();
 				nodeCounter++;
 				SVONNode& node = GetLayer(aLayer)[index];
-
+				// Set details
 				node.myCode = i;
 				if (firstChildIndex > -1)
 				{
@@ -159,7 +168,8 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 				}
 				GetNodePosition(aLayer, i, node.myPosition);
 				
-				if (myShowLinks && firstChildIndex > -1) {
+				// Debug stuff
+				if (myShowParentChildLinks && firstChildIndex > -1) {
 					DrawDebugDirectionalArrow(GetWorld(), node.myPosition, GetLayer(aLayer - 1)[node.myFirstChildIndex].myPosition, 20.0f, myLayerColors[aLayer], true, -1.f, 0, 20.0f);
 				}
 				if (myShowVoxels) {
@@ -176,6 +186,7 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 }
 
 // Check if any nodes within this node's parent is blocked
+//   This is unnecessarily slow right now, doing too many iterations, needs changing
 bool ASVONManager::IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodeindex aThisParentIndex, nodeindex& oFirstChildIndex)
 {
 	int32 parentCode = aCode >> 3;
@@ -200,7 +211,91 @@ bool ASVONManager::IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodei
 
 void ASVONManager::BuildNeighbourLinks(layerindex aLayer)
 {
+	mortoncode thisCode;
+	uint_fast32_t maxCoord = GetNodesPerSide(aLayer);
+	TArray<SVONNode>& layer = GetLayer(aLayer);
+	
+	// For each node
+	for (nodeindex i = 0; i < layer.Num(); i++)
+	{
+		SVONNode& node = layer[i];
+		// Get our world co-ordinate
+		uint_fast32_t x, y, z;
+		morton3D_64_decode(node.myCode, x, y, z);
 
+		// For each direction
+		for (int d = 0; d < 6; d++)
+		{
+			x += dirs[d].X;
+			y += dirs[d].Y;
+			z += dirs[d].Z;
+			// If the coords are out of bounds, the link is invalid.
+			if (x < 0 || x > maxCoord || y < 0 || y > maxCoord || z < 0 || z > maxCoord)
+			{
+				node.myNeighbours[d].SetInvalid();
+			}
+			// Get the morton code
+			thisCode = morton3D_64_encode(x, y, z);
+			
+			bool isHigher = thisCode > node.myCode;
+			int32 idelta = 0;
+
+			// If the code we want is higher, start looking up the array for it
+			if (isHigher)
+			{
+				while (i + idelta < layer.Num())
+				{
+					// This is the node we're looking for
+					if (layer[i + idelta].myCode == thisCode)
+					{
+						layer[i].myNeighbours[d].myLayerIndex = aLayer;
+						layer[i].myNeighbours[d].myNodeIndex = i + idelta;
+						// subnodes???
+						if (myShowNeighbourLinks)
+						{
+							FVector startPos, endPos;
+							GetNodePosition(aLayer, node.myCode, startPos);
+							GetNodePosition(aLayer, thisCode, endPos);
+							DrawDebugLine(GetWorld(), startPos, endPos, FColor::Black, true, -1.f, 0, .0f);
+						}
+						break;
+					}
+					// If it's higher than the one we want, then it ain't on this layer
+					else if (layer[i + idelta].myCode > thisCode)
+					{
+						// Need to look up a layer
+					}
+
+					idelta++;
+				}
+			}
+			else // Code is lower, so look down the array
+			{
+				while (i + idelta > 0)
+				{
+					// This is the node we're looking for
+					if (layer[i + idelta].myCode == thisCode)
+					{
+						layer[i].myNeighbours[d].myLayerIndex = aLayer;
+						layer[i].myNeighbours[d].myNodeIndex = i + idelta;
+						// subnodes???
+						FVector startPos, endPos;
+						GetNodePosition(aLayer, node.myCode, startPos);
+						GetNodePosition(aLayer, thisCode, endPos);
+						DrawDebugLine(GetWorld(), startPos, endPos, FColor::Black, true, -1.f, 0, 20.0f);
+						break;
+					}
+					// If it's higher than the one we want, then it ain't on this layer
+					else if (layer[i + idelta].myCode > thisCode)
+					{
+						// Need to look up a layer
+					}
+
+					idelta--;
+				}
+			}
+		}
+	}
 }
 
 void ASVONManager::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)
@@ -249,10 +344,6 @@ void ASVONManager::BeginPlay()
 
 bool ASVONManager::GetNodePosition(layerindex aLayer, mortoncode aCode, FVector& oPosition)
 {
-	if (aLayer > NUM_LAYERS)
-	{
-		return false;
-	}
 	float voxelSize = GetVoxelSize(aLayer);
 	uint_fast32_t x, y, z;
 	morton3D_64_decode(aCode, x, y, z);
