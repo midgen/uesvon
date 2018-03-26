@@ -2,17 +2,15 @@
 
 #include "CoreMinimal.h"
 #include "SVONLink.h"
+#include "SVONDefines.h"
 
 struct UESVON_API SVONNode
 {
 	FVector myPosition;
-	uint_fast64_t myCode;
-	
-	//SVONLink myParent;
-	//SVONLink myFirstChild;
+	mortoncode myCode;
 
-	int32 myParentIndex;
-	int32 myFirstChildIndex;
+	nodeindex myParentIndex;
+	nodeindex myFirstChildIndex;
 
 	SVONLink myNeighbours[6];
 
@@ -20,13 +18,10 @@ struct UESVON_API SVONNode
 		myPosition(FVector(0.f)),
 		myParentIndex(-1),
 		myFirstChildIndex(-1) {}
-		//myParent(SVONLink(aLayer, 0, 0)),
-		//myFirstChild(SVONLink(aLayer, 0, 0)) {}
 
 	SVONNode() :
 		myPosition(FVector(0.f)),
 		myParentIndex(-1),
 		myFirstChildIndex(-1) {}
-		//myParent(SVONLink(0, 0, 0)),
-		//myFirstChild(SVONLink(0, 0, 0)) {}
+
 };

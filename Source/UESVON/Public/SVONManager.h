@@ -6,18 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "SVONNode.h"
 #include "SVONLeafNode.h"
+#include "SVONDefines.h"
 #include "SVONManager.generated.h"
 
 enum class dir : uint8
 {
 	pX, nX, pY, nY, pZ, nZ
 };
-
-typedef uint8 layerindex;
-typedef int32 nodeindex;
-typedef uint8 subnodeindex;
-typedef uint_fast64_t mortoncode;
-typedef uint_fast32_t posint;
 
 UCLASS()
 class UESVON_API ASVONManager : public AActor

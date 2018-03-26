@@ -87,7 +87,6 @@ void ASVONManager::FirstPassRasterize()
 		FVector position;
 		GetNodePosition(1, i, position);
 
-		//if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(1) * 0.5f))))
 		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeSphere(GetVoxelSize(1) * 0.5f)))
 		{
 			myBlockedIndices.Add(i);
@@ -214,11 +213,6 @@ void ASVONManager::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)
 		float leafVoxelSize = GetVoxelSize(0) * 0.25f;
 		FVector position = aOrigin + FVector(x * leafVoxelSize, y * leafVoxelSize, z * leafVoxelSize) + FVector(leafVoxelSize * 0.5f);
 
-		if (i == 0)
-		{
-			//DrawDebugDirectionalArrow(GetWorld(), position, aOrigin, 2.0f, FColor::Red, true, -1.f, 0, 2.0f);
-		}
-		//if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(leafVoxelSize * 0.5f))))
 		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeSphere(leafVoxelSize * 0.5f)))
 		{
 			myLeafNodes[aLeafIndex].SetNodeAt(x,y,z);
@@ -235,7 +229,6 @@ void ASVONManager::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)
 bool ASVONManager::SetNeighbour(const layerindex aLayer, const nodeindex aArrayIndex, const dir aDirection)
 {
 	return false;
-	//GetLayer(aLayer)[aArrayIndex]
 }
 
 SVONNode& ASVONManager::GetNodeFromLink(SVONLink& aLink)
@@ -251,21 +244,7 @@ void ASVONManager::BeginPlay()
 	FBox bounds = myBoundsVolume->GetComponentsBoundingBox(true);
 	bounds.GetCenterAndExtents(myOrigin, myExtent);
 
-	//myVoxelSize[0] = (myExtent.X / FMath::Pow(2, myVoxelPower)) * (2.0f * aLayer + 1) ;
-	//myVoxelSize[1] = myVoxelSize[0] * 2.0f;
-	//myVoxelSize[2] = myVoxelSize[1] * 2.0f;
-	//myVoxelSize[3] = myVoxelSize[2] * 2.0f;
-
-
-	//myLayerSize[0] = FMath::Pow(2, myVoxelPower);
-	//myLayerSize[1] = myLayerSize[0] / 2;
-	//myLayerSize[2] = myLayerSize[1] / 2;
-	//myLayerSize[3] = myLayerSize[2] / 2;
-
-
 	Generate();
-
-	
 }
 
 bool ASVONManager::GetNodePosition(layerindex aLayer, mortoncode aCode, FVector& oPosition)
