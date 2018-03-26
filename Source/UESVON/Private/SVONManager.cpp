@@ -22,17 +22,27 @@ void ASVONManager::AllocateLeafNodes()
 void ASVONManager::Generate()
 {
 	myBlockedIndices.Empty();
+	myLayers.Empty();
+	myNumLayers = myVoxelPower + 1;
 	
 	FirstPassRasterize();
 
 	AllocateLeafNodes();
 
-	for (int i = 0; i < NUM_LAYERS; i++)
+	// Add layers
+	for (int i = 0; i < myNumLayers; i++)
 	{
+		myLayers.Emplace();
+	}
+
+	// Rasterize layer, bottom up, adding parent/child links
+	for (int i = 0; i < myNumLayers; i++)
+	{	
 		RasterizeLayer(i);
 	}
 
-	for (int i = NUM_LAYERS; i >= 0; i--)
+	// Now traverse down, adding neighbour links
+	for (int i = myNumLayers; i >= 0; i--)
 	{
 		BuildNeighbourLinks(i);
 	}
@@ -48,14 +58,10 @@ float ASVONManager::GetVoxelSize(layerindex aLayer)
 	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1.0f));
 }
 
-int32 ASVONManager::GetLayerSize(layerindex aLayer)
-{
-	return FMath::Pow(2, myVoxelPower) / (aLayer > 0 ? 2 * aLayer : 1);
-}
 
 int32 ASVONManager::GetNodesInLayer(layerindex aLayer)
 {
-	return FMath::Pow(GetLayerSize(aLayer), 3); 
+	return FMath::Pow(FMath::Pow(2, (myVoxelPower - (aLayer))), 3);
 }
 
 void ASVONManager::FirstPassRasterize()

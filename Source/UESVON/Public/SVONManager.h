@@ -59,14 +59,16 @@ public:
 	FVector myOrigin;
 	FVector myExtent;
 
+	uint8 myNumLayers = 0;
+
 private:
 
-	TArray<SVONNode> myLayers[NUM_LAYERS];
+	TArray<TArray<SVONNode>> myLayers;
 
 	TArray<SVONLeafNode> myLeafNodes;
 	TSet<mortoncode> myBlockedIndices;
 
-	FColor myLayerColors[7] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Blue, FColor::Turquoise, FColor::Cyan, FColor::Emerald };
+	FColor myLayerColors[8] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Blue, FColor::Turquoise, FColor::Cyan, FColor::Emerald, FColor::Orange };
 
 	void AllocateLeafNodes();
 
@@ -86,7 +88,6 @@ private:
 	TArray<SVONNode>& GetLayer(layerindex aLayer);
 
 	float GetVoxelSize(layerindex aLayer);
-	int32 GetLayerSize(layerindex aLayer);
 	int32 GetNodesInLayer(layerindex aLayer);
 
 protected:
