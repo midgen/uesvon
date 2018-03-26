@@ -3,6 +3,9 @@
 #include "SVONManager.h"
 #include "libmorton/morton.h"
 #include "DrawDebugHelpers.h"
+#include <chrono>
+
+using namespace std::chrono;
 
 // Sets default values
 ASVONManager::ASVONManager()
@@ -21,6 +24,10 @@ void ASVONManager::AllocateLeafNodes()
 
 void ASVONManager::Generate()
 {
+	milliseconds startMs = duration_cast<milliseconds>(
+		system_clock::now().time_since_epoch()
+		);
+
 	myBlockedIndices.Empty();
 	myLayers.Empty();
 	myNumLayers = myVoxelPower + 1;
@@ -46,6 +53,14 @@ void ASVONManager::Generate()
 	{
 		BuildNeighbourLinks(i);
 	}
+
+	int32 buildTime = (duration_cast<milliseconds>(
+		system_clock::now().time_since_epoch()
+		) - startMs).count();
+
+	UE_LOG(LogTemp, Warning, TEXT("Generation Time : %d"), buildTime);
+
+	GEngine->AddOnScreenDebugMessage(0, 10.0f, FColor::Green, TEXT("Generation Time :" + FString::FromInt(buildTime) + "ms"), true);
 }
 
 TArray<SVONNode>& ASVONManager::GetLayer(layerindex aLayer)
@@ -72,7 +87,8 @@ void ASVONManager::FirstPassRasterize()
 		FVector position;
 		GetNodePosition(1, i, position);
 
-		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(1) * 0.5f))))
+		//if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(1) * 0.5f))))
+		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeSphere(GetVoxelSize(1) * 0.5f)))
 		{
 			myBlockedIndices.Add(i);
 		}
@@ -143,7 +159,7 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 					node.myFirstChildIndex = firstChildIndex;
 				}
 				GetNodePosition(aLayer, i, node.myPosition);
-				//node.myFirstChild.SetLayerIndex(aLayer - 1);
+				
 				if (myShowLinks && firstChildIndex > -1) {
 					DrawDebugDirectionalArrow(GetWorld(), node.myPosition, GetLayer(aLayer - 1)[node.myFirstChildIndex].myPosition, 20.0f, myLayerColors[aLayer], true, -1.f, 0, 20.0f);
 				}
@@ -202,7 +218,8 @@ void ASVONManager::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)
 		{
 			//DrawDebugDirectionalArrow(GetWorld(), position, aOrigin, 2.0f, FColor::Red, true, -1.f, 0, 2.0f);
 		}
-		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(leafVoxelSize * 0.5f))))
+		//if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(leafVoxelSize * 0.5f))))
+		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeSphere(leafVoxelSize * 0.5f)))
 		{
 			myLeafNodes[aLeafIndex].SetNodeAt(x,y,z);
 			if (myShowVoxels) {

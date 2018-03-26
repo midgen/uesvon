@@ -52,10 +52,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 		bool myShowLinks = false;
 
-	// Voxel dimensions. 0 is leaf node.
-	//float myVoxelSize[NUM_LAYERS];
-	//uint32 myLayerSize[NUM_LAYERS];
-
 	FVector myOrigin;
 	FVector myExtent;
 
@@ -93,7 +89,5 @@ private:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-
 
 };
