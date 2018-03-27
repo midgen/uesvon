@@ -72,12 +72,14 @@ private:
 
 	FColor myLayerColors[8] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Blue, FColor::Turquoise, FColor::Cyan, FColor::Emerald, FColor::Orange };
 
+	FColor myLinkColors[8] = { FColor(0xFF111111), FColor(0xFFFFFFFF),FColor(0xFF333333), FColor(0xFFDDDDDD), FColor(0xFFBBBBBB), FColor(0xFF999999), FColor(0xFF777777), FColor(0xFF555555)  };
+
 	void AllocateLeafNodes();
 
 	void FirstPassRasterize();
 	void RasterizeLayer(layerindex aLayer);
 	void BuildNeighbourLinks(layerindex aLayer);
-	bool FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate);
+	bool FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug);
 	void RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex);
 
 	bool SetNeighbour(const layerindex aLayer, const nodeindex aArrayIndex, const dir aDirection);

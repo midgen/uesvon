@@ -222,49 +222,65 @@ void ASVONManager::BuildNeighbourLinks(layerindex aLayer)
 		// Get our world co-ordinate
 		uint_fast32_t x, y, z;
 		morton3D_64_decode(node.myCode, x, y, z);
-
+		nodeindex backtrackIndex = -1;
 		nodeindex index = i;
+		FVector nodePos;
+		GetNodePosition(aLayer, node.myCode, nodePos);
 
 		// For each direction
 		for (int d = 0; d < 6; d++)
 		{
 			SVONLink& linkToUpdate = node.myNeighbours[d];
 
-			while (!FindLinkInDirection(searchLayer, index, d, linkToUpdate)
+			backtrackIndex = index;
+
+			while (!FindLinkInDirection(searchLayer, index, d, linkToUpdate, nodePos)
 				&& aLayer < myLayers.Num() - 2)
 			{
 				index = GetLayer(searchLayer)[index].myParentIndex;
+				
 				searchLayer++;
 			}
+			index = backtrackIndex;
 			searchLayer = aLayer;
 		}
 	}
 }
 
-bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate)
+bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug)
 {
-	uint_fast32_t maxCoord = GetNodesPerSide(aLayer);
+	int32 maxCoord = GetNodesPerSide(aLayer);
 	SVONNode& node = GetLayer(aLayer)[aNodeIndex];
 	TArray<SVONNode>& layer = GetLayer(aLayer);
 
 	// Get our world co-ordinate
-	uint_fast32_t x, y, z;
+	uint_fast32_t x = 0, y = 0, z = 0;
 	morton3D_64_decode(node.myCode, x, y, z);
+	int32 sX = x, sY = y, sZ = z;
 	// Add the direction
-	x += dirs[aDir].X;
-	y += dirs[aDir].Y;
-	z += dirs[aDir].Z;
+	sX += dirs[aDir].X;
+	sY += dirs[aDir].Y;
+	sZ += dirs[aDir].Z;
+
+
 
 	// If the coords are out of bounds, the link is invalid.
-	if (x < 0 || x > maxCoord || y < 0 || y > maxCoord || z < 0 || z > maxCoord)
+	if (sX < 0 || sX >= maxCoord || sY < 0 || sY >= maxCoord || sZ < 0 || sZ >= maxCoord)
 	{
 		oLinkToUpdate.SetInvalid();
+		if (myShowNeighbourLinks)
+		{
+			FVector startPos, endPos;
+			GetNodePosition(aLayer, node.myCode, startPos);
+			endPos = startPos + (FVector(dirs[aDir]) * 100.f);
+			DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, FColor::Red, true, -1.f, 0, .0f);
+		}
 		return true;
 		//node.myNeighbours[aDir].SetInvalid();
 	}
+	x = sX; y = sY; z = sZ;
 	// Get the morton code for the direction
 	mortoncode thisCode = morton3D_64_encode(x, y, z);
-
 	bool isHigher = thisCode > node.myCode;
 	int32 idelta = 1;
 
@@ -283,10 +299,9 @@ bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, 
 				// subnodes???
 				if (myShowNeighbourLinks)
 				{
-					FVector startPos, endPos;
-					GetNodePosition(aLayer, node.myCode, startPos);
+					FVector endPos;
 					GetNodePosition(aLayer, thisCode, endPos);
-					DrawDebugLine(GetWorld(), startPos, endPos, FColor::Black, true, -1.f, 0, .0f);
+					DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, myLinkColors[aLayer], true, -1.f, 0, .0f);
 				}
 				return true;
 			}
@@ -301,7 +316,7 @@ bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, 
 	}
 	else // Code is lower, so look down the array
 	{
-		while (aNodeIndex - idelta > 0)
+		while (aNodeIndex - idelta >= 0)
 		{
 			// This is the node we're looking for
 			if (layer[aNodeIndex - idelta].myCode == thisCode)
@@ -311,10 +326,10 @@ bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, 
 				//layer[aNodeIndex].myNeighbours[d].myLayerIndex = aLayer;
 				//layer[aNodeIndex].myNeighbours[d].myNodeIndex = aNodeIndex + idelta;
 				// subnodes???
-				FVector startPos, endPos;
-				GetNodePosition(aLayer, node.myCode, startPos);
+				FVector endPos;
+
 				GetNodePosition(aLayer, thisCode, endPos);
-				DrawDebugLine(GetWorld(), startPos, endPos, FColor::Black, true, -1.f, 0, 20.0f);
+				DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, myLinkColors[aLayer], true, -1.f, 0, 20.0f);
 				return true;
 			}
 			// If it's higher than the one we want, then it ain't on this layer
