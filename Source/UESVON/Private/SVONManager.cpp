@@ -49,7 +49,7 @@ void ASVONManager::Generate()
 	}
 
 	// Now traverse down, adding neighbour links
-	for (int i = myNumLayers - 1; i >= 0; i--)
+	for (int i = myNumLayers - 2; i >= 0; i--)
 	{
 		BuildNeighbourLinks(i);
 	}
@@ -211,9 +211,9 @@ bool ASVONManager::IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodei
 
 void ASVONManager::BuildNeighbourLinks(layerindex aLayer)
 {
-	mortoncode thisCode;
-	uint_fast32_t maxCoord = GetNodesPerSide(aLayer);
+	
 	TArray<SVONNode>& layer = GetLayer(aLayer);
+	layerindex searchLayer = aLayer;
 	
 	// For each node
 	for (nodeindex i = 0; i < layer.Num(); i++)
@@ -223,79 +223,113 @@ void ASVONManager::BuildNeighbourLinks(layerindex aLayer)
 		uint_fast32_t x, y, z;
 		morton3D_64_decode(node.myCode, x, y, z);
 
+		nodeindex index = i;
+
 		// For each direction
 		for (int d = 0; d < 6; d++)
 		{
-			x += dirs[d].X;
-			y += dirs[d].Y;
-			z += dirs[d].Z;
-			// If the coords are out of bounds, the link is invalid.
-			if (x < 0 || x > maxCoord || y < 0 || y > maxCoord || z < 0 || z > maxCoord)
-			{
-				node.myNeighbours[d].SetInvalid();
-			}
-			// Get the morton code
-			thisCode = morton3D_64_encode(x, y, z);
-			
-			bool isHigher = thisCode > node.myCode;
-			int32 idelta = 0;
+			SVONLink& linkToUpdate = node.myNeighbours[d];
 
-			// If the code we want is higher, start looking up the array for it
-			if (isHigher)
+			while (!FindLinkInDirection(searchLayer, index, d, linkToUpdate)
+				&& aLayer < myLayers.Num() - 2)
 			{
-				while (i + idelta < layer.Num())
-				{
-					// This is the node we're looking for
-					if (layer[i + idelta].myCode == thisCode)
-					{
-						layer[i].myNeighbours[d].myLayerIndex = aLayer;
-						layer[i].myNeighbours[d].myNodeIndex = i + idelta;
-						// subnodes???
-						if (myShowNeighbourLinks)
-						{
-							FVector startPos, endPos;
-							GetNodePosition(aLayer, node.myCode, startPos);
-							GetNodePosition(aLayer, thisCode, endPos);
-							DrawDebugLine(GetWorld(), startPos, endPos, FColor::Black, true, -1.f, 0, .0f);
-						}
-						break;
-					}
-					// If it's higher than the one we want, then it ain't on this layer
-					else if (layer[i + idelta].myCode > thisCode)
-					{
-						// Need to look up a layer
-					}
-
-					idelta++;
-				}
+				index = GetLayer(searchLayer)[index].myParentIndex;
+				searchLayer++;
 			}
-			else // Code is lower, so look down the array
-			{
-				while (i + idelta > 0)
-				{
-					// This is the node we're looking for
-					if (layer[i + idelta].myCode == thisCode)
-					{
-						layer[i].myNeighbours[d].myLayerIndex = aLayer;
-						layer[i].myNeighbours[d].myNodeIndex = i + idelta;
-						// subnodes???
-						FVector startPos, endPos;
-						GetNodePosition(aLayer, node.myCode, startPos);
-						GetNodePosition(aLayer, thisCode, endPos);
-						DrawDebugLine(GetWorld(), startPos, endPos, FColor::Black, true, -1.f, 0, 20.0f);
-						break;
-					}
-					// If it's higher than the one we want, then it ain't on this layer
-					else if (layer[i + idelta].myCode > thisCode)
-					{
-						// Need to look up a layer
-					}
-
-					idelta--;
-				}
-			}
+			searchLayer = aLayer;
 		}
 	}
+}
+
+bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate)
+{
+	uint_fast32_t maxCoord = GetNodesPerSide(aLayer);
+	SVONNode& node = GetLayer(aLayer)[aNodeIndex];
+	TArray<SVONNode>& layer = GetLayer(aLayer);
+
+	// Get our world co-ordinate
+	uint_fast32_t x, y, z;
+	morton3D_64_decode(node.myCode, x, y, z);
+	// Add the direction
+	x += dirs[aDir].X;
+	y += dirs[aDir].Y;
+	z += dirs[aDir].Z;
+
+	// If the coords are out of bounds, the link is invalid.
+	if (x < 0 || x > maxCoord || y < 0 || y > maxCoord || z < 0 || z > maxCoord)
+	{
+		oLinkToUpdate.SetInvalid();
+		return true;
+		//node.myNeighbours[aDir].SetInvalid();
+	}
+	// Get the morton code for the direction
+	mortoncode thisCode = morton3D_64_encode(x, y, z);
+
+	bool isHigher = thisCode > node.myCode;
+	int32 idelta = 1;
+
+	// If the code we want is higher, start looking up the array for it
+	if (isHigher)
+	{
+		while (aNodeIndex + idelta < layer.Num())
+		{
+			// This is the node we're looking for
+			if (layer[aNodeIndex + idelta].myCode == thisCode)
+			{
+				oLinkToUpdate.myLayerIndex = aLayer;
+				oLinkToUpdate.myNodeIndex = aNodeIndex + idelta;
+				//layer[aNodeIndex].myNeighbours[d].myLayerIndex = aLayer;
+				//layer[aNodeIndex].myNeighbours[d].myNodeIndex = aNodeIndex + idelta;
+				// subnodes???
+				if (myShowNeighbourLinks)
+				{
+					FVector startPos, endPos;
+					GetNodePosition(aLayer, node.myCode, startPos);
+					GetNodePosition(aLayer, thisCode, endPos);
+					DrawDebugLine(GetWorld(), startPos, endPos, FColor::Black, true, -1.f, 0, .0f);
+				}
+				return true;
+			}
+			// If it's higher than the one we want, then it ain't on this layer
+			else if (layer[aNodeIndex + idelta].myCode > thisCode)
+			{
+				return false;
+			}
+
+			idelta++;
+		}
+	}
+	else // Code is lower, so look down the array
+	{
+		while (aNodeIndex - idelta > 0)
+		{
+			// This is the node we're looking for
+			if (layer[aNodeIndex - idelta].myCode == thisCode)
+			{
+				oLinkToUpdate.myLayerIndex = aLayer;
+				oLinkToUpdate.myNodeIndex = aNodeIndex + idelta;
+				//layer[aNodeIndex].myNeighbours[d].myLayerIndex = aLayer;
+				//layer[aNodeIndex].myNeighbours[d].myNodeIndex = aNodeIndex + idelta;
+				// subnodes???
+				FVector startPos, endPos;
+				GetNodePosition(aLayer, node.myCode, startPos);
+				GetNodePosition(aLayer, thisCode, endPos);
+				DrawDebugLine(GetWorld(), startPos, endPos, FColor::Black, true, -1.f, 0, 20.0f);
+				return true;
+			}
+			// If it's higher than the one we want, then it ain't on this layer
+			else if (layer[aNodeIndex - idelta].myCode < thisCode)
+			{
+				return false;
+			}
+
+			idelta++;
+		}
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("Find link reached the end, something went horribly wrong in neighbour link generation"));
+	return true;
+
 }
 
 void ASVONManager::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)

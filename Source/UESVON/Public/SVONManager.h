@@ -77,8 +77,7 @@ private:
 	void FirstPassRasterize();
 	void RasterizeLayer(layerindex aLayer);
 	void BuildNeighbourLinks(layerindex aLayer);
-	void BuildNeighbourLinksForNode(layerindex aLayer, SVONNode& aNode, nodeindex aIndex);	
-	bool FindLinkInParentDirection(layerindex aLayer, nodeindex aIndex, uint8 aDir);
+	bool FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate);
 	void RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex);
 
 	bool SetNeighbour(const layerindex aLayer, const nodeindex aArrayIndex, const dir aDirection);
