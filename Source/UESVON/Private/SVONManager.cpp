@@ -125,18 +125,20 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 
 				// Set my code and position
 				node.myCode = (i);
-				GetNodePosition(aLayer, node.myCode, node.myPosition);
+
+				FVector nodePos;
+				GetNodePosition(aLayer, node.myCode, nodePos);
 
 				// Debug stuff
 				if (myShowMortonCodes) { 
-					DrawDebugString(GetWorld(), node.myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false); 
+					DrawDebugString(GetWorld(), nodePos, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
 				}
 				if (myShowVoxels) {
-					DrawDebugBox(GetWorld(), node.myPosition, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+					DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
 				}
 				
 				// Rasterize my leaf nodes
-				FVector leafOrigin = node.myPosition - (FVector(GetVoxelSize(aLayer) * 0.5f));
+				FVector leafOrigin = nodePos - (FVector(GetVoxelSize(aLayer) * 0.5f));
 				RasterizeLeafNode(leafOrigin, leafIndex);
 
 				node.myFirstChildIndex = leafIndex;
@@ -166,17 +168,21 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 				{
 					node.myFirstChildIndex = firstChildIndex;
 				}
-				GetNodePosition(aLayer, i, node.myPosition);
-				
-				// Debug stuff
-				if (myShowParentChildLinks && firstChildIndex > -1) {
-					DrawDebugDirectionalArrow(GetWorld(), node.myPosition, GetLayer(aLayer - 1)[node.myFirstChildIndex].myPosition, 20.0f, myLayerColors[aLayer], true, -1.f, 0, 20.0f);
-				}
-				if (myShowVoxels) {
-					DrawDebugBox(GetWorld(), node.myPosition, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
-				}
-				if (myShowMortonCodes) {
-					DrawDebugString(GetWorld(), node.myPosition, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
+				if (myShowParentChildLinks || myShowMortonCodes || myShowVoxels)
+				{
+					FVector nodePos;
+					GetNodePosition(aLayer, i, nodePos);
+
+					// Debug stuff
+					if (myShowParentChildLinks && firstChildIndex > -1) {
+						//DrawDebugDirectionalArrow(GetWorld(), nodePos, GetLayer(aLayer - 1)[node.myFirstChildIndex].myPosition, 20.0f, myLayerColors[aLayer], true, -1.f, 0, 20.0f);
+					}
+					if (myShowVoxels) {
+						DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+					}
+					if (myShowMortonCodes) {
+						DrawDebugString(GetWorld(), nodePos, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
+					}
 				}
 				
 			}
@@ -294,8 +300,6 @@ bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, 
 			{
 				oLinkToUpdate.myLayerIndex = aLayer;
 				oLinkToUpdate.myNodeIndex = aNodeIndex + idelta;
-				//layer[aNodeIndex].myNeighbours[d].myLayerIndex = aLayer;
-				//layer[aNodeIndex].myNeighbours[d].myNodeIndex = aNodeIndex + idelta;
 				// subnodes???
 				if (myShowNeighbourLinks)
 				{
@@ -323,13 +327,13 @@ bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, 
 			{
 				oLinkToUpdate.myLayerIndex = aLayer;
 				oLinkToUpdate.myNodeIndex = aNodeIndex + idelta;
-				//layer[aNodeIndex].myNeighbours[d].myLayerIndex = aLayer;
-				//layer[aNodeIndex].myNeighbours[d].myNodeIndex = aNodeIndex + idelta;
 				// subnodes???
-				FVector endPos;
-
-				GetNodePosition(aLayer, thisCode, endPos);
-				DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, myLinkColors[aLayer], true, -1.f, 0, 20.0f);
+				if (myShowNeighbourLinks)
+				{
+					FVector endPos;
+					GetNodePosition(aLayer, thisCode, endPos);
+					DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, myLinkColors[aLayer], true, -1.f, 0, 20.0f);
+				}
 				return true;
 			}
 			// If it's higher than the one we want, then it ain't on this layer

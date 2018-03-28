@@ -6,7 +6,7 @@
 
 struct UESVON_API SVONNode
 {
-	FVector myPosition;
+	//FVector myPosition;
 	mortoncode myCode;
 
 	nodeindex myParentIndex;
@@ -15,12 +15,10 @@ struct UESVON_API SVONNode
 	SVONLink myNeighbours[6];
 
 	SVONNode(uint8 aLayer) :
-		myPosition(FVector(0.f)),
 		myParentIndex(-1),
 		myFirstChildIndex(-1) {}
 
 	SVONNode() :
-		myPosition(FVector(0.f)),
 		myParentIndex(-1),
 		myFirstChildIndex(-1) {}
 
