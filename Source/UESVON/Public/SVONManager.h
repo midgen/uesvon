@@ -72,7 +72,7 @@ private:
 
 	FColor myLayerColors[8] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Blue, FColor::Turquoise, FColor::Cyan, FColor::Emerald, FColor::Orange };
 
-	FColor myLinkColors[8] = { FColor(0xFF111111), FColor(0xFFFFFFFF),FColor(0xFF333333), FColor(0xFFDDDDDD), FColor(0xFFBBBBBB), FColor(0xFF999999), FColor(0xFF777777), FColor(0xFF555555)  };
+	FColor myLinkColors[8] = { FColor(0xFF000000), FColor(0xFF444444),FColor(0xFF888888), FColor(0xFFBBBBBB), FColor(0xFFFFFFFF), FColor(0xFF999999), FColor(0xFF777777), FColor(0xFF555555)  };
 
 	void AllocateLeafNodes();
 
