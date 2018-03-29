@@ -2,6 +2,8 @@
 
 #include "UESVON.h"
 
+DEFINE_LOG_CATEGORY(UESVON);
+
 #define LOCTEXT_NAMESPACE "FUESVONModule"
 
 void FUESVONModule::StartupModule()

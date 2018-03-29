@@ -7,6 +7,7 @@
 #include "SVONNode.h"
 #include "SVONLeafNode.h"
 #include "SVONDefines.h"
+#include "UESVON.h"
 #include "SVONManager.generated.h"
 
 enum class dir : uint8

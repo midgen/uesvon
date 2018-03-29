@@ -58,9 +58,20 @@ void ASVONManager::Generate()
 		system_clock::now().time_since_epoch()
 		) - startMs).count();
 
-	UE_LOG(LogTemp, Warning, TEXT("Generation Time : %d"), buildTime);
+	int32 totalNodes = 0;
 
-	GEngine->AddOnScreenDebugMessage(0, 10.0f, FColor::Green, TEXT("Generation Time :" + FString::FromInt(buildTime) + "ms"), true);
+	for (int i = 0; i < myNumLayers; i++)
+	{
+		totalNodes += myLayers[i].Num();
+	}
+
+	int32 totalBytes = sizeof(SVONNode) * totalNodes;
+	totalBytes += sizeof(SVONLeafNode) * myLeafNodes.Num();
+
+	UE_LOG(UESVON, Display, TEXT("Generation Time : %d"), buildTime);
+	UE_LOG(UESVON, Display, TEXT("Total Layers-Nodes : %d-%d"), myNumLayers, totalNodes);
+	UE_LOG(UESVON, Display, TEXT("Total Leaf Nodes : %d"), myLeafNodes.Num());
+	UE_LOG(UESVON, Display, TEXT("Total Size (bytes): %d"), totalBytes);
 }
 
 TArray<SVONNode>& ASVONManager::GetLayer(layerindex aLayer)
