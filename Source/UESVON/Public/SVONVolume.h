@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Volume.h"
-#include "SVONBoundsVolume.generated.h"
+#include "SVONVolume.generated.h"
 
 
 /**
  * 
  */
 UCLASS()
-class UESVON_API ASVONBoundsVolume : public AVolume
+class UESVON_API ASVONVolume : public AVolume
 {
 	GENERATED_UCLASS_BODY()
 	
@@ -28,5 +28,6 @@ public:
 	//~ End UObject Interface
 #endif // WITH_EDITOR
 	
-	
+private:
+
 };

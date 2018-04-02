@@ -142,10 +142,10 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 
 				// Debug stuff
 				if (myShowMortonCodes) { 
-					DrawDebugString(GetWorld(), nodePos, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
+					DrawDebugString(GetWorld(), nodePos, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
 				}
 				if (myShowVoxels) {
-					DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+					DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
 				}
 				
 				// Rasterize my leaf nodes
@@ -189,10 +189,10 @@ void ASVONManager::RasterizeLayer(layerindex aLayer)
 						//DrawDebugDirectionalArrow(GetWorld(), nodePos, GetLayer(aLayer - 1)[node.myFirstChildIndex].myPosition, 20.0f, myLayerColors[aLayer], true, -1.f, 0, 20.0f);
 					}
 					if (myShowVoxels) {
-						DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+						DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
 					}
 					if (myShowMortonCodes) {
-						DrawDebugString(GetWorld(), nodePos, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, myLayerColors[aLayer], -1, false);
+						DrawDebugString(GetWorld(), nodePos, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
 					}
 				}
 				
@@ -275,9 +275,9 @@ bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, 
 	morton3D_64_decode(node.myCode, x, y, z);
 	int32 sX = x, sY = y, sZ = z;
 	// Add the direction
-	sX += dirs[aDir].X;
-	sY += dirs[aDir].Y;
-	sZ += dirs[aDir].Z;
+	sX += SVONStatics::dirs[aDir].X;
+	sY += SVONStatics::dirs[aDir].Y;
+	sZ += SVONStatics::dirs[aDir].Z;
 
 
 
@@ -289,7 +289,7 @@ bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, 
 		{
 			FVector startPos, endPos;
 			GetNodePosition(aLayer, node.myCode, startPos);
-			endPos = startPos + (FVector(dirs[aDir]) * 100.f);
+			endPos = startPos + (FVector(SVONStatics::dirs[aDir]) * 100.f);
 			DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, FColor::Red, true, -1.f, 0, .0f);
 		}
 		return true;
@@ -316,7 +316,7 @@ bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, 
 				{
 					FVector endPos;
 					GetNodePosition(aLayer, thisCode, endPos);
-					DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, myLinkColors[aLayer], true, -1.f, 0, .0f);
+					DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, SVONStatics::myLinkColors[aLayer], true, -1.f, 0, .0f);
 				}
 				return true;
 			}
@@ -343,7 +343,7 @@ bool ASVONManager::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, 
 				{
 					FVector endPos;
 					GetNodePosition(aLayer, thisCode, endPos);
-					DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, myLinkColors[aLayer], true, -1.f, 0, 20.0f);
+					DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, SVONStatics::myLinkColors[aLayer], true, -1.f, 0, 20.0f);
 				}
 				return true;
 			}

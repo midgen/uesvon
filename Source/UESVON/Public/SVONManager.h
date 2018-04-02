@@ -7,6 +7,7 @@
 #include "SVONNode.h"
 #include "SVONLeafNode.h"
 #include "SVONDefines.h"
+#include "SVONVolume.h"
 #include "UESVON.h"
 #include "SVONManager.generated.h"
 
@@ -22,18 +23,6 @@ class UESVON_API ASVONManager : public AActor
 
 public:
 
-	//static const uint8 NUM_LAYERS = 6;
-
-	const FIntVector dirs[6] = {
-		FIntVector(1,0,0),
-		FIntVector(-1,0,0),
-		FIntVector(0,1,0),
-		FIntVector(0,-1,0),
-		FIntVector(0,0,1),
-		FIntVector(0,0,-1)
-	};
-
-
 	bool GetNodePosition(layerindex aLayer, mortoncode aCode, FVector& oPosition);
 	SVONNode& GetNodeAt(layerindex aLayer, posint aX, posint aY, posint aZ);
 
@@ -44,7 +33,7 @@ public:
 	ASVONManager();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
-		ASVONBoundsVolume* myBoundsVolume;
+		ASVONVolume* myBoundsVolume;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 		int32 myVoxelPower;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
@@ -70,10 +59,6 @@ private:
 
 	TArray<SVONLeafNode> myLeafNodes;
 	TSet<mortoncode> myBlockedIndices;
-
-	FColor myLayerColors[8] = { FColor::Orange, FColor::Yellow, FColor::White, FColor::Blue, FColor::Turquoise, FColor::Cyan, FColor::Emerald, FColor::Orange };
-
-	FColor myLinkColors[8] = { FColor(0xFF000000), FColor(0xFF444444),FColor(0xFF888888), FColor(0xFFBBBBBB), FColor(0xFFFFFFFF), FColor(0xFF999999), FColor(0xFF777777), FColor(0xFF555555)  };
 
 	void AllocateLeafNodes();
 

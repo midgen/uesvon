@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "SVONBoundsVolume.h"
+#include "SVONVolume.h"
 #include "Engine/CollisionProfile.h"
 #include "Components/BrushComponent.h"
 
 
 
-ASVONBoundsVolume::ASVONBoundsVolume(const FObjectInitializer& ObjectInitializer)
+ASVONVolume::ASVONVolume(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	GetBrushComponent()->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
@@ -19,24 +19,24 @@ ASVONBoundsVolume::ASVONBoundsVolume(const FObjectInitializer& ObjectInitializer
 
 #if WITH_EDITOR
 
-void ASVONBoundsVolume::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+void ASVONVolume::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 
-void ASVONBoundsVolume::PostEditUndo()
+void ASVONVolume::PostEditUndo()
 {
 	Super::PostEditUndo();
 }
 
 #endif // WITH_EDITOR
 
-void ASVONBoundsVolume::PostRegisterAllComponents()
+void ASVONVolume::PostRegisterAllComponents()
 {
 	Super::PostRegisterAllComponents();
 }
 
-void ASVONBoundsVolume::PostUnregisterAllComponents()
+void ASVONVolume::PostUnregisterAllComponents()
 {
 	Super::PostUnregisterAllComponents();
 }
