@@ -1,4 +1,5 @@
 #include "UESVONEditor.h"
+#include "SVONVolumeDetails.h"
 #include "Editor/PropertyEditor/Public/PropertyEditorModule.h"
 
 IMPLEMENT_GAME_MODULE(FUESVONEditorModule, UESVONEditor);
@@ -13,8 +14,10 @@ void FUESVONEditorModule::StartupModule()
 
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
-	//Custom properties
-	//PropertyModule.RegisterCustomPropertyTypeLayout("GOAPAtom", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGOAPStateCustomization::MakeInstance));
+	//PropertyModule.RegisterCustomPropertyTypeLayout(ASVONVolume::StaticClass(), FOnGetDetailCustomizationInstance::CreateRaw(&FSVONVolumeDetails::MakeInstance));
+
+	PropertyModule.RegisterCustomClassLayout("SVONVolume", FOnGetDetailCustomizationInstance::CreateStatic(&FSVONVolumeDetails::MakeInstance));
+
 
 	//create your factory and shared pointer to it.
 	//TSharedPtr<FGOAPAtomPinFactory> GOAPAtomPinFactory = MakeShareable(new FGOAPAtomPinFactory());

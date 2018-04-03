@@ -15,6 +15,11 @@ enum class EBuildTrigger : uint8
 	Manual 	UMETA(DisplayName = "Manual")
 };
 
+enum class dir : uint8
+{
+	pX, nX, pY, nY, pZ, nZ
+};
+
 
 class UESVON_API SVONStatics
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Engine.h"
-#include "ModuleManager.h"
+#include "CoreMinimal.h"
+#include "Modules/ModuleManager.h"
 #include "UnrealEd.h"
 
 

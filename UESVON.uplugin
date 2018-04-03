@@ -18,6 +18,11 @@
 			"Name": "UESVON",
 			"Type": "Developer",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "UESVONEditor",
+			"Type": "Editor",
+			"LoadingPhase":  "PostEngineInit"
 		}
 	]
 }
