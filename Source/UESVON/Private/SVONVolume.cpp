@@ -24,11 +24,20 @@ ASVONVolume::ASVONVolume(const FObjectInitializer& ObjectInitializer)
 void ASVONVolume::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (myGenerateOnEdit)
+	{
+		Generate();
+	}
 }
 
 void ASVONVolume::PostEditUndo()
 {
 	Super::PostEditUndo();
+	if (myGenerateOnEdit)
+	{
+		Generate();
+	}
 }
 #endif // WITH_EDITOR
 

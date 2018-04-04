@@ -14,7 +14,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(hidecategories = (Tags, Cooking, Collision, Actor, HLOD, Mobile, LOD))
 class UESVON_API ASVONVolume : public AVolume
 {
 	GENERATED_UCLASS_BODY()
@@ -42,6 +42,8 @@ public:
 	int32 myVoxelPower = 3;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	TEnumAsByte<ECollisionChannel> myCollisionChannel;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+	bool myGenerateOnEdit = false;
 
 	bool Generate();
 	

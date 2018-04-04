@@ -1,25 +1,26 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "SVONVolumeDetails.h"
-#include "Layout/Visibility.h"
-#include "Widgets/DeclarativeSyntaxSupport.h"
-#include "Widgets/SBoxPanel.h"
-#include "Widgets/Layout/SBorder.h"
-#include "Widgets/Images/SImage.h"
-#include "Widgets/Text/STextBlock.h"
-#include "EditorStyleSet.h"
-#include "Engine/EngineBaseTypes.h"
-#include "Components/ActorComponent.h"
+#include "SVONVolume.h"
+//#include "Layout/Visibility.h"
+//#include "Widgets/DeclarativeSyntaxSupport.h"
+//#include "Widgets/SBoxPanel.h"
+//#include "Widgets/Layout/SBorder.h"
+//#include "Widgets/Images/SImage.h"
+//#include "Widgets/Text/STextBlock.h"
+//#include "EditorStyleSet.h"
+//#include "Engine/EngineBaseTypes.h"
+//#include "Components/ActorComponent.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "DetailCategoryBuilder.h"
-#include "IDetailsView.h"
-#include "ObjectEditorUtils.h"
-#include "Widgets/SToolTip.h"
-#include "IDocumentation.h"
-#include "Widgets/Text/STextBlock.h"
-#include "Widgets/Input/SButton.h"
-#include "SVONVolume.h"
+#include "Components/BrushComponent.h"
+//#include "IDetailsView.h"
+//#include "ObjectEditorUtils.h"
+//#include "Widgets/SToolTip.h"
+//#include "IDocumentation.h"
+//#include "Widgets/Text/STextBlock.h"
+//#include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "SVONVolumeDetails"
 
@@ -53,13 +54,21 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	TSharedPtr<IPropertyHandle> showNeighbourLinksProperty = DetailBuilder.GetProperty("myShowNeighbourLinks");
 	TSharedPtr<IPropertyHandle> voxelPowerProperty = DetailBuilder.GetProperty("myVoxelPower");
 	TSharedPtr<IPropertyHandle> collisionChannelProperty = DetailBuilder.GetProperty("myCollisionChannel");
+	TSharedPtr<IPropertyHandle> generateOnEditProperty = DetailBuilder.GetProperty("myGenerateOnEdit");
 	
+	showVoxelProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Voxels", "Debug Voxels"));
+	showMortonCodesProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Morton Codes", "Debug Morton Codes"));
+	showNeighbourLinksProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Links", "Debug Links"));
+	voxelPowerProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Density Power", "Density Power"));
+	voxelPowerProperty->SetInstanceMetaData("UIMin", TEXT("1"));
+	voxelPowerProperty->SetInstanceMetaData("UIMax", TEXT("12"));
+	collisionChannelProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Collision Channel", "Collision Channel"));
 
-	navigationCategory.AddProperty(showVoxelProperty);
-	navigationCategory.AddProperty(showMortonCodesProperty);
-	navigationCategory.AddProperty(showNeighbourLinksProperty);
+	generateOnEditProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Auto Generate", "Auto Generate"));
+
 	navigationCategory.AddProperty(voxelPowerProperty);
 	navigationCategory.AddProperty(collisionChannelProperty);
+	navigationCategory.AddProperty(generateOnEditProperty);
 
 	const TArray< TWeakObjectPtr<UObject> >& SelectedObjects = DetailBuilder.GetSelectedObjects();
 
@@ -77,13 +86,13 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 		}
 	}
 
-	DetailBuilder.EditCategory("SVO Generation")
-		.AddCustomRow(NSLOCTEXT("SVO Volume", "Update", "Update"))
+	DetailBuilder.EditCategory("SVO Navigation")
+		.AddCustomRow(NSLOCTEXT("SVO Volume", "Generate", "Generate"))
 		.NameContent()
 		[
 			SNew(STextBlock)
 			.Font(IDetailLayoutBuilder::GetDetailFont())
-		.Text(NSLOCTEXT("SVO Volume", "Update", "Update"))
+		.Text(NSLOCTEXT("SVO Volume", "Generate", "Generate"))
 		]
 	.ValueContent()
 		.MaxDesiredWidth(125.f)
@@ -97,10 +106,13 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 		[
 			SNew(STextBlock)
 			.Font(IDetailLayoutBuilder::GetDetailFont())
-		.Text(NSLOCTEXT("SVO Volume", "Update", "Update"))
+		.Text(NSLOCTEXT("SVO Volume", "Generate", "Generate"))
 		]
 		];
 
+	navigationCategory.AddProperty(showVoxelProperty);
+	navigationCategory.AddProperty(showMortonCodesProperty);
+	navigationCategory.AddProperty(showNeighbourLinksProperty);
 }
 
 FReply FSVONVolumeDetails::OnUpdateVolume()
