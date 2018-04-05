@@ -2,25 +2,10 @@
 
 #include "SVONVolumeDetails.h"
 #include "SVONVolume.h"
-//#include "Layout/Visibility.h"
-//#include "Widgets/DeclarativeSyntaxSupport.h"
-//#include "Widgets/SBoxPanel.h"
-//#include "Widgets/Layout/SBorder.h"
-//#include "Widgets/Images/SImage.h"
-//#include "Widgets/Text/STextBlock.h"
-//#include "EditorStyleSet.h"
-//#include "Engine/EngineBaseTypes.h"
-//#include "Components/ActorComponent.h"
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "DetailCategoryBuilder.h"
 #include "Components/BrushComponent.h"
-//#include "IDetailsView.h"
-//#include "ObjectEditorUtils.h"
-//#include "Widgets/SToolTip.h"
-//#include "IDocumentation.h"
-//#include "Widgets/Text/STextBlock.h"
-//#include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "SVONVolumeDetails"
 
@@ -54,7 +39,6 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	TSharedPtr<IPropertyHandle> showNeighbourLinksProperty = DetailBuilder.GetProperty("myShowNeighbourLinks");
 	TSharedPtr<IPropertyHandle> voxelPowerProperty = DetailBuilder.GetProperty("myVoxelPower");
 	TSharedPtr<IPropertyHandle> collisionChannelProperty = DetailBuilder.GetProperty("myCollisionChannel");
-	TSharedPtr<IPropertyHandle> generateOnEditProperty = DetailBuilder.GetProperty("myGenerateOnEdit");
 	
 	showVoxelProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Voxels", "Debug Voxels"));
 	showMortonCodesProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Morton Codes", "Debug Morton Codes"));
@@ -64,11 +48,8 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	voxelPowerProperty->SetInstanceMetaData("UIMax", TEXT("12"));
 	collisionChannelProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Collision Channel", "Collision Channel"));
 
-	generateOnEditProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Auto Generate", "Auto Generate"));
-
 	navigationCategory.AddProperty(voxelPowerProperty);
 	navigationCategory.AddProperty(collisionChannelProperty);
-	navigationCategory.AddProperty(generateOnEditProperty);
 
 	const TArray< TWeakObjectPtr<UObject> >& SelectedObjects = DetailBuilder.GetSelectedObjects();
 

@@ -29,6 +29,7 @@ public:
 	//~ Begin UObject Interface
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditUndo() override;
+	void OnPostShapeChanged();
 	//~ End UObject Interface
 #endif // WITH_EDITOR
 
@@ -42,8 +43,6 @@ public:
 	int32 myVoxelPower = 3;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	TEnumAsByte<ECollisionChannel> myCollisionChannel;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
-	bool myGenerateOnEdit = false;
 
 	bool Generate();
 	

@@ -24,21 +24,18 @@ ASVONVolume::ASVONVolume(const FObjectInitializer& ObjectInitializer)
 void ASVONVolume::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	if (myGenerateOnEdit)
-	{
-		Generate();
-	}
 }
 
 void ASVONVolume::PostEditUndo()
 {
 	Super::PostEditUndo();
-	if (myGenerateOnEdit)
-	{
-		Generate();
-	}
 }
+
+void ASVONVolume::OnPostShapeChanged()
+{
+
+}
+
 #endif // WITH_EDITOR
 
 /************************************************************************/
@@ -276,6 +273,8 @@ bool ASVONVolume::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, u
 
 			idelta++;
 		}
+
+		return false;
 	}
 	else // Code is lower, so look down the array
 	{
@@ -303,6 +302,7 @@ bool ASVONVolume::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, u
 
 			idelta++;
 		}
+		return false;
 	}
 
 	UE_LOG(LogTemp, Error, TEXT("Find link reached the end. Layer : %i Node : %i"), aLayer, aNodeIndex);
