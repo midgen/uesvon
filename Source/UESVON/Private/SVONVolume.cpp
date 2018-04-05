@@ -65,7 +65,7 @@ bool ASVONVolume::Generate()
 
 	// Allocate the leaf node data
 	myLeafNodes.Empty();
-	myLeafNodes.AddDefaulted(myBlockedIndices.Num() * 8);
+	myLeafNodes.AddDefaulted(myBlockedIndices[0].Num() * 8);
 
 	// Add layers
 	for (int i = 0; i < myNumLayers; i++)
@@ -110,6 +110,9 @@ bool ASVONVolume::Generate()
 
 bool ASVONVolume::FirstPassRasterize()
 {
+	// Add the first layer of blocking
+	myBlockedIndices.Emplace();
+
 	int32 numNodes = GetNodesInLayer(1);
 	for (int32 i = 0; i < numNodes; i++)
 	{
@@ -118,18 +121,28 @@ bool ASVONVolume::FirstPassRasterize()
 
 		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(1) * 0.5f))))
 		{
-			myBlockedIndices.Add(i);
+			myBlockedIndices[0].Add(i);
 		}
 	}
 
-	if (myBlockedIndices.Num() == 0)
-	{
-		return false;
-	}
-
-	myBlockedIndices.Sort([](const uint_fast64_t& A, const uint_fast64_t& B) {
+	// Do we need to do this? Should be in order anyway
+	/*myBlockedIndices.Sort([](const uint_fast64_t& A, const uint_fast64_t& B) {
 		return B > A;
 	});
+*/
+	int layerIndex = 0;
+
+	while (myBlockedIndices[layerIndex].Num() > 1)
+	{
+		// Add a new layer to structure
+		myBlockedIndices.Emplace();
+		// Add any parent morton codes to the new layer
+		for (mortoncode& code : myBlockedIndices[layerIndex])
+		{
+			myBlockedIndices[layerIndex + 1].Add(code >> 3);
+		}
+		layerIndex++;
+	}
 
 	return true;
 }
@@ -361,6 +374,25 @@ bool ASVONVolume::IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodein
 	return isBlocked;
 }
 
+// This doesn't work...need to look at it when not tired.
+bool ASVONVolume::IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodeindex& oFirstChildIndex)
+{
+	mortoncode parentCode = aCode >> 3;
+
+	if (aLayer == myBlockedIndices.Num())
+	{
+		oFirstChildIndex = parentCode << 3;
+		return true;
+	}
+	if (myBlockedIndices[aLayer].Contains(parentCode))
+	{
+		oFirstChildIndex = parentCode ;
+		return true;
+	}
+
+	return false;
+}
+
 bool ASVONVolume::SetNeighbour(const layerindex aLayer, const nodeindex aArrayIndex, const dir aDirection)
 {
 	return false;
@@ -381,7 +413,7 @@ void ASVONVolume::RasterizeLayer(layerindex aLayer)
 			int index = (i);
 
 			// If we know this is blocked, from our first pass
-			if (myBlockedIndices.Contains(i >> 3))
+			if (myBlockedIndices[0].Contains(i >> 3))
 			{
 				// Add a node
 				index = GetLayer(aLayer).Emplace();
@@ -421,6 +453,7 @@ void ASVONVolume::RasterizeLayer(layerindex aLayer)
 			// Do we have any blocking children, or siblings?
 			// Remember we must have 8 children per parent
 			if (IsAnyMemberBlocked(aLayer, i, nodeCounter, firstChildIndex))
+			//if(IsAnyMemberBlocked(aLayer, i, firstChildIndex))
 			{
 				// Add a node
 				int32 index = GetLayer(aLayer).Emplace();

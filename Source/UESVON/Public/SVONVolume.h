@@ -30,6 +30,8 @@ public:
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditUndo() override;
 	void OnPostShapeChanged();
+
+	bool ShouldTickIfViewportsOnly() const override { return true; }
 	//~ End UObject Interface
 #endif // WITH_EDITOR
 
@@ -57,7 +59,9 @@ private:
 	TArray<TArray<SVONNode>> myLayers;
 	TArray<SVONLeafNode> myLeafNodes;
 	// First pass rasterize results
-	TSet<mortoncode> myBlockedIndices;
+	TArray<TSet<mortoncode>> myBlockedIndices;
+
+
 
 	bool FirstPassRasterize();
 	void RasterizeLayer(layerindex aLayer);
@@ -73,4 +77,6 @@ private:
 	void RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex);
 	bool SetNeighbour(const layerindex aLayer, const nodeindex aArrayIndex, const dir aDirection);
 	bool IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodeindex aThisParentIndex, nodeindex& oFirstChildIndex);
+
+	bool IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodeindex& oFirstChildIndex);
 };
