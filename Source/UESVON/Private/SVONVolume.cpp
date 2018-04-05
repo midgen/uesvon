@@ -290,7 +290,7 @@ bool ASVONVolume::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, u
 				{
 					FVector endPos;
 					GetNodePosition(aLayer, thisCode, endPos);
-					DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, SVONStatics::myLinkColors[aLayer], true, -1.f, 0, 20.0f);
+					DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, SVONStatics::myLinkColors[aLayer], true, -1.f, 0, .0f);
 				}
 				return true;
 			}
@@ -324,7 +324,7 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)
 		{
 			myLeafNodes[aLeafIndex].SetNodeAt(x, y, z);
 			if (myShowVoxels) {
-				DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, 6.0f);
+				DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, .0f);
 			}
 
 		}
@@ -398,7 +398,7 @@ void ASVONVolume::RasterizeLayer(layerindex aLayer)
 					DrawDebugString(GetWorld(), nodePos, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
 				}
 				if (myShowVoxels) {
-					DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+					DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
 				}
 
 				// Rasterize my leaf nodes
@@ -439,7 +439,7 @@ void ASVONVolume::RasterizeLayer(layerindex aLayer)
 
 					// Debug stuff
 					if (myShowVoxels) {
-						DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, aLayer + 1 * 6.0f);
+						DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
 					}
 					if (myShowMortonCodes) {
 						DrawDebugString(GetWorld(), nodePos, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
