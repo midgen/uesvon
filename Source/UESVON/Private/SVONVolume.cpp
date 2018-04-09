@@ -158,7 +158,7 @@ bool ASVONVolume::GetNodePosition(layerindex aLayer, mortoncode aCode, FVector& 
 
 
 
-float ASVONVolume::GetVoxelSize(layerindex aLayer)
+float ASVONVolume::GetVoxelSize(layerindex aLayer) const
 {
 	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1.0f));
 }
@@ -345,6 +345,11 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)
 }
 
 TArray<SVONNode>& ASVONVolume::GetLayer(layerindex aLayer)
+{
+	return myLayers[aLayer];
+}
+
+const TArray<SVONNode>& ASVONVolume::GetLayer(layerindex aLayer) const
 {
 	return myLayers[aLayer];
 }

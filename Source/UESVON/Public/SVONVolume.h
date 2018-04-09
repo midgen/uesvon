@@ -47,6 +47,13 @@ public:
 	TEnumAsByte<ECollisionChannel> myCollisionChannel;
 
 	bool Generate();
+
+	const FVector& GetOrigin() const { return myOrigin; }
+	const FVector& GetExtent() const { return myExtent; }
+	const uint8 GetMyNumLayers() const { return myNumLayers; }
+	const TArray<SVONNode>& GetLayer(layerindex aLayer) const;
+	float GetVoxelSize(layerindex aLayer) const;
+
 	
 private:
 
@@ -61,16 +68,16 @@ private:
 	// First pass rasterize results
 	TArray<TSet<mortoncode>> myBlockedIndices;
 
-
+	TArray<SVONNode>& GetLayer(layerindex aLayer);
 
 	bool FirstPassRasterize();
 	void RasterizeLayer(layerindex aLayer);
 
-	float GetVoxelSize(layerindex aLayer);
+
 	int32 GetNodesInLayer(layerindex aLayer);
 	int32 GetNodesPerSide(layerindex aLayer);
 	bool GetNodePosition(layerindex aLayer, mortoncode aCode, FVector& oPosition);
-	TArray<SVONNode>& GetLayer(layerindex aLayer);
+
 
 	void BuildNeighbourLinks(layerindex aLayer);
 	bool FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug);
