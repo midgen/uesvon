@@ -30,4 +30,12 @@ struct UESVON_API SVONLink
 	bool IsValid() const { return myLayerIndex != 16; }
 	void SetInvalid() { myLayerIndex = 16; }
 
+	static SVONLink GetInvalidLink() { return SVONLink(16, 0, 0); }
+
+	FString ToString() 
+	{
+		return FString::Printf(TEXT("%i:%i:%i"), myLayerIndex, myNodeIndex, mySubnodeIndex);
+	};
+
 };
+

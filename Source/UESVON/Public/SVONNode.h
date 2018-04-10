@@ -7,19 +7,19 @@
 struct UESVON_API SVONNode
 {
 	//FVector myPosition;
-	mortoncode myCode;
+	mortoncode_t myCode;
 
-	nodeindex myParentIndex;
-	nodeindex myFirstChildIndex;
+	nodeindex_t myParentIndex;
+	SVONLink myFirstChildIndex;
 
 	SVONLink myNeighbours[6];
 
 	SVONNode(uint8 aLayer) :
 		myParentIndex(-1),
-		myFirstChildIndex(-1) {}
+		myFirstChildIndex(SVONLink::GetInvalidLink()) {}
 
 	SVONNode() :
 		myParentIndex(-1),
-		myFirstChildIndex(-1) {}
+		myFirstChildIndex(SVONLink::GetInvalidLink()) {}
 
 };

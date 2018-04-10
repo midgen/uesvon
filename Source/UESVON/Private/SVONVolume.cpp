@@ -137,7 +137,7 @@ bool ASVONVolume::FirstPassRasterize()
 		// Add a new layer to structure
 		myBlockedIndices.Emplace();
 		// Add any parent morton codes to the new layer
-		for (mortoncode& code : myBlockedIndices[layerIndex])
+		for (mortoncode_t& code : myBlockedIndices[layerIndex])
 		{
 			myBlockedIndices[layerIndex + 1].Add(code >> 3);
 		}
@@ -147,7 +147,7 @@ bool ASVONVolume::FirstPassRasterize()
 	return true;
 }
 
-bool ASVONVolume::GetNodePosition(layerindex aLayer, mortoncode aCode, FVector& oPosition)
+bool ASVONVolume::GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition)
 {
 	float voxelSize = GetVoxelSize(aLayer);
 	uint_fast32_t x, y, z;
@@ -158,18 +158,18 @@ bool ASVONVolume::GetNodePosition(layerindex aLayer, mortoncode aCode, FVector& 
 
 
 
-float ASVONVolume::GetVoxelSize(layerindex aLayer) const
+float ASVONVolume::GetVoxelSize(layerindex_t aLayer) const
 {
 	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1.0f));
 }
 
 
-int32 ASVONVolume::GetNodesInLayer(layerindex aLayer)
+int32 ASVONVolume::GetNodesInLayer(layerindex_t aLayer)
 {
 	return FMath::Pow(FMath::Pow(2, (myVoxelPower - (aLayer))), 3);
 }
 
-int32 ASVONVolume::GetNodesPerSide(layerindex aLayer)
+int32 ASVONVolume::GetNodesPerSide(layerindex_t aLayer)
 {
 	return FMath::Pow(2, (myVoxelPower - (aLayer)));
 }
@@ -184,21 +184,21 @@ void ASVONVolume::PostUnregisterAllComponents()
 	Super::PostUnregisterAllComponents();
 }
 
-void ASVONVolume::BuildNeighbourLinks(layerindex aLayer)
+void ASVONVolume::BuildNeighbourLinks(layerindex_t aLayer)
 {
 
 	TArray<SVONNode>& layer = GetLayer(aLayer);
-	layerindex searchLayer = aLayer;
+	layerindex_t searchLayer = aLayer;
 
 	// For each node
-	for (nodeindex i = 0; i < layer.Num(); i++)
+	for (nodeindex_t i = 0; i < layer.Num(); i++)
 	{
 		SVONNode& node = layer[i];
 		// Get our world co-ordinate
 		uint_fast32_t x, y, z;
 		morton3D_64_decode(node.myCode, x, y, z);
-		nodeindex backtrackIndex = -1;
-		nodeindex index = i;
+		nodeindex_t backtrackIndex = -1;
+		nodeindex_t index = i;
 		FVector nodePos;
 		GetNodePosition(aLayer, node.myCode, nodePos);
 
@@ -222,7 +222,7 @@ void ASVONVolume::BuildNeighbourLinks(layerindex aLayer)
 	}
 }
 
-bool ASVONVolume::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug)
+bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug)
 {
 	int32 maxCoord = GetNodesPerSide(aLayer);
 	SVONNode& node = GetLayer(aLayer)[aNodeIndex];
@@ -255,7 +255,7 @@ bool ASVONVolume::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, u
 	}
 	x = sX; y = sY; z = sZ;
 	// Get the morton code for the direction
-	mortoncode thisCode = morton3D_64_encode(x, y, z);
+	mortoncode_t thisCode = morton3D_64_encode(x, y, z);
 	bool isHigher = thisCode > node.myCode;
 	int32 idelta = 1;
 
@@ -323,7 +323,7 @@ bool ASVONVolume::FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, u
 
 }
 
-void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)
+void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 {
 	for (int i = 0; i < 64; i++)
 	{
@@ -344,12 +344,12 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex)
 	}
 }
 
-TArray<SVONNode>& ASVONVolume::GetLayer(layerindex aLayer)
+TArray<SVONNode>& ASVONVolume::GetLayer(layerindex_t aLayer)
 {
 	return myLayers[aLayer];
 }
 
-const TArray<SVONNode>& ASVONVolume::GetLayer(layerindex aLayer) const
+const TArray<SVONNode>& ASVONVolume::GetLayer(layerindex_t aLayer) const
 {
 	return myLayers[aLayer];
 }
@@ -357,7 +357,7 @@ const TArray<SVONNode>& ASVONVolume::GetLayer(layerindex aLayer) const
 
 // Check if any nodes within this node's parent is blocked
 //   This is unnecessarily slow right now, doing too many iterations, needs changing
-bool ASVONVolume::IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodeindex aThisParentIndex, nodeindex& oFirstChildIndex)
+bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t aThisParentIndex, nodeindex_t& oFirstChildIndex)
 {
 	int32 parentCode = aCode >> 3;
 	bool isBlocked = false;
@@ -380,9 +380,9 @@ bool ASVONVolume::IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodein
 }
 
 // This doesn't work...need to look at it when not tired.
-bool ASVONVolume::IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodeindex& oFirstChildIndex)
+bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oFirstChildIndex)
 {
-	mortoncode parentCode = aCode >> 3;
+	mortoncode_t parentCode = aCode >> 3;
 
 	if (aLayer == myBlockedIndices.Num())
 	{
@@ -398,15 +398,15 @@ bool ASVONVolume::IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodein
 	return false;
 }
 
-bool ASVONVolume::SetNeighbour(const layerindex aLayer, const nodeindex aArrayIndex, const dir aDirection)
+bool ASVONVolume::SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArrayIndex, const dir aDirection)
 {
 	return false;
 }
 
 
-void ASVONVolume::RasterizeLayer(layerindex aLayer)
+void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 {
-	nodeindex leafIndex = 0;
+	nodeindex_t leafIndex = 0;
 
 	// Layer 0 is a special case
 	if (aLayer == 0)
@@ -442,7 +442,8 @@ void ASVONVolume::RasterizeLayer(layerindex aLayer)
 				FVector leafOrigin = nodePos - (FVector(GetVoxelSize(aLayer) * 0.5f));
 				RasterizeLeafNode(leafOrigin, leafIndex);
 
-				node.myFirstChildIndex = leafIndex;
+				// This is the leaf node index
+				node.myFirstChildIndex.SetNodeIndex(leafIndex);
 				leafIndex++;
 			}
 		}
@@ -468,7 +469,8 @@ void ASVONVolume::RasterizeLayer(layerindex aLayer)
 				node.myCode = i;
 				if (firstChildIndex > -1)
 				{
-					node.myFirstChildIndex = firstChildIndex;
+					node.myFirstChildIndex.SetLayerIndex(aLayer - 1);
+					node.myFirstChildIndex.SetNodeIndex(firstChildIndex);
 				}
 				if (myShowMortonCodes || myShowVoxels)
 				{

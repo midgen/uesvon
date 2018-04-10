@@ -51,8 +51,8 @@ public:
 	const FVector& GetOrigin() const { return myOrigin; }
 	const FVector& GetExtent() const { return myExtent; }
 	const uint8 GetMyNumLayers() const { return myNumLayers; }
-	const TArray<SVONNode>& GetLayer(layerindex aLayer) const;
-	float GetVoxelSize(layerindex aLayer) const;
+	const TArray<SVONNode>& GetLayer(layerindex_t aLayer) const;
+	float GetVoxelSize(layerindex_t aLayer) const;
 
 	
 private:
@@ -66,24 +66,24 @@ private:
 	TArray<TArray<SVONNode>> myLayers;
 	TArray<SVONLeafNode> myLeafNodes;
 	// First pass rasterize results
-	TArray<TSet<mortoncode>> myBlockedIndices;
+	TArray<TSet<mortoncode_t>> myBlockedIndices;
 
-	TArray<SVONNode>& GetLayer(layerindex aLayer);
+	TArray<SVONNode>& GetLayer(layerindex_t aLayer);
 
 	bool FirstPassRasterize();
-	void RasterizeLayer(layerindex aLayer);
+	void RasterizeLayer(layerindex_t aLayer);
 
 
-	int32 GetNodesInLayer(layerindex aLayer);
-	int32 GetNodesPerSide(layerindex aLayer);
-	bool GetNodePosition(layerindex aLayer, mortoncode aCode, FVector& oPosition);
+	int32 GetNodesInLayer(layerindex_t aLayer);
+	int32 GetNodesPerSide(layerindex_t aLayer);
+	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition);
 
 
-	void BuildNeighbourLinks(layerindex aLayer);
-	bool FindLinkInDirection(layerindex aLayer, nodeindex aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug);
-	void RasterizeLeafNode(FVector& aOrigin, nodeindex aLeafIndex);
-	bool SetNeighbour(const layerindex aLayer, const nodeindex aArrayIndex, const dir aDirection);
-	bool IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodeindex aThisParentIndex, nodeindex& oFirstChildIndex);
+	void BuildNeighbourLinks(layerindex_t aLayer);
+	bool FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug);
+	void RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex);
+	bool SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArrayIndex, const dir aDirection);
+	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t aThisParentIndex, nodeindex_t& oFirstChildIndex);
 
-	bool IsAnyMemberBlocked(layerindex aLayer, mortoncode aCode, nodeindex& oFirstChildIndex);
+	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oFirstChildIndex);
 };
