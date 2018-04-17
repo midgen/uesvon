@@ -11,12 +11,15 @@ using namespace std::chrono;
 ASVONVolume::ASVONVolume(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	GetBrushComponent()->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+	//GetBrushComponent()->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	GetBrushComponent()->Mobility = EComponentMobility::Static;
 
 	BrushColor = FColor(255, 255, 255, 255);
 
 	bColored = true;
+
+	FBox bounds = GetComponentsBoundingBox(true);
+	bounds.GetCenterAndExtents(myOrigin, myExtent);
 }
 
 #if WITH_EDITOR
@@ -164,6 +167,11 @@ float ASVONVolume::GetVoxelSize(layerindex_t aLayer) const
 }
 
 
+bool ASVONVolume::IsReadyForNavigation()
+{
+	return myIsReadyForNavigation;
+}
+
 int32 ASVONVolume::GetNodesInLayer(layerindex_t aLayer)
 {
 	return FMath::Pow(FMath::Pow(2, (myVoxelPower - (aLayer))), 3);
@@ -172,6 +180,15 @@ int32 ASVONVolume::GetNodesInLayer(layerindex_t aLayer)
 int32 ASVONVolume::GetNodesPerSide(layerindex_t aLayer)
 {
 	return FMath::Pow(2, (myVoxelPower - (aLayer)));
+}
+
+void ASVONVolume::BeginPlay()
+{
+	if (!myIsReadyForNavigation)
+	{
+		Generate();
+		myIsReadyForNavigation = true;
+	}
 }
 
 void ASVONVolume::PostRegisterAllComponents()
@@ -443,6 +460,7 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				RasterizeLeafNode(leafOrigin, leafIndex);
 
 				// This is the leaf node index
+				node.myFirstChildIndex.SetLeafNode();
 				node.myFirstChildIndex.SetNodeIndex(leafIndex);
 				leafIndex++;
 			}

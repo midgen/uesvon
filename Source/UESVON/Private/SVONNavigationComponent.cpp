@@ -13,7 +13,7 @@ USVONNavigationComponent::USVONNavigationComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
 }
@@ -23,7 +23,16 @@ USVONNavigationComponent::USVONNavigationComponent()
 void USVONNavigationComponent::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
+/** Are we inside a valid nav volume ? */
+bool USVONNavigationComponent::HasNavVolume()
+{
+	return myCurrentNavVolume && GetOwner() && myCurrentNavVolume->EncompassesPoint(GetOwner()->GetActorLocation());
+}
+
+bool USVONNavigationComponent::FindVolume()
+{
 	TArray<AActor*> navVolumes;
 
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASVONVolume::StaticClass(), navVolumes);
@@ -34,21 +43,28 @@ void USVONNavigationComponent::BeginPlay()
 		if (volume && volume->EncompassesPoint(GetOwner()->GetActorLocation()))
 		{
 			myCurrentNavVolume = volume;
+			return true;
 		}
 	}
-	
-}
-
-/** Are we inside a valid nav volume ? */
-bool USVONNavigationComponent::HasNavVolume()
-{
-	return myCurrentNavVolume && GetOwner() && myCurrentNavVolume->EncompassesPoint(GetOwner()->GetActorLocation());
+	return false;
 }
 
 // Called every frame
 void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (!HasNavVolume())
+	{
+		FindVolume();
+	}
+	else if (myCurrentNavVolume->IsReadyForNavigation())
+	{
+		FVector location = GetOwner()->GetActorLocation();
+		//SVONLink link = GetNavPosition(location);
+		DebugLocalPosition(location);
+	}
+
 
 	// ...
 }
@@ -64,5 +80,18 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 		
 	}
 	return navLink;
+}
+
+void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition)
+{
+
+	if (HasNavVolume())
+	{
+		FIntVector pos;
+		SVONMediator::GetVolumeXYZ(GetOwner()->GetActorLocation(), *myCurrentNavVolume, pos);
+		DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), pos.ToString());
+
+	}
+
 }
 

@@ -8,5 +8,5 @@ class UESVON_API SVONMediator
 public:
 	static bool GetLinkFromPosition(const FVector& aPosition, const ASVONVolume& aVolume, SVONLink& oLink);
 
-
+	static void GetVolumeXYZ(const FVector& aPosition, const ASVONVolume& aVolume, FIntVector& oXYZ);
 };

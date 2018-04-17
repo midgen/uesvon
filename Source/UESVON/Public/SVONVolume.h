@@ -14,12 +14,14 @@
 /**
  * 
  */
-UCLASS(hidecategories = (Tags, Cooking, Collision, Actor, HLOD, Mobile, LOD))
+UCLASS(hidecategories = (Tags, Cooking, Actor, HLOD, Mobile, LOD))
 class UESVON_API ASVONVolume : public AVolume
 {
 	GENERATED_UCLASS_BODY()
 	
 public:
+
+	virtual void BeginPlay() override;
 
 	//~ Begin AActor Interface
 	virtual void PostRegisterAllComponents() override;
@@ -54,8 +56,11 @@ public:
 	const TArray<SVONNode>& GetLayer(layerindex_t aLayer) const;
 	float GetVoxelSize(layerindex_t aLayer) const;
 
+	bool IsReadyForNavigation();
+
 	
 private:
+	bool myIsReadyForNavigation = false;
 
 	FVector myOrigin;
 	FVector myExtent;

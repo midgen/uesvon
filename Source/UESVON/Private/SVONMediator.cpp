@@ -13,12 +13,16 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 		return false;
 	}
 
-	const FVector& origin = aVolume.GetOrigin();
-	const FVector& extent = aVolume.GetExtent();
+	FBox box = aVolume.GetComponentsBoundingBox(true);
+
+	FVector origin;
+	FVector extent;
+
+	box.GetCenterAndExtents(origin, extent);
 	// The z-order origin of the volume (where code == 0)
 	FVector zOrigin = origin - extent;
 	// The local position of the point in volume space
-	FVector localPos = zOrigin - aPosition;
+	FVector localPos = aPosition - zOrigin;
 
 	int layerIndex = aVolume.GetMyNumLayers() - 1;
 	nodeindex_t nodeIndex = 0;
@@ -29,9 +33,11 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 		const TArray<SVONNode>& layer = aVolume.GetLayer(layerIndex);
 		// Calculate the XYZ coordinates
 		uint_fast32_t x, y, z;
-		x = FMath::FloorToInt(localPos.X / voxelSize);
-		y = FMath::FloorToInt(localPos.Y / voxelSize);
-		z = FMath::FloorToInt(localPos.Z / voxelSize);
+		x = FMath::FloorToInt((localPos.X / voxelSize));// +(voxelSize * 0.5f));
+		y = FMath::FloorToInt((localPos.Y / voxelSize));// +(voxelSize * 0.5f));
+		z = FMath::FloorToInt((localPos.Z / voxelSize));// +(voxelSize * 0.5f));
+
+		//oPosition = myOrigin - myExtent + FVector(x * voxelSize, y * voxelSize, z * voxelSize) + FVector(voxelSize * 0.5f);
 		// Get the morton code we want for this layer
 		mortoncode_t code = morton3D_64_encode(x, y, z);
 
@@ -44,6 +50,12 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 				if (!layer[j].myFirstChildIndex.IsValid())
 				{
 					oLink.myLayerIndex = layerIndex;
+					oLink.myNodeIndex = j;
+					return true;
+				}
+				if (layer[j].myFirstChildIndex.IsLeafNode())
+				{
+					oLink.myLayerIndex = 15;
 					oLink.myNodeIndex = j;
 					return true;
 				}
@@ -64,5 +76,32 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 	
 	return false;
 
+
+}
+
+void SVONMediator::GetVolumeXYZ(const FVector& aPosition, const ASVONVolume& aVolume, FIntVector& oXYZ)
+{
+	FBox box = aVolume.GetComponentsBoundingBox(true);
+
+	FVector origin;
+	FVector extent;
+
+	box.GetCenterAndExtents(origin, extent);
+	// The z-order origin of the volume (where code == 0)
+	FVector zOrigin = origin - extent;
+	// The local position of the point in volume space
+	FVector localPos = aPosition - zOrigin;
+
+	int layerIndex = aVolume.GetMyNumLayers() - 2;
+
+	// Get the layer and voxel size
+	float voxelSize = aVolume.GetVoxelSize(layerIndex);
+	
+	// Calculate the XYZ coordinates
+
+	//uint_fast32_t x, y, z;
+	oXYZ.X = FMath::FloorToInt((localPos.X / voxelSize));// +(voxelSize * 0.5f));
+	oXYZ.Y = FMath::FloorToInt((localPos.Y / voxelSize));// +(voxelSize * 0.5f));
+	oXYZ.Z = FMath::FloorToInt((localPos.Z / voxelSize));// +(voxelSize * 0.5f));
 
 }

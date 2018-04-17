@@ -27,11 +27,15 @@ protected:
 	ASVONVolume* myCurrentNavVolume;
 	bool HasNavVolume();
 
+	bool FindVolume();
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	SVONLink GetNavPosition(FVector& aPosition);
+
+	void DebugLocalPosition(FVector& aPosition);
 
 
 	
