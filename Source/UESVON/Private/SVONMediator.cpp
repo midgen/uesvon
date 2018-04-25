@@ -29,13 +29,16 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 	while (layerIndex >= 0 && layerIndex < aVolume.GetMyNumLayers())
 	{
 		// Get the layer and voxel size
-		float voxelSize = aVolume.GetVoxelSize(layerIndex);
+		//float voxelSize = aVolume.GetVoxelSize(layerIndex);
 		const TArray<SVONNode>& layer = aVolume.GetLayer(layerIndex);
 		// Calculate the XYZ coordinates
+
+		FIntVector voxel;
+		GetVolumeXYZ(localPos, aVolume, layerIndex, voxel);
 		uint_fast32_t x, y, z;
-		x = FMath::FloorToInt((localPos.X / voxelSize));// +(voxelSize * 0.5f));
-		y = FMath::FloorToInt((localPos.Y / voxelSize));// +(voxelSize * 0.5f));
-		z = FMath::FloorToInt((localPos.Z / voxelSize));// +(voxelSize * 0.5f));
+		x = voxel.X;//FMath::FloorToInt((localPos.X / voxelSize));// +(voxelSize * 0.5f));
+		y = voxel.Y;//FMath::FloorToInt((localPos.Y / voxelSize));// +(voxelSize * 0.5f));
+		z = voxel.Z;//FMath::FloorToInt((localPos.Z / voxelSize));// +(voxelSize * 0.5f));
 
 		//oPosition = myOrigin - myExtent + FVector(x * voxelSize, y * voxelSize, z * voxelSize) + FVector(voxelSize * 0.5f);
 		// Get the morton code we want for this layer
@@ -47,25 +50,24 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 			if (layer[j].myCode == code)
 			{
 				// There are no child nodes, so this is our nav position
-				if (!layer[j].myFirstChildIndex.IsValid())
+				if (!layer[j].myFirstChild.IsValid())
 				{
 					oLink.myLayerIndex = layerIndex;
 					oLink.myNodeIndex = j;
 					return true;
 				}
-				if (layer[j].myFirstChildIndex.IsLeafNode())
+				if (layer[j].myFirstChild.IsLeafNode())
 				{
 					oLink.myLayerIndex = 15;
 					oLink.myNodeIndex = j;
 					return true;
 				}
-				else
-				{
-					// We need to go down a layer
-					layerIndex = layer[j].myFirstChildIndex.GetLayerIndex();
-					nodeIndex = layer[j].myFirstChildIndex.GetNodeIndex();
+				
+				// We need to go down a layer
+				layerIndex = layer[j].myFirstChild.GetLayerIndex();
+				nodeIndex = layer[j].myFirstChild.GetNodeIndex();
 
-				}
+				
 				break; //out of the for loop
 			}
 		}
@@ -79,7 +81,7 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 
 }
 
-void SVONMediator::GetVolumeXYZ(const FVector& aPosition, const ASVONVolume& aVolume, FIntVector& oXYZ)
+void SVONMediator::GetVolumeXYZ(const FVector& aPosition, const ASVONVolume& aVolume, const int aLayer, FIntVector& oXYZ)
 {
 	FBox box = aVolume.GetComponentsBoundingBox(true);
 
@@ -92,10 +94,10 @@ void SVONMediator::GetVolumeXYZ(const FVector& aPosition, const ASVONVolume& aVo
 	// The local position of the point in volume space
 	FVector localPos = aPosition - zOrigin;
 
-	int layerIndex = aVolume.GetMyNumLayers() - 2;
+	int layerIndex = aLayer;
 
 	// Get the layer and voxel size
-	float voxelSize = aVolume.GetVoxelSize(layerIndex);
+	float voxelSize = aVolume.GetVoxelSize(layerIndex + 1);
 	
 	// Calculate the XYZ coordinates
 

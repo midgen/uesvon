@@ -37,12 +37,14 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	TSharedPtr<IPropertyHandle> showVoxelProperty = DetailBuilder.GetProperty("myShowVoxels");
 	TSharedPtr<IPropertyHandle> showMortonCodesProperty = DetailBuilder.GetProperty("myShowMortonCodes");
 	TSharedPtr<IPropertyHandle> showNeighbourLinksProperty = DetailBuilder.GetProperty("myShowNeighbourLinks");
+	TSharedPtr<IPropertyHandle> showParentChildLinksProperty = DetailBuilder.GetProperty("myShowParentChildLinks");
 	TSharedPtr<IPropertyHandle> voxelPowerProperty = DetailBuilder.GetProperty("myVoxelPower");
 	TSharedPtr<IPropertyHandle> collisionChannelProperty = DetailBuilder.GetProperty("myCollisionChannel");
 	
 	showVoxelProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Voxels", "Debug Voxels"));
 	showMortonCodesProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Morton Codes", "Debug Morton Codes"));
 	showNeighbourLinksProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Links", "Debug Links"));
+	showParentChildLinksProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Parent Child Links", "Parent Child Links"));
 	voxelPowerProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Density Power", "Density Power"));
 	voxelPowerProperty->SetInstanceMetaData("UIMin", TEXT("1"));
 	voxelPowerProperty->SetInstanceMetaData("UIMax", TEXT("12"));
@@ -94,6 +96,7 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	navigationCategory.AddProperty(showVoxelProperty);
 	navigationCategory.AddProperty(showMortonCodesProperty);
 	navigationCategory.AddProperty(showNeighbourLinksProperty);
+	navigationCategory.AddProperty(showParentChildLinksProperty);
 }
 
 FReply FSVONVolumeDetails::OnUpdateVolume()

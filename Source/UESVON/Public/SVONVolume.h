@@ -44,6 +44,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	bool myShowNeighbourLinks = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+	bool myShowParentChildLinks = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	int32 myVoxelPower = 3;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	TEnumAsByte<ECollisionChannel> myCollisionChannel;

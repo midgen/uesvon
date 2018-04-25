@@ -163,7 +163,7 @@ bool ASVONVolume::GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVect
 
 float ASVONVolume::GetVoxelSize(layerindex_t aLayer) const
 {
-	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1.0f));
+	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1));
 }
 
 
@@ -229,7 +229,7 @@ void ASVONVolume::BuildNeighbourLinks(layerindex_t aLayer)
 			while (!FindLinkInDirection(searchLayer, index, d, linkToUpdate, nodePos)
 				&& aLayer < myLayers.Num() - 2)
 			{
-				index = GetLayer(searchLayer)[index].myParentIndex;
+				index = GetLayer(searchLayer)[index].myParent.myNodeIndex;
 
 				searchLayer++;
 			}
@@ -381,10 +381,18 @@ bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, no
 	for (int32 i = 0; i < GetLayer(aLayer - 1).Num(); i++)
 	{
 		SVONNode& node = GetLayer(aLayer - 1)[i];
-		if (node.myCode >> 3 >> 3 == parentCode)
+		if (node.myCode >> 3 == aCode)
 		{
 			if ((node.myCode >> 3) == aCode) {
-				node.myParentIndex = aThisParentIndex;
+				node.myParent.SetNodeIndex(aThisParentIndex);
+				node.myParent.SetLayerIndex(aLayer);
+				if (myShowParentChildLinks)
+				{
+					FVector startPos, endPos;
+					GetNodePosition(aLayer - 1, node.myCode, startPos);
+					GetNodePosition(aLayer, aCode, endPos);
+					DrawDebugDirectionalArrow(GetWorld(), startPos, endPos, 0.f, SVONStatics::myLinkColors[aLayer], true);
+				}
 				if (node.myCode % 8 == 0) {
 					oFirstChildIndex = i;
 				}
@@ -449,7 +457,7 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 
 				// Debug stuff
 				if (myShowMortonCodes) {
-					DrawDebugString(GetWorld(), nodePos, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
+					DrawDebugString(GetWorld(), nodePos, FString::FromInt(node.myCode), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
 				}
 				if (myShowVoxels) {
 					DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
@@ -460,8 +468,8 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				RasterizeLeafNode(leafOrigin, leafIndex);
 
 				// This is the leaf node index
-				node.myFirstChildIndex.SetLeafNode();
-				node.myFirstChildIndex.SetNodeIndex(leafIndex);
+				node.myFirstChild.SetLeafNode();
+				node.myFirstChild.SetNodeIndex(leafIndex);
 				leafIndex++;
 			}
 		}
@@ -487,8 +495,13 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				node.myCode = i;
 				if (firstChildIndex > -1)
 				{
-					node.myFirstChildIndex.SetLayerIndex(aLayer - 1);
-					node.myFirstChildIndex.SetNodeIndex(firstChildIndex);
+					node.myFirstChild.SetLayerIndex(aLayer - 1);
+					node.myFirstChild.SetNodeIndex(firstChildIndex);
+					if (myShowParentChildLinks)
+					{
+						FVector pos;
+						//GetNodePosition()
+					}
 				}
 				if (myShowMortonCodes || myShowVoxels)
 				{
@@ -500,7 +513,7 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 						DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
 					}
 					if (myShowMortonCodes) {
-						DrawDebugString(GetWorld(), nodePos, FString::FromInt(GetLayer(aLayer)[index].myCode), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
+						DrawDebugString(GetWorld(), nodePos, FString::FromInt(node.myCode), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
 					}
 				}
 
