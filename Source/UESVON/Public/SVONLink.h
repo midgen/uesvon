@@ -9,7 +9,7 @@ struct UESVON_API SVONLink
 	unsigned int mySubnodeIndex:6;
 
 	SVONLink() : 
-		myLayerIndex(16),
+		myLayerIndex(15),
 		myNodeIndex(0),
 		mySubnodeIndex(0) {}
 
@@ -27,13 +27,13 @@ struct UESVON_API SVONLink
 	uint8 GetSubnodeIndex() const { return mySubnodeIndex; }
 	void SetSubnodeIndex(const uint8 aSubnodeIndex) { mySubnodeIndex = aSubnodeIndex; }
 
-	bool IsValid() const { return myLayerIndex != 16; }
-	void SetInvalid() { myLayerIndex = 16; }
+	bool IsValid() const { return myLayerIndex != 15; }
+	void SetInvalid() { myLayerIndex = 15; }
 
-	bool IsLeafNode() const { return myLayerIndex == 15; }
-	void SetLeafNode() { myLayerIndex = 15; }
+	bool IsLeafNode() const { return myLayerIndex == 14; }
+	void SetLeafNode() { myLayerIndex = 14; }
 
-	static SVONLink GetInvalidLink() { return SVONLink(16, 0, 0); }
+	static SVONLink GetInvalidLink() { return SVONLink(15, 0, 0); }
 
 	FString ToString() 
 	{

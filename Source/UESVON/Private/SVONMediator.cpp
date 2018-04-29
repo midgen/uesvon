@@ -34,7 +34,7 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 		// Calculate the XYZ coordinates
 
 		FIntVector voxel;
-		GetVolumeXYZ(localPos, aVolume, layerIndex, voxel);
+		GetVolumeXYZ(aPosition, aVolume, layerIndex, voxel);
 		uint_fast32_t x, y, z;
 		x = voxel.X;//FMath::FloorToInt((localPos.X / voxelSize));// +(voxelSize * 0.5f));
 		y = voxel.Y;//FMath::FloorToInt((localPos.Y / voxelSize));// +(voxelSize * 0.5f));
@@ -71,6 +71,8 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 				break; //out of the for loop
 			}
 		}
+
+		// If we've iterated through the layer without finding a match, then 
 	}
 
 	
@@ -97,7 +99,7 @@ void SVONMediator::GetVolumeXYZ(const FVector& aPosition, const ASVONVolume& aVo
 	int layerIndex = aLayer;
 
 	// Get the layer and voxel size
-	float voxelSize = aVolume.GetVoxelSize(layerIndex + 1);
+	float voxelSize = aVolume.GetVoxelSize(layerIndex);
 	
 	// Calculate the XYZ coordinates
 
