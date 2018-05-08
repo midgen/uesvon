@@ -58,7 +58,7 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 				}
 				if (layer[j].myFirstChild.IsLeafNode())
 				{
-					oLink.myLayerIndex = 15;
+					oLink.myLayerIndex = 14;
 					oLink.myNodeIndex = j;
 					return true;
 				}

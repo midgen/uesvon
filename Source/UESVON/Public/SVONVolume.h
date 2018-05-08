@@ -85,6 +85,8 @@ private:
 	int32 GetNodesPerSide(layerindex_t aLayer);
 	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition);
 
+	bool GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t oIndex) const;
+
 
 	void BuildNeighbourLinks(layerindex_t aLayer);
 	bool FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug);
@@ -92,5 +94,5 @@ private:
 	bool SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArrayIndex, const dir aDirection);
 	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t aThisParentIndex, nodeindex_t& oFirstChildIndex);
 
-	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oFirstChildIndex);
+	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode);
 };

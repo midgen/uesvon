@@ -161,6 +161,24 @@ bool ASVONVolume::GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVect
 
 
 
+
+
+bool ASVONVolume::GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t oIndex) const
+{
+	const TArray<SVONNode>& layer = GetLayer(aLayer);
+
+	for (int i = 0; i < layer.Num(); i++)
+	{
+		if (layer[i].myCode == aCode)
+		{
+			oIndex = i;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 float ASVONVolume::GetVoxelSize(layerindex_t aLayer) const
 {
 	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1));
@@ -376,14 +394,14 @@ const TArray<SVONNode>& ASVONVolume::GetLayer(layerindex_t aLayer) const
 //   This is unnecessarily slow right now, doing too many iterations, needs changing
 bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t aThisParentIndex, nodeindex_t& oFirstChildIndex)
 {
-	int32 parentCode = aCode >> 3;
+	//int32 parentCode = aCode >> 3;
 	bool isBlocked = false;
 	for (int32 i = 0; i < GetLayer(aLayer - 1).Num(); i++)
 	{
 		SVONNode& node = GetLayer(aLayer - 1)[i];
 		if (node.myCode >> 3 == aCode)
 		{
-			if ((node.myCode >> 3) == aCode) {
+			//if ((node.myCode >> 3) == aCode) {
 				node.myParent.SetNodeIndex(aThisParentIndex);
 				node.myParent.SetLayerIndex(aLayer);
 				if (myShowParentChildLinks)
@@ -396,7 +414,7 @@ bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, no
 				if (node.myCode % 8 == 0) {
 					oFirstChildIndex = i;
 				}
-			}
+			//}
 
 			isBlocked = true;
 		}
@@ -405,18 +423,17 @@ bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, no
 }
 
 // This doesn't work...need to look at it when not tired.
-bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oFirstChildIndex)
+bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode)
 {
 	mortoncode_t parentCode = aCode >> 3;
 
 	if (aLayer == myBlockedIndices.Num())
 	{
-		oFirstChildIndex = parentCode << 3;
 		return true;
 	}
+	// The parent of this code is blocked
 	if (myBlockedIndices[aLayer].Contains(parentCode))
 	{
-		oFirstChildIndex = parentCode ;
 		return true;
 	}
 
@@ -484,25 +501,40 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 			int firstChildIndex = -1;
 			// Do we have any blocking children, or siblings?
 			// Remember we must have 8 children per parent
-			if (IsAnyMemberBlocked(aLayer, i, nodeCounter, firstChildIndex))
+			if (IsAnyMemberBlocked(aLayer, i))
 			//if(IsAnyMemberBlocked(aLayer, i, firstChildIndex))
 			{
+				if (aLayer == myNumLayers - 1)
+				{
+					firstChildIndex = 0;
+				}
 				// Add a node
 				int32 index = GetLayer(aLayer).Emplace();
 				nodeCounter++;
 				SVONNode& node = GetLayer(aLayer)[index];
 				// Set details
 				node.myCode = i;
-				if (firstChildIndex > -1)
+				//if (firstChildIndex > -1)
+				//{
+				nodeindex_t childIndex = 0;
+				if (GetIndexForCode(aLayer - 1, node.myCode << 3, childIndex))
 				{
 					node.myFirstChild.SetLayerIndex(aLayer - 1);
-					node.myFirstChild.SetNodeIndex(firstChildIndex);
+					node.myFirstChild.SetNodeIndex(childIndex);
 					if (myShowParentChildLinks)
 					{
-						FVector pos;
-						//GetNodePosition()
+						FVector startPos, endPos;
+						GetNodePosition(aLayer, node.myCode, startPos);
+						GetNodePosition(aLayer - 1, node.myCode << 3, endPos);
+						DrawDebugDirectionalArrow(GetWorld(), startPos, endPos, 0.f, SVONStatics::myLinkColors[aLayer], true);
 					}
 				}
+				else
+				{
+					node.myFirstChild.SetInvalid();
+				}
+
+				//}
 				if (myShowMortonCodes || myShowVoxels)
 				{
 					FVector nodePos;

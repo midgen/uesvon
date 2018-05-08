@@ -62,7 +62,7 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	{
 		FVector location = GetOwner()->GetActorLocation();
 		
-		//DebugLocalPosition(location);
+		DebugLocalPosition(location);
 		SVONLink link = GetNavPosition(location);
 	}
 
@@ -77,7 +77,7 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	{
 		
 		SVONMediator::GetLinkFromPosition(GetOwner()->GetActorLocation(), *myCurrentNavVolume, navLink);
-		DrawDebugString(GetWorld(), GetOwner()->GetActorLocation(), navLink.ToString());
+		DrawDebugString(GetWorld(), GetOwner()->GetActorLocation() + FVector(0.f, 0.f, -50.f), navLink.ToString(), NULL, FColor::Yellow);
 		
 	}
 	return navLink;
