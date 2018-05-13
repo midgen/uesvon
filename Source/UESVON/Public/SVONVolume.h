@@ -85,7 +85,7 @@ private:
 	int32 GetNodesPerSide(layerindex_t aLayer);
 	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition);
 
-	bool GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t oIndex) const;
+	bool GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oIndex) const;
 
 
 	void BuildNeighbourLinks(layerindex_t aLayer);

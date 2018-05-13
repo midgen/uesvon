@@ -163,7 +163,7 @@ bool ASVONVolume::GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVect
 
 
 
-bool ASVONVolume::GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t oIndex) const
+bool ASVONVolume::GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oIndex) const
 {
 	const TArray<SVONNode>& layer = GetLayer(aLayer);
 
@@ -247,9 +247,18 @@ void ASVONVolume::BuildNeighbourLinks(layerindex_t aLayer)
 			while (!FindLinkInDirection(searchLayer, index, d, linkToUpdate, nodePos)
 				&& aLayer < myLayers.Num() - 2)
 			{
-				index = GetLayer(searchLayer)[index].myParent.myNodeIndex;
+				SVONLink& parent = GetLayer(searchLayer)[index].myParent;
+				if (parent.IsValid())
+				{
+					index = parent.myNodeIndex;
+					searchLayer = parent.myLayerIndex;
+				}
+				else
+				{
+					searchLayer++;
+					GetIndexForCode(searchLayer, node.myCode >> 3, index);
+				}
 
-				searchLayer++;
 			}
 			index = backtrackIndex;
 			searchLayer = aLayer;
@@ -514,13 +523,17 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				SVONNode& node = GetLayer(aLayer)[index];
 				// Set details
 				node.myCode = i;
-				//if (firstChildIndex > -1)
-				//{
 				nodeindex_t childIndex = 0;
 				if (GetIndexForCode(aLayer - 1, node.myCode << 3, childIndex))
 				{
 					node.myFirstChild.SetLayerIndex(aLayer - 1);
 					node.myFirstChild.SetNodeIndex(childIndex);
+					for (int iter = 0; iter < 8; iter++)
+					{
+						GetLayer(node.myFirstChild.GetLayerIndex())[node.myFirstChild.GetNodeIndex() + iter].myParent.SetLayerIndex(aLayer);
+						GetLayer(node.myFirstChild.GetLayerIndex())[node.myFirstChild.GetNodeIndex() + iter].myParent.SetNodeIndex(index);
+					}
+					
 					if (myShowParentChildLinks)
 					{
 						FVector startPos, endPos;
@@ -534,7 +547,6 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 					node.myFirstChild.SetInvalid();
 				}
 
-				//}
 				if (myShowMortonCodes || myShowVoxels)
 				{
 					FVector nodePos;
