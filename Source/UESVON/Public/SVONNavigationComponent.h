@@ -16,6 +16,10 @@ class UESVON_API USVONNavigationComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
+	bool DebugPrintCurrentPosition;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
+	bool DebugPrintMortonCodes;
 	// Sets default values for this component's properties
 	USVONNavigationComponent();
 
@@ -23,18 +27,23 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-
+	// The current navigation volume
 	ASVONVolume* myCurrentNavVolume;
+
+	// Do I have a valid nav volume ready?
 	bool HasNavVolume();
 
+	// Check the scene for a valid volume that I am within the extents of
 	bool FindVolume();
 
 public:	
-	// Called every frame
+	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	// Get a Nav position
 	SVONLink GetNavPosition(FVector& aPosition);
 
+	// Print current layer/morton code information
 	void DebugLocalPosition(FVector& aPosition);
 
 

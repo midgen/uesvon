@@ -61,15 +61,16 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	else if (myCurrentNavVolume->IsReadyForNavigation())
 	{
 		FVector location = GetOwner()->GetActorLocation();
-		
-		DebugLocalPosition(location);
+		if (DebugPrintMortonCodes)
+		{
+			DebugLocalPosition(location);
+		}
 		SVONLink link = GetNavPosition(location);
 	}
 
 
-	// ...
-}
 
+}
 SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 {
 	SVONLink navLink;
@@ -77,7 +78,17 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	{
 		
 		SVONMediator::GetLinkFromPosition(GetOwner()->GetActorLocation(), *myCurrentNavVolume, navLink);
-		DrawDebugString(GetWorld(), GetOwner()->GetActorLocation() + FVector(0.f, 0.f, -50.f), navLink.ToString(), NULL, FColor::Yellow);
+
+		const SVONNode& currentNode = myCurrentNavVolume->GetNode(navLink);
+		FVector currentNodePosition;
+
+		myCurrentNavVolume->GetNodePosition(navLink.GetLayerIndex(), currentNode.myCode, currentNodePosition);
+
+		if (DebugPrintCurrentPosition)
+		{
+			DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), currentNodePosition, FColor::Green, false, -1.f, 0, 10.f);
+			DrawDebugString(GetWorld(), GetOwner()->GetActorLocation() + FVector(0.f, 0.f, -50.f), navLink.ToString(), NULL, FColor::Yellow, 0.01f);
+		}
 		
 	}
 	return navLink;
@@ -94,7 +105,7 @@ void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition)
 			SVONMediator::GetVolumeXYZ(GetOwner()->GetActorLocation(), *myCurrentNavVolume, i,  pos);
 			uint_fast64_t code = morton3D_64_encode(pos.X, pos.Y, pos.Z);
 			FString codeString = FString::FromInt(code);
-			DrawDebugString(GetWorld(), GetOwner()->GetActorLocation() + FVector(0.f, 0.f, i*50.0f), pos.ToString() + " - " + codeString);
+			DrawDebugString(GetWorld(), GetOwner()->GetActorLocation() + FVector(0.f, 0.f, i*50.0f), pos.ToString() + " - " + codeString, NULL, FColor::White, 0.01f);
 		}
 	
 

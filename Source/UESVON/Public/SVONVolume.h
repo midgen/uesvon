@@ -60,6 +60,9 @@ public:
 
 	bool IsReadyForNavigation();
 
+	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition);
+	const SVONNode& GetNode(SVONLink& aLink) const;
+
 	
 private:
 	bool myIsReadyForNavigation = false;
@@ -83,16 +86,14 @@ private:
 
 	int32 GetNodesInLayer(layerindex_t aLayer);
 	int32 GetNodesPerSide(layerindex_t aLayer);
-	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition);
+
 
 	bool GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oIndex) const;
-
 
 	void BuildNeighbourLinks(layerindex_t aLayer);
 	bool FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug);
 	void RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex);
 	bool SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArrayIndex, const dir aDirection);
-	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t aThisParentIndex, nodeindex_t& oFirstChildIndex);
 
 	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode);
 };
