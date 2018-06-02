@@ -150,7 +150,7 @@ bool ASVONVolume::FirstPassRasterize()
 	return true;
 }
 
-bool ASVONVolume::GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition)
+bool ASVONVolume::GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition) const
 {
 	float voxelSize = GetVoxelSize(aLayer);
 	uint_fast32_t x, y, z;
@@ -159,9 +159,23 @@ bool ASVONVolume::GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVect
 	return true;
 }
 
+// Gets the position of a given link. Returns true if the link is open, false if blocked
+bool ASVONVolume::GetLinkPosition(SVONLink& aLink, FVector& oPosition) const
+{
 
-
-
+	GetNodePosition(aLink.GetLayerIndex(), GetLayer(aLink.GetLayerIndex())[aLink.GetNodeIndex()].myCode, oPosition);
+	if (aLink.GetLayerIndex() == 0 && aLink.GetSubnodeIndex() > 0)
+	{
+		float voxelSize = GetVoxelSize(0);
+		uint_fast32_t x,y,z;
+		morton3D_64_decode(aLink.GetSubnodeIndex(), x,y,z);
+		oPosition += FVector(x * voxelSize * 0.25f, y * voxelSize * 0.25f, z * voxelSize * 0.25f) - FVector(voxelSize * 0.375);
+		const SVONLeafNode& leafNode = GetLeafNode(aLink.GetNodeIndex());
+		bool isBlocked = leafNode.GetNode(aLink.GetSubnodeIndex());
+		return !isBlocked;
+	}
+	return true;
+}
 
 bool ASVONVolume::GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oIndex) const
 {
@@ -179,7 +193,7 @@ bool ASVONVolume::GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodei
 	return false;
 }
 
-const SVONNode& ASVONVolume::GetNode(SVONLink& aLink) const
+const SVONNode& ASVONVolume::GetNode(const SVONLink& aLink) const
 {
 	if (aLink.GetLayerIndex() < 14)
 	{
@@ -191,6 +205,24 @@ const SVONNode& ASVONVolume::GetNode(SVONLink& aLink) const
 	}
 }
 
+const SVONLeafNode& ASVONVolume::GetLeafNode(nodeindex_t aIndex) const
+{
+	return myLeafNodes[aIndex];
+}
+
+//
+//SVONNode* ASVONVolume::GetNode(SVONLink& aLink)
+//{
+//	if (aLink.GetLayerIndex() < 14)
+//	{
+//		return &GetLayer(aLink.GetLayerIndex())[aLink.GetNodeIndex()];
+//	}
+//	else
+//	{
+//		return &GetLayer(myNumLayers - 1)[0];
+//	}
+//}
+
 float ASVONVolume::GetVoxelSize(layerindex_t aLayer) const
 {
 	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1));
@@ -201,6 +233,7 @@ bool ASVONVolume::IsReadyForNavigation()
 {
 	return myIsReadyForNavigation;
 }
+
 
 int32 ASVONVolume::GetNodesInLayer(layerindex_t aLayer)
 {
@@ -387,7 +420,7 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 
 		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(leafVoxelSize * 0.5f))))
 		{
-			myLeafNodes[aLeafIndex].SetNodeAt(x, y, z);
+			myLeafNodes[aLeafIndex].SetNode(i);
 			if (myShowVoxels) {
 				DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, .0f);
 			}

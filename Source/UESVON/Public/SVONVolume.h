@@ -59,9 +59,11 @@ public:
 	float GetVoxelSize(layerindex_t aLayer) const;
 
 	bool IsReadyForNavigation();
-
-	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition);
-	const SVONNode& GetNode(SVONLink& aLink) const;
+	
+	bool GetLinkPosition(SVONLink& aLink, FVector& oPosition) const;
+	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition) const;
+	const SVONNode& GetNode(const SVONLink& aLink) const;
+	const SVONLeafNode& GetLeafNode(nodeindex_t aIndex) const;
 
 	
 private:

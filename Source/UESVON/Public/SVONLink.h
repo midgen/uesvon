@@ -33,6 +33,12 @@ struct UESVON_API SVONLink
 	bool IsLeafNode() const { return myLayerIndex == 14; }
 	void SetLeafNode() { myLayerIndex = 14; }
 
+	bool operator==(const SVONLink& aOther) const {
+		return aOther.myLayerIndex == myLayerIndex &&
+			aOther.myNodeIndex == myNodeIndex &&
+			aOther.mySubnodeIndex == mySubnodeIndex;
+	}
+
 	static SVONLink GetInvalidLink() { return SVONLink(15, 0, 0); }
 
 	FString ToString() 
@@ -41,4 +47,9 @@ struct UESVON_API SVONLink
 	};
 
 };
+
+FORCEINLINE uint32 GetTypeHash(const SVONLink& b)
+{
+	return FCrc::MemCrc_DEPRECATED(&b, sizeof(SVONLink));
+}
 

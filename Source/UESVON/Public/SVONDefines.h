@@ -20,6 +20,7 @@ enum class dir : uint8
 	pX, nX, pY, nY, pZ, nZ
 };
 
+#define LEAF_LAYER_INDEX 14;
 
 class UESVON_API SVONStatics
 {

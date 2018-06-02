@@ -7,7 +7,7 @@ struct UESVON_API SVONLeafNode
 	uint_fast64_t myVoxelGrid = 0;
 
 
-	inline bool GetNode(uint_fast32_t aX, uint_fast32_t aY, uint_fast32_t aZ)
+	inline bool GetNodeAt(uint_fast32_t aX, uint_fast32_t aY, uint_fast32_t aZ) const
 	{
 		uint_fast64_t index = 0;
 		morton3D_64_decode(index, aX, aY, aZ);
@@ -19,5 +19,15 @@ struct UESVON_API SVONLeafNode
 		uint_fast64_t index = 0;
 		morton3D_64_decode(index, aX, aY, aZ);
 		myVoxelGrid |= 1ULL << index;
+	}
+
+	inline void SetNode(uint8 aIndex)
+	{
+		myVoxelGrid |= 1ULL << aIndex;
+	}
+
+	inline bool GetNode(mortoncode_t aIndex) const
+	{
+		return (myVoxelGrid & (1ULL << aIndex)) != 0;
 	}
 };

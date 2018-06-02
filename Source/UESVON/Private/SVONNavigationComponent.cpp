@@ -79,14 +79,15 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 		
 		SVONMediator::GetLinkFromPosition(GetOwner()->GetActorLocation(), *myCurrentNavVolume, navLink);
 
-		const SVONNode& currentNode = myCurrentNavVolume->GetNode(navLink);
-		FVector currentNodePosition;
-
-		myCurrentNavVolume->GetNodePosition(navLink.GetLayerIndex(), currentNode.myCode, currentNodePosition);
-
 		if (DebugPrintCurrentPosition)
 		{
-			DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), currentNodePosition, FColor::Green, false, -1.f, 0, 10.f);
+			const SVONNode& currentNode = myCurrentNavVolume->GetNode(navLink);
+			FVector currentNodePosition;
+
+			//myCurrentNavVolume->GetNodePosition(navLink.GetLayerIndex(), currentNode.myCode, currentNodePosition);
+			bool isValid = myCurrentNavVolume->GetLinkPosition(navLink, currentNodePosition);
+
+			DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), currentNodePosition, isValid ? FColor::Green : FColor::Red, false, -1.f, 0, 10.f);
 			DrawDebugString(GetWorld(), GetOwner()->GetActorLocation() + FVector(0.f, 0.f, -50.f), navLink.ToString(), NULL, FColor::Yellow, 0.01f);
 		}
 		
