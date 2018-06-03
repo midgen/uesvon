@@ -36,6 +36,10 @@ protected:
 	// Check the scene for a valid volume that I am within the extents of
 	bool FindVolume();
 
+	// Print current layer/morton code information
+	void DebugLocalPosition(FVector& aPosition);
+
+
 public:	
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -43,9 +47,6 @@ public:
 	// Get a Nav position
 	SVONLink GetNavPosition(FVector& aPosition);
 
-	// Print current layer/morton code information
-	void DebugLocalPosition(FVector& aPosition);
+	bool FindPath(FVector& aTargetPosition);
 
-
-	
 };

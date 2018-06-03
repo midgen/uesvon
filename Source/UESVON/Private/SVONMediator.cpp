@@ -83,6 +83,8 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 					oLink.myLayerIndex = 0; // Layer 0 (leaf)
 					oLink.myNodeIndex = j; // This index
 					oLink.mySubnodeIndex = morton3D_64_encode(coord.X, coord.Y, coord.Z); // This morton code is our key into the 64-bit leaf node
+
+					return true;
 				}
 				
 				// If we've got here, the current node has a child, and isn't a leaf, so lets go down...

@@ -7,7 +7,6 @@
 #include "SVONLink.h"
 #include "DrawDebugHelpers.h"
 
-
 // Sets default values for this component's properties
 USVONNavigationComponent::USVONNavigationComponent()
 {
@@ -94,7 +93,40 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	return navLink;
 }
 
-void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition)
+bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
+{
+	SVONLink startNavLink;
+	SVONLink targetNavLink;
+	if (HasNavVolume())
+	{
+		// Get the nav link from our volume
+		if (!SVONMediator::GetLinkFromPosition(GetOwner()->GetActorLocation(), *myCurrentNavVolume, startNavLink))
+		{
+			UE_LOG(UESVON, Display, TEXT("Path finder failed to find start nav link"));
+			return false;
+		}
+
+
+
+		if (!SVONMediator::GetLinkFromPosition(aTargetPosition, *myCurrentNavVolume, targetNavLink))
+		{
+			UE_LOG(UESVON, Display, TEXT("Path finder failed to find target nav link"));
+			return false;
+		}
+
+
+
+
+
+		return true;
+
+
+	}
+
+	return false;
+}
+
+void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition) 
 {
 
 	if (HasNavVolume())
