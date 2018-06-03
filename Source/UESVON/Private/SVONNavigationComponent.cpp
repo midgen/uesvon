@@ -76,7 +76,7 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	SVONLink navLink;
 	if (HasNavVolume())
 	{
-		
+		// Get the nav link from our volume
 		SVONMediator::GetLinkFromPosition(GetOwner()->GetActorLocation(), *myCurrentNavVolume, navLink);
 
 		if (DebugPrintCurrentPosition)
@@ -84,7 +84,6 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 			const SVONNode& currentNode = myCurrentNavVolume->GetNode(navLink);
 			FVector currentNodePosition;
 
-			//myCurrentNavVolume->GetNodePosition(navLink.GetLayerIndex(), currentNode.myCode, currentNodePosition);
 			bool isValid = myCurrentNavVolume->GetLinkPosition(navLink, currentNodePosition);
 
 			DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), currentNodePosition, isValid ? FColor::Green : FColor::Red, false, -1.f, 0, 10.f);

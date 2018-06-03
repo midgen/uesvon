@@ -52,7 +52,7 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 			if (layer[j].myCode == code)
 			{
 				// There are no child nodes, so this is our nav position
-				if (!layer[j].myFirstChild.IsValid())
+				if (!layer[j].myFirstChild.IsValid() && layerIndex > 0)
 				{
 					oLink.myLayerIndex = layerIndex;
 					oLink.myNodeIndex = j;
@@ -64,54 +64,37 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 				if (layerIndex == 0)
 				{
 					const SVONLeafNode& leaf = aVolume.GetLeafNode(j);
+					// We need to calculate the node local position to get the morton code for the leaf
 					float voxelSize = aVolume.GetVoxelSize(layerIndex);
 					// The world position of the 0 node
 					FVector nodePosition;
 					aVolume.GetNodePosition(layerIndex, layer[j].myCode, nodePosition);
-					
-					//DrawDebugSphere(aVolume.GetWorld(), nodePosition, 30.0f, 4, FColor::White, true, -1.f);
-					
+					// The morton origin of the node
 					FVector nodeOrigin = nodePosition - FVector(voxelSize * 0.5f);
-					
-					//DrawDebugSphere(aVolume.GetWorld(), nodeOrigin, 200.0f, 4, FColor::Cyan, true, -1.f);
-
+					// The requested position, relative to the node origin
 					FVector nodeLocalPos = aPosition - nodeOrigin;
-
+					// Now get our voxel coordinates
 					FIntVector coord;
 					coord.X = FMath::FloorToInt((nodeLocalPos.X / (voxelSize * 0.25f)));
 					coord.Y = FMath::FloorToInt((nodeLocalPos.Y / (voxelSize * 0.25f)));
 					coord.Z = FMath::FloorToInt((nodeLocalPos.Z / (voxelSize * 0.25f)));
 
-					//DrawDebugString(aVolume.GetWorld(), aPosition - FVector(0.f, 0.f, -50.0f), coord.ToString(), NULL, FColor::White, 0.001f);
-
-					oLink.myLayerIndex = 0;
-					oLink.myNodeIndex = j;
-					oLink.mySubnodeIndex = morton3D_64_encode(coord.X, coord.Y, coord.Z);
-
+					// So our link is.....*drum roll*
+					oLink.myLayerIndex = 0; // Layer 0 (leaf)
+					oLink.myNodeIndex = j; // This index
+					oLink.mySubnodeIndex = morton3D_64_encode(coord.X, coord.Y, coord.Z); // This morton code is our key into the 64-bit leaf node
 				}
 				
-				// We need to go down a layer
+				// If we've got here, the current node has a child, and isn't a leaf, so lets go down...
 				layerIndex = layer[j].myFirstChild.GetLayerIndex();
 				nodeIndex = layer[j].myFirstChild.GetNodeIndex();
 
-
-
-				
-				break; //out of the for loop
+				break; //stop iterating this layer
 			}
 		}
-
-
-
-		// If we've iterated through the layer without finding a match, then 
 	}
 
-	
-
-	
 	return false;
-
-
 }
 
 void SVONMediator::GetVolumeXYZ(const FVector& aPosition, const ASVONVolume& aVolume, const int aLayer, FIntVector& oXYZ)
@@ -134,10 +117,9 @@ void SVONMediator::GetVolumeXYZ(const FVector& aPosition, const ASVONVolume& aVo
 	
 	// Calculate the XYZ coordinates
 
-	//uint_fast32_t x, y, z;
-	oXYZ.X = FMath::FloorToInt((localPos.X / voxelSize));// +(voxelSize * 0.5f));
-	oXYZ.Y = FMath::FloorToInt((localPos.Y / voxelSize));// +(voxelSize * 0.5f));
-	oXYZ.Z = FMath::FloorToInt((localPos.Z / voxelSize));// +(voxelSize * 0.5f));
+	oXYZ.X = FMath::FloorToInt((localPos.X / voxelSize));
+	oXYZ.Y = FMath::FloorToInt((localPos.Y / voxelSize));
+	oXYZ.Z = FMath::FloorToInt((localPos.Z / voxelSize));
 
 }
 

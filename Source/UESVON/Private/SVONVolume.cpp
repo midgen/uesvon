@@ -11,7 +11,6 @@ using namespace std::chrono;
 ASVONVolume::ASVONVolume(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	//GetBrushComponent()->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	GetBrushComponent()->Mobility = EComponentMobility::Static;
 
 	BrushColor = FColor(255, 255, 255, 255);
@@ -128,11 +127,6 @@ bool ASVONVolume::FirstPassRasterize()
 		}
 	}
 
-	// Do we need to do this? Should be in order anyway
-	/*myBlockedIndices.Sort([](const uint_fast64_t& A, const uint_fast64_t& B) {
-		return B > A;
-	});
-*/
 	int layerIndex = 0;
 
 	while (myBlockedIndices[layerIndex].Num() > 1)
@@ -209,19 +203,6 @@ const SVONLeafNode& ASVONVolume::GetLeafNode(nodeindex_t aIndex) const
 {
 	return myLeafNodes[aIndex];
 }
-
-//
-//SVONNode* ASVONVolume::GetNode(SVONLink& aLink)
-//{
-//	if (aLink.GetLayerIndex() < 14)
-//	{
-//		return &GetLayer(aLink.GetLayerIndex())[aLink.GetNodeIndex()];
-//	}
-//	else
-//	{
-//		return &GetLayer(myNumLayers - 1)[0];
-//	}
-//}
 
 float ASVONVolume::GetVoxelSize(layerindex_t aLayer) const
 {
@@ -465,9 +446,7 @@ bool ASVONVolume::SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArr
 
 void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 {
-	nodeindex_t leafIndex = 0;
-
-	// Layer 0 is a special case
+	// Layer 0 Leaf nodes are special
 	if (aLayer == 0)
 	{
 		// Run through all our coordinates
@@ -499,12 +478,7 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 
 				// Rasterize my leaf nodes
 				FVector leafOrigin = nodePos - (FVector(GetVoxelSize(aLayer) * 0.5f));
-				RasterizeLeafNode(leafOrigin, leafIndex);
-
-				// This is the leaf node index
-				node.myFirstChild.SetLeafNode();
-				node.myFirstChild.SetNodeIndex(leafIndex);
-				leafIndex++;
+				RasterizeLeafNode(leafOrigin, index);
 			}
 		}
 	}
@@ -531,14 +505,14 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 					// Set parent->child links
 					node.myFirstChild.SetLayerIndex(aLayer - 1);
 					node.myFirstChild.SetNodeIndex(childIndex);
-					// Set child->parent links
+					// Set child->parent links, this can probably be done smarter, as we're duplicating work here
 					for (int iter = 0; iter < 8; iter++)
 					{
 						GetLayer(node.myFirstChild.GetLayerIndex())[node.myFirstChild.GetNodeIndex() + iter].myParent.SetLayerIndex(aLayer);
 						GetLayer(node.myFirstChild.GetLayerIndex())[node.myFirstChild.GetNodeIndex() + iter].myParent.SetNodeIndex(index);
 					}
 					
-					if (myShowParentChildLinks)
+					if (myShowParentChildLinks) // Debug all the things
 					{
 						FVector startPos, endPos;
 						GetNodePosition(aLayer, node.myCode, startPos);
