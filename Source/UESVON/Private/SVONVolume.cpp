@@ -156,15 +156,17 @@ bool ASVONVolume::GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVect
 // Gets the position of a given link. Returns true if the link is open, false if blocked
 bool ASVONVolume::GetLinkPosition(SVONLink& aLink, FVector& oPosition) const
 {
+	const SVONNode& node = GetLayer(aLink.GetLayerIndex())[aLink.GetNodeIndex()];
 
-	GetNodePosition(aLink.GetLayerIndex(), GetLayer(aLink.GetLayerIndex())[aLink.GetNodeIndex()].myCode, oPosition);
-	if (aLink.GetLayerIndex() == 0 && aLink.GetSubnodeIndex() > 0)
+	GetNodePosition(aLink.GetLayerIndex(), node.myCode, oPosition);
+	// If this is layer 0, and there are valid children
+	if (aLink.GetLayerIndex() == 0 && node.myFirstChild.IsValid())
 	{
 		float voxelSize = GetVoxelSize(0);
 		uint_fast32_t x,y,z;
 		morton3D_64_decode(aLink.GetSubnodeIndex(), x,y,z);
 		oPosition += FVector(x * voxelSize * 0.25f, y * voxelSize * 0.25f, z * voxelSize * 0.25f) - FVector(voxelSize * 0.375);
-		const SVONLeafNode& leafNode = GetLeafNode(aLink.GetNodeIndex());
+		const SVONLeafNode& leafNode = GetLeafNode(node.myFirstChild.myNodeIndex);
 		bool isBlocked = leafNode.GetNode(aLink.GetSubnodeIndex());
 		return !isBlocked;
 	}
@@ -459,9 +461,7 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 		{
 			int index = (i);
 
-			// If we know this is blocked, from our first pass
-			// TODO: false economy, by re-using this we are doing a leaf node rasterization (64 checks)
-			//   on lots of empty cells
+			// If we know this node needs to be added, from the low res first pass
 			if (myBlockedIndices[0].Contains(i >> 3))
 			{
 				// Add a node
@@ -482,7 +482,7 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 					DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
 				}
 				
-				// Now check if we have any blocking, and searh leaf nodes
+				// Now check if we have any blocking, and search leaf nodes
 				FVector position;
 				GetNodePosition(0, i, position);
 
@@ -490,8 +490,17 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				{
 					// Rasterize my leaf nodes
 					FVector leafOrigin = nodePos - (FVector(GetVoxelSize(aLayer) * 0.5f));
-					RasterizeLeafNode(leafOrigin, leafIndex++);
+					RasterizeLeafNode(leafOrigin, leafIndex);
+					node.myFirstChild.SetLayerIndex(0);
+					node.myFirstChild.SetNodeIndex(leafIndex);
+					node.myFirstChild.SetSubnodeIndex(0);
+					leafIndex++;
 				}
+				else
+				{
+					node.myFirstChild.SetInvalid();
+				}
+
 			}
 		}
 	}

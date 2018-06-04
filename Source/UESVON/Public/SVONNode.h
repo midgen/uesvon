@@ -6,8 +6,6 @@
 
 struct UESVON_API SVONNode
 {
-	// TODO: pack this better
-	bool myVisited;
 	mortoncode_t myCode;
 
 	SVONLink myParent;
@@ -17,12 +15,9 @@ struct UESVON_API SVONNode
 
 	SVONNode(uint8 aLayer) :
 		myParent(SVONLink::GetInvalidLink()),
-		myFirstChild(SVONLink::GetInvalidLink()),
-		myVisited(false) {}
+		myFirstChild(SVONLink::GetInvalidLink()) {}
 
 	SVONNode() :
 		myParent(SVONLink::GetInvalidLink()),
-		myFirstChild(SVONLink::GetInvalidLink()),
-		myVisited(false) {}
-
+		myFirstChild(SVONLink::GetInvalidLink()) {}
 };

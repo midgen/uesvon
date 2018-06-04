@@ -30,9 +30,6 @@ struct UESVON_API SVONLink
 	bool IsValid() const { return myLayerIndex != 15; }
 	void SetInvalid() { myLayerIndex = 15; }
 
-	bool IsLeafNode() const { return myLayerIndex == 14; }
-	void SetLeafNode() { myLayerIndex = 14; }
-
 	bool operator==(const SVONLink& aOther) const {
 		return aOther.myLayerIndex == myLayerIndex &&
 			aOther.myNodeIndex == myNodeIndex &&

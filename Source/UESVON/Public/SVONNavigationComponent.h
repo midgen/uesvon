@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "SVONPath.h"
 #include "SVONNavigationComponent.generated.h"
 
 class ASVONVolume;
@@ -38,6 +39,8 @@ protected:
 
 	// Print current layer/morton code information
 	void DebugLocalPosition(FVector& aPosition);
+
+	SVONPath myCurrentPath;
 
 
 public:	

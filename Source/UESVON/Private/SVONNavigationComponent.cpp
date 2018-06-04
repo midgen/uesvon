@@ -114,9 +114,18 @@ bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
 			return false;
 		}
 
+		TMap<SVONLink, SVONLink> linkPath;
 
+		SVONMediator::FindPath(*myCurrentNavVolume, startNavLink, targetNavLink, linkPath);
 
-
+		myCurrentPath.ResetPath();
+		for (TPair<SVONLink, SVONLink>& step : linkPath)
+		{
+			FVector pos; 
+			myCurrentNavVolume->GetLinkPosition(step.Key, pos);
+			myCurrentPath.AddPoint(pos);
+		}
+		
 
 		return true;
 

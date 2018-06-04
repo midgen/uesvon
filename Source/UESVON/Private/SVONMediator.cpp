@@ -52,7 +52,7 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 			if (layer[j].myCode == code)
 			{
 				// There are no child nodes, so this is our nav position
-				if (!layer[j].myFirstChild.IsValid() && layerIndex > 0)
+				if (!layer[j].myFirstChild.IsValid())// && layerIndex > 0)
 				{
 					oLink.myLayerIndex = layerIndex;
 					oLink.myNodeIndex = j;
@@ -63,7 +63,7 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 				// If this is a leaf node, we need to find our subnode
 				if (layerIndex == 0)
 				{
-					const SVONLeafNode& leaf = aVolume.GetLeafNode(j);
+					const SVONLeafNode& leaf = aVolume.GetLeafNode(layer[j].myFirstChild.myNodeIndex);
 					// We need to calculate the node local position to get the morton code for the leaf
 					float voxelSize = aVolume.GetVoxelSize(layerIndex);
 					// The world position of the 0 node
@@ -127,7 +127,6 @@ void SVONMediator::GetVolumeXYZ(const FVector& aPosition, const ASVONVolume& aVo
 
 bool SVONMediator::FindPath(ASVONVolume& aVolume, const SVONLink& aStart, const SVONLink& aGoal, TMap<SVONLink, SVONLink>& oCameFrom)
 {
-
 	TArray<SVONLink> openSet;
 	TSet<SVONLink> closedSet;
 
