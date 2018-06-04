@@ -67,7 +67,7 @@ bool ASVONVolume::Generate()
 
 	// Allocate the leaf node data
 	myLeafNodes.Empty();
-	myLeafNodes.AddDefaulted(myBlockedIndices[0].Num() * 8);
+	myLeafNodes.AddDefaulted(myBlockedIndices[0].Num() * 8 * 0.25f);
 
 	// Add layers
 	for (int i = 0; i < myNumLayers; i++)
@@ -399,6 +399,9 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 		float leafVoxelSize = GetVoxelSize(0) * 0.25f;
 		FVector position = aOrigin + FVector(x * leafVoxelSize, y * leafVoxelSize, z * leafVoxelSize) + FVector(leafVoxelSize * 0.5f);
 
+		if (aLeafIndex >= myLeafNodes.Num() - 1)
+			myLeafNodes.AddDefaulted(1);
+
 		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(leafVoxelSize * 0.5f))))
 		{
 			myLeafNodes[aLeafIndex].SetNode(i);
@@ -446,6 +449,7 @@ bool ASVONVolume::SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArr
 
 void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 {
+	nodeindex_t leafIndex = 0;
 	// Layer 0 Leaf nodes are special
 	if (aLayer == 0)
 	{
@@ -456,6 +460,8 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 			int index = (i);
 
 			// If we know this is blocked, from our first pass
+			// TODO: false economy, by re-using this we are doing a leaf node rasterization (64 checks)
+			//   on lots of empty cells
 			if (myBlockedIndices[0].Contains(i >> 3))
 			{
 				// Add a node
@@ -475,10 +481,17 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				if (myShowVoxels) {
 					DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
 				}
+				
+				// Now check if we have any blocking, and searh leaf nodes
+				FVector position;
+				GetNodePosition(0, i, position);
 
-				// Rasterize my leaf nodes
-				FVector leafOrigin = nodePos - (FVector(GetVoxelSize(aLayer) * 0.5f));
-				RasterizeLeafNode(leafOrigin, index);
+				if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(0) * 0.5f))))
+				{
+					// Rasterize my leaf nodes
+					FVector leafOrigin = nodePos - (FVector(GetVoxelSize(aLayer) * 0.5f));
+					RasterizeLeafNode(leafOrigin, leafIndex++);
+				}
 			}
 		}
 	}
