@@ -48,11 +48,12 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 
 		for (nodeindex_t j = nodeIndex; j < layer.Num(); j++)
 		{
+			const SVONNode& node = layer[j];
 			// This is the node we are in
-			if (layer[j].myCode == code)
+			if (node.myCode == code)
 			{
 				// There are no child nodes, so this is our nav position
-				if (!layer[j].myFirstChild.IsValid())// && layerIndex > 0)
+				if (!node.myFirstChild.IsValid())// && layerIndex > 0)
 				{
 					oLink.myLayerIndex = layerIndex;
 					oLink.myNodeIndex = j;
@@ -63,12 +64,12 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 				// If this is a leaf node, we need to find our subnode
 				if (layerIndex == 0)
 				{
-					const SVONLeafNode& leaf = aVolume.GetLeafNode(layer[j].myFirstChild.myNodeIndex);
+					const SVONLeafNode& leaf = aVolume.GetLeafNode(node.myFirstChild.myNodeIndex);
 					// We need to calculate the node local position to get the morton code for the leaf
 					float voxelSize = aVolume.GetVoxelSize(layerIndex);
 					// The world position of the 0 node
 					FVector nodePosition;
-					aVolume.GetNodePosition(layerIndex, layer[j].myCode, nodePosition);
+					aVolume.GetNodePosition(layerIndex, node.myCode, nodePosition);
 					// The morton origin of the node
 					FVector nodeOrigin = nodePosition - FVector(voxelSize * 0.5f);
 					// The requested position, relative to the node origin
@@ -134,9 +135,9 @@ bool SVONMediator::FindPath(ASVONVolume& aVolume, const SVONLink& aStart, const 
 	TMap<SVONLink, float>    fScore;
 
 	openSet.Add(aStart);
-	oCameFrom[aStart] = aStart;
-	gScore[aStart] = 0;
-	fScore[aStart] = HeuristicScore(aVolume, aStart, aGoal); // Distance to target
+	oCameFrom.Add(aStart, aStart);
+	gScore.Add(aStart, 0);
+	fScore.Add(aStart, HeuristicScore(aVolume, aStart, aGoal)); // Distance to target
 
 	while (openSet.Num() > 0)
 	{
@@ -144,7 +145,7 @@ bool SVONMediator::FindPath(ASVONVolume& aVolume, const SVONLink& aStart, const 
 		float lowestScore = FLT_MAX;
 		for (SVONLink& link : openSet)
 		{
-			if (fScore[link] < lowestScore)
+			if (!fScore.Contains(link) || fScore[link] < lowestScore) 
 				current = link;
 		}
 
@@ -191,7 +192,9 @@ float SVONMediator::DistanceBetween(const ASVONVolume& aVolume, const SVONLink& 
 	FVector startPos(0.f), endPos(0.f);
 	const SVONNode& startNode = aVolume.GetNode(aStart);
 	const SVONNode& endNode = aVolume.GetNode(aTarget);
-	aVolume.GetNodePosition(aStart.GetLayerIndex(), startNode.myCode, startPos);
-	aVolume.GetNodePosition(aTarget.GetLayerIndex(), endNode.myCode, endPos);
+	aVolume.GetLinkPosition(aStart, startPos);
+	aVolume.GetLinkPosition(aTarget, endPos);
+	//aVolume.GetNodePosition(aStart.GetLayerIndex(), startNode.myCode, startPos);
+	//aVolume.GetNodePosition(aTarget.GetLayerIndex(), endNode.myCode, endPos);
 	return (startPos - endPos).Size();
 }

@@ -77,6 +77,8 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	{
 		// Get the nav link from our volume
 		SVONMediator::GetLinkFromPosition(GetOwner()->GetActorLocation(), *myCurrentNavVolume, navLink);
+		FVector targetPos = GetOwner()->GetActorLocation() + FVector(0.f, 500.f, 0.f);
+		FindPath(targetPos);
 
 		if (DebugPrintCurrentPosition)
 		{
@@ -123,6 +125,7 @@ bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
 		{
 			FVector pos; 
 			myCurrentNavVolume->GetLinkPosition(step.Key, pos);
+			DrawDebugSphere(GetWorld(), pos, 100.f, 10, FColor::Cyan, true);
 			myCurrentPath.AddPoint(pos);
 		}
 		

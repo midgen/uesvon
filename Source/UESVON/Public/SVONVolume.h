@@ -60,7 +60,7 @@ public:
 
 	bool IsReadyForNavigation();
 	
-	bool GetLinkPosition(SVONLink& aLink, FVector& oPosition) const;
+	bool GetLinkPosition(const SVONLink& aLink, FVector& oPosition) const;
 	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition) const;
 	const SVONNode& GetNode(const SVONLink& aLink) const;
 	const SVONLeafNode& GetLeafNode(nodeindex_t aIndex) const;

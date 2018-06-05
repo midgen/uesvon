@@ -154,7 +154,7 @@ bool ASVONVolume::GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVect
 }
 
 // Gets the position of a given link. Returns true if the link is open, false if blocked
-bool ASVONVolume::GetLinkPosition(SVONLink& aLink, FVector& oPosition) const
+bool ASVONVolume::GetLinkPosition(const SVONLink& aLink, FVector& oPosition) const
 {
 	const SVONNode& node = GetLayer(aLink.GetLayerIndex())[aLink.GetNodeIndex()];
 
@@ -337,6 +337,7 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 			if (layer[aNodeIndex + idelta].myCode == thisCode)
 			{
 				oLinkToUpdate.myLayerIndex = aLayer;
+				check(aNodeIndex + idelta < layer.Num());
 				oLinkToUpdate.myNodeIndex = aNodeIndex + idelta;
 				if (myShowNeighbourLinks)
 				{
@@ -365,7 +366,8 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 			if (layer[aNodeIndex - idelta].myCode == thisCode)
 			{
 				oLinkToUpdate.myLayerIndex = aLayer;
-				oLinkToUpdate.myNodeIndex = aNodeIndex + idelta;
+				check(aNodeIndex - idelta < layer.Num());
+				oLinkToUpdate.myNodeIndex = aNodeIndex - idelta;
 				// subnodes???
 				if (myShowNeighbourLinks)
 				{
