@@ -20,4 +20,5 @@ struct UESVON_API SVONNode
 	SVONNode() :
 		myParent(SVONLink::GetInvalidLink()),
 		myFirstChild(SVONLink::GetInvalidLink()) {}
+
 };

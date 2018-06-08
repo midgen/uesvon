@@ -66,6 +66,8 @@ public:
 	const SVONLeafNode& GetLeafNode(nodeindex_t aIndex) const;
 
 	
+
+	
 private:
 	bool myIsReadyForNavigation = false;
 

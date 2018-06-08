@@ -5,6 +5,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "SVONVolume.h"
 #include "SVONLink.h"
+#include "SVONPathFinder.h"
+#include "SVONPath.h"
 #include "DrawDebugHelpers.h"
 
 // Sets default values for this component's properties
@@ -77,7 +79,7 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	{
 		// Get the nav link from our volume
 		SVONMediator::GetLinkFromPosition(GetOwner()->GetActorLocation(), *myCurrentNavVolume, navLink);
-		FVector targetPos = GetOwner()->GetActorLocation() + FVector(0.f, 500.f, 0.f);
+		FVector targetPos = GetOwner()->GetActorLocation() + (GetOwner()->GetActorForwardVector() * 10000.f);
 		FindPath(targetPos);
 
 		if (DebugPrintCurrentPosition)
@@ -116,19 +118,13 @@ bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
 			return false;
 		}
 
-		TMap<SVONLink, SVONLink> linkPath;
+		SVONPath newPath;
+		SVONPathFinder pathFinder(*myCurrentNavVolume);
 
-		SVONMediator::FindPath(*myCurrentNavVolume, startNavLink, targetNavLink, linkPath);
+		//DrawDebugSphere(GetWorld(), aTargetPosition, 200.0f, 30, FColor::Cyan, false);
+		//DrawDebugString(GetWorld(), aTargetPosition + FVector(0.f, 0.f, 50.f), targetNavLink.ToString());
 
-		myCurrentPath.ResetPath();
-		for (TPair<SVONLink, SVONLink>& step : linkPath)
-		{
-			FVector pos; 
-			myCurrentNavVolume->GetLinkPosition(step.Key, pos);
-			DrawDebugSphere(GetWorld(), pos, 100.f, 10, FColor::Cyan, true);
-			myCurrentPath.AddPoint(pos);
-		}
-		
+		pathFinder.FindPath(startNavLink, targetNavLink, newPath);
 
 		return true;
 
