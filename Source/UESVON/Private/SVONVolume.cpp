@@ -206,6 +206,50 @@ const SVONLeafNode& ASVONVolume::GetLeafNode(nodeindex_t aIndex) const
 	return myLeafNodes[aIndex];
 }
 
+void ASVONVolume::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const
+{
+	mortoncode_t leafIndex = aLink.GetSubnodeIndex();
+	const SVONNode& node = GetNode(aLink);
+	const SVONLeafNode& leaf = GetLeafNode(node.myFirstChild.GetNodeIndex());
+
+	// Get our starting co-ordinates
+	uint_fast32_t x = 0, y = 0, z = 0;
+	morton3D_64_decode(leafIndex, x, y, z);
+
+	for (int i = 0; i < 6; i++)
+	{
+
+		int32 sX = x, sY = y, sZ = z;
+		// Add the direction
+		sX += SVONStatics::dirs[i].X;
+		sY += SVONStatics::dirs[i].Y;
+		sZ += SVONStatics::dirs[i].Z;
+
+		// If the neighbour is in bounds of this leaf node
+		if (sX >= 0 && sX < 4 && sY >= 0 && sY < 4 && sZ >= 0 && sZ < 4)
+		{
+			mortoncode_t thisIndex = morton3D_64_encode(sX, sY, sZ);
+			// If this node is blocked, then no link in this direction, continue
+			if (leaf.GetNode(thisIndex))
+			{
+				continue;
+			}
+			else // Otherwise, this is a valid link, add it
+			{
+				oNeighbours.Emplace(0, aLink.GetNodeIndex(), thisIndex);
+				continue;
+			}
+			
+		}
+		else // the neighbours is out of bounds, we need to find our neighbour
+		{
+			oNeighbours.Add(node.myNeighbours[i]);
+		}
+			
+	}
+
+}
+
 float ASVONVolume::GetVoxelSize(layerindex_t aLayer) const
 {
 	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1));

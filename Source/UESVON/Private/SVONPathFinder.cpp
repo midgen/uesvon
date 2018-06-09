@@ -45,10 +45,25 @@ bool SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVO
 
 		const SVONNode& currentNode = myVolume.GetNode(myCurrent);
 
-		for (const SVONLink& neighbour : currentNode.myNeighbours)
+		if (myCurrent.GetLayerIndex() == 0 && currentNode.myFirstChild.IsValid())
 		{
-			ProcessLink(neighbour);
+			TArray<SVONLink> leafNeighbours;
+			myVolume.GetLeafNeighbours(myCurrent, leafNeighbours);
+			for (const SVONLink& neighbour : leafNeighbours)
+			{
+				ProcessLink(neighbour);
+			}
+
 		}
+		else
+		{
+			for (const SVONLink& neighbour : currentNode.myNeighbours)
+			{
+				ProcessLink(neighbour);
+			}
+		}
+
+
 
 		numIterations++;
 	}

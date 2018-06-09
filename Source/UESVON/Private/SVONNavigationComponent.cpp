@@ -128,9 +128,6 @@ bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
 		
 		SVONPathFinder pathFinder(*myCurrentNavVolume, true, GetWorld());
 
-		//DrawDebugSphere(GetWorld(), aTargetPosition, 200.0f, 30, FColor::Cyan, false);
-		//DrawDebugString(GetWorld(), aTargetPosition + FVector(0.f, 0.f, 50.f), targetNavLink.ToString());
-
 		pathFinder.FindPath(startNavLink, targetNavLink, newPath);
 
 		newPath.AddPoint(GetOwner()->GetActorLocation());

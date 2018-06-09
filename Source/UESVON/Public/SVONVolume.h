@@ -65,7 +65,7 @@ public:
 	const SVONNode& GetNode(const SVONLink& aLink) const;
 	const SVONLeafNode& GetLeafNode(nodeindex_t aIndex) const;
 
-	
+	void GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
 
 	
 private:
