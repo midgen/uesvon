@@ -27,7 +27,10 @@ bool SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVO
 		for (SVONLink& link : myOpenSet)
 		{
 			if (!myFScore.Contains(link) || myFScore[link] < lowestScore)
+			{
+				lowestScore = myFScore[link];
 				myCurrent = link;
+			}
 		}
 
 		myOpenSet.Remove(myCurrent);
@@ -56,7 +59,7 @@ bool SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVO
 
 float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aTarget)
 {
-	return DistanceBetween(aStart, aTarget);
+	return DistanceBetween(aStart, aTarget) * 0.001f;
 }
 
 float SVONPathFinder::DistanceBetween( const SVONLink& aStart, const SVONLink& aTarget)
@@ -77,9 +80,23 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 			return;
 
 		if (!myOpenSet.Contains(aNeighbour))
+		{
 			myOpenSet.Add(aNeighbour);
+			if (myDebugOpenNodes)
+			{
+				FVector pos;
+				myVolume.GetLinkPosition(aNeighbour, pos);
+				DrawDebugSphere(myWorld, pos, 80.f, 10, FColor::White, false, 0.0f, 0, 20.f);
+			}
+		}
+			
 
-		float t_gScore = (myGScore.Contains(myCurrent) ? myGScore[myCurrent] : FLT_MAX) + DistanceBetween(myCurrent, aNeighbour);
+
+		float t_gScore = FLT_MAX;
+		if (myGScore.Contains(myCurrent))
+			t_gScore = myGScore[myCurrent] + DistanceBetween(myCurrent, aNeighbour);
+		else
+			myGScore.Add(myCurrent, FLT_MAX);
 
 		if (t_gScore >= (myGScore.Contains(aNeighbour) ? myGScore[aNeighbour] : FLT_MAX))
 			return;
@@ -94,11 +111,17 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 {
 	
 	FVector pos;
+	myVolume.GetLinkPosition(myCurrent, pos);
+	oPath.AddPoint(pos);
+
 	while (aCameFrom.Contains(aCurrent) && !(aCurrent == aCameFrom[aCurrent]))
 	{
 		aCurrent = aCameFrom[aCurrent];
 		myVolume.GetLinkPosition(aCurrent, pos);
 		oPath.AddPoint(pos);
 	}
+
+	//myVolume.GetLinkPosition(myGoal, pos);
+	//oPath.AddPoint(pos);
 	
 }

@@ -9,7 +9,10 @@ struct SVONLink;
 class UESVON_API SVONPathFinder
 {
 public:
-	SVONPathFinder(const ASVONVolume& aVolume) : myVolume(aVolume) {};
+	SVONPathFinder(const ASVONVolume& aVolume, bool aDebugOpenNodes, UWorld* aWorld) 
+		: myVolume(aVolume), 
+		myDebugOpenNodes (aDebugOpenNodes),
+		myWorld(aWorld) {};
 	~SVONPathFinder() {};
 protected:
 	SVONPath myPath;
@@ -26,6 +29,9 @@ protected:
 	SVONLink myGoal;
 
 	const ASVONVolume& myVolume;
+
+	bool myDebugOpenNodes;
+	UWorld* myWorld;
 
 public:
 
