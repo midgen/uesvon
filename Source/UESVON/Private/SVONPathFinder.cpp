@@ -18,6 +18,8 @@ bool SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVO
 	myGScore.Add(aStart, 0);
 	myFScore.Add(aStart, HeuristicScore(aStart, myGoal)); // Distance to target
 
+	int numIterations = 0;
+
 	while (myOpenSet.Num() > 0)
 	{
 		
@@ -33,7 +35,8 @@ bool SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVO
 
 		if (myCurrent == myGoal)
 		{
-			BuildPath(myCameFrom, oPath);
+			BuildPath(myCameFrom, myCurrent, oPath);
+			UE_LOG(UESVON, Display, TEXT("Pathfinding complete, iterations : %i"), numIterations);
 			return true;
 		}
 
@@ -43,8 +46,11 @@ bool SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVO
 		{
 			ProcessLink(neighbour);
 		}
+
+		numIterations++;
 	}
 
+	UE_LOG(UESVON, Display, TEXT("Pathfinding failed, iterations : %i"), numIterations);
 	return false;
 }
 
@@ -73,32 +79,26 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 		if (!myOpenSet.Contains(aNeighbour))
 			myOpenSet.Add(aNeighbour);
 
-		float t_gScore = myGScore.Contains(aNeighbour) ? myGScore[aNeighbour] : FLT_MAX + DistanceBetween(myCurrent, aNeighbour);
+		float t_gScore = (myGScore.Contains(myCurrent) ? myGScore[myCurrent] : FLT_MAX) + DistanceBetween(myCurrent, aNeighbour);
 
 		if (t_gScore >= (myGScore.Contains(aNeighbour) ? myGScore[aNeighbour] : FLT_MAX))
 			return;
 
-		myCameFrom[aNeighbour] = myCurrent;
-		myGScore[aNeighbour] = t_gScore;
-		myFScore[aNeighbour] = myGScore[aNeighbour] + HeuristicScore(aNeighbour, myGoal);
+		myCameFrom.Add(aNeighbour, myCurrent);
+		myGScore.Add(aNeighbour, t_gScore);
+		myFScore.Add(aNeighbour, myGScore[aNeighbour] + HeuristicScore(aNeighbour, myGoal));
 	}
 }
 
-void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONPath& oPath)
+void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, SVONPath& oPath)
 {
-	oPath.ResetPath();
-	for (TPair<SVONLink, SVONLink>& step : aCameFrom)
+	
+	FVector pos;
+	while (aCameFrom.Contains(aCurrent) && !(aCurrent == aCameFrom[aCurrent]))
 	{
-		FVector pos;
-		myVolume.GetLinkPosition(step.Key, pos);
-		DrawDebugSphere(myVolume.GetWorld(), pos, 100.f, 10, FColor::Cyan, true);
+		aCurrent = aCameFrom[aCurrent];
+		myVolume.GetLinkPosition(aCurrent, pos);
 		oPath.AddPoint(pos);
 	}
-
-	FVector pos;
-	myVolume.GetLinkPosition(myGoal, pos);
-	DrawDebugSphere(myVolume.GetWorld(), pos, 100.f, 10, FColor::Cyan, true);
-	oPath.AddPoint(pos);
-
-
+	
 }

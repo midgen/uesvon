@@ -37,7 +37,7 @@ public:
 
 	void ProcessLink(const SVONLink& aNeighbour);
 
-	void BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONPath& oPoints);
+	void BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, SVONPath& oPoints);
 
 
 	const SVONPath& GetPath() const {

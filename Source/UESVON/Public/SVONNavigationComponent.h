@@ -21,6 +21,10 @@ public:
 	bool DebugPrintCurrentPosition;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
 	bool DebugPrintMortonCodes;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
+	bool DebugPathToOverride = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
+	FVector DebugPathTo;
 	// Sets default values for this component's properties
 	USVONNavigationComponent();
 

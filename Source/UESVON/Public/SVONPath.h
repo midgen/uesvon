@@ -10,6 +10,8 @@ public:
 	void AddPoint(const FVector& aPoint);
 	void ResetPath();
 
+	void DebugDraw(UWorld* aWorld);
+
 	const TArray<FVector>& GetPoints() const {
 		return myPoints;
 	};

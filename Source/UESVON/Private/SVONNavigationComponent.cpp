@@ -99,6 +99,11 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 
 bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
 {
+	UE_LOG(UESVON, Display, TEXT("Finding path from %s and %s"), *GetOwner()->GetActorLocation().ToString(), *aTargetPosition.ToString());
+
+	if (DebugPathToOverride)
+		aTargetPosition = DebugPathTo;
+
 	SVONLink startNavLink;
 	SVONLink targetNavLink;
 	if (HasNavVolume())
@@ -119,12 +124,17 @@ bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
 		}
 
 		SVONPath newPath;
+		newPath.AddPoint(GetOwner()->GetActorLocation());
 		SVONPathFinder pathFinder(*myCurrentNavVolume);
 
 		//DrawDebugSphere(GetWorld(), aTargetPosition, 200.0f, 30, FColor::Cyan, false);
 		//DrawDebugString(GetWorld(), aTargetPosition + FVector(0.f, 0.f, 50.f), targetNavLink.ToString());
 
 		pathFinder.FindPath(startNavLink, targetNavLink, newPath);
+
+		newPath.AddPoint(aTargetPosition);
+
+		newPath.DebugDraw(GetWorld());
 
 		return true;
 
