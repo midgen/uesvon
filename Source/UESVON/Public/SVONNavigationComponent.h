@@ -50,8 +50,11 @@ protected:
 	SVONLink myLastLocation;
 
 	TQueue<int> myJobQueue;
+	TArray<FVector> myDebugPoints;
 
 	bool myIsBusy;
+
+	int myPointDebugIndex;
 
 public:	
 	

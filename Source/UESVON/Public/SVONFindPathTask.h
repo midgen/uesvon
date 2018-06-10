@@ -7,13 +7,14 @@ class FSVONFindPathTask : public FNonAbandonableTask
 	friend class FAutoDeleteAsyncTask<FSVONFindPathTask>;
 
 public:
-	FSVONFindPathTask(ASVONVolume& aVolume, UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, SVONPath& oPath, TQueue<int>& aQueue) :
+	FSVONFindPathTask(ASVONVolume& aVolume, UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, SVONPath& oPath, TQueue<int>& aQueue, TArray<FVector>& aDebugOpenPoints) :
 		myVolume(aVolume),
 		myWorld(aWorld),
 		myStart(aStart),
 		myTarget(aTarget),
 		myPath(oPath),
-		myOutQueue(aQueue)
+		myOutQueue(aQueue),
+		myDebugOpenPoints(aDebugOpenPoints)
 	{}
 
 protected:
@@ -25,10 +26,11 @@ protected:
 	SVONPath& myPath;
 
 	TQueue<int>& myOutQueue;
+	TArray<FVector>& myDebugOpenPoints;
 
 	void DoWork()
 	{
-		SVONPathFinder pathFinder(myVolume, false, myWorld);
+		SVONPathFinder pathFinder(myVolume, true, myWorld, myDebugOpenPoints);
 
 		pathFinder.FindPath(myStart, myTarget, myPath);
 

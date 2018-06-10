@@ -101,7 +101,8 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 			{
 				FVector pos;
 				myVolume.GetLinkPosition(aNeighbour, pos);
-				DrawDebugSphere(myWorld, pos, 80.f, 10, FColor::White, false, 0.0f, 0, 20.f);
+				myDebugPoints.Add(pos);
+				//DrawDebugSphere(myWorld, pos, 80.f, 10, FColor::White, false, 0.0f, 0, 20.f);
 			}
 		}
 			
