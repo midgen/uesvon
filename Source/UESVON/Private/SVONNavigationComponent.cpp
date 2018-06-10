@@ -7,10 +7,12 @@
 #include "SVONLink.h"
 #include "SVONPathFinder.h"
 #include "SVONPath.h"
+#include "SVONFindPathTask.h"
 #include "DrawDebugHelpers.h"
 
 // Sets default values for this component's properties
 USVONNavigationComponent::USVONNavigationComponent()
+	: myIsBusy(false)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -60,7 +62,7 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	{
 		FindVolume();
 	}
-	else if (myCurrentNavVolume->IsReadyForNavigation())
+	else if (myCurrentNavVolume->IsReadyForNavigation() && !myIsBusy)
 	{
 		FVector location = GetOwner()->GetActorLocation();
 		if (DebugPrintMortonCodes)
@@ -69,6 +71,17 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		}
 		SVONLink link = GetNavPosition(location);
 	}
+
+	int q;
+	if (myJobQueue.Dequeue(q))
+	{
+		myCurrentPath.AddPoint(GetOwner()->GetActorLocation());
+
+		myCurrentPath.DebugDraw(GetWorld());
+
+		myIsBusy = false;
+	}
+
 
 
 
@@ -130,16 +143,17 @@ bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
 			return false;
 		}
 
-		SVONPath newPath;
-		newPath.AddPoint(aTargetPosition);
+		myCurrentPath.ResetPath();
+
+		myCurrentPath.AddPoint(aTargetPosition);
 		
-		SVONPathFinder pathFinder(*myCurrentNavVolume, true, GetWorld());
+		//SVONPathFinder pathFinder(*myCurrentNavVolume, true, GetWorld());
 
-		pathFinder.FindPath(startNavLink, targetNavLink, newPath);
+		//pathFinder.FindPath(startNavLink, targetNavLink, newPath);
 
-		newPath.AddPoint(GetOwner()->GetActorLocation());
+		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(*myCurrentNavVolume, GetWorld(), startNavLink, targetNavLink, myCurrentPath, myJobQueue))->StartBackgroundTask();
 
-		newPath.DebugDraw(GetWorld());
+		myIsBusy = true;
 
 		return true;
 

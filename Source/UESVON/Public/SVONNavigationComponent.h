@@ -49,6 +49,10 @@ protected:
 
 	SVONLink myLastLocation;
 
+	TQueue<int> myJobQueue;
+
+	bool myIsBusy;
+
 public:	
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
