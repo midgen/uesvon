@@ -15,6 +15,7 @@ USVONNavigationComponent::USVONNavigationComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+	myLastLocation = SVONLink(0, 0, 0);
 
 	// ...
 }
@@ -79,6 +80,12 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	{
 		// Get the nav link from our volume
 		SVONMediator::GetLinkFromPosition(GetOwner()->GetActorLocation(), *myCurrentNavVolume, navLink);
+
+		if (navLink == myLastLocation)
+			return navLink;
+
+		myLastLocation = navLink;
+
 		FVector targetPos = GetOwner()->GetActorLocation() + (GetOwner()->GetActorForwardVector() * 10000.f);
 		FindPath(targetPos);
 

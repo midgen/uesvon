@@ -24,9 +24,10 @@ void SVONPath::DebugDraw(UWorld* aWorld)
 			if (i == 0)
 				//offSet.Z -= 300.f;
 			
-			DrawDebugSphere(aWorld, point + offSet, 30.f, 20, FColor::Cyan, false, 0.0f, 0, 20.f);
+				
+			DrawDebugSphere(aWorld, point + offSet, 30.f, 20, FColor::Cyan, false, 20.f, 0, 20.f);
 
-			DrawDebugLine(aWorld, point + offSet, myPoints[i+1], FColor::Cyan, false, 0.f, 0, 20.f);
+			DrawDebugLine(aWorld, point + offSet, myPoints[i+1], FColor::Cyan, false, 20.f, 0, 20.f);
 		}
 	}
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "SVONPath.h"
+#include "SVONLink.h"
 #include "SVONNavigationComponent.generated.h"
 
 class ASVONVolume;
@@ -46,6 +47,7 @@ protected:
 
 	SVONPath myCurrentPath;
 
+	SVONLink myLastLocation;
 
 public:	
 	

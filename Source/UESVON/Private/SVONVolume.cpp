@@ -243,7 +243,38 @@ void ASVONVolume::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNe
 		}
 		else // the neighbours is out of bounds, we need to find our neighbour
 		{
-			oNeighbours.Add(node.myNeighbours[i]);
+			const SVONLink& neighbourLink = node.myNeighbours[i];
+			const SVONNode& neighbourNode = GetNode(neighbourLink);
+
+			// If the neighbour layer 0 has no leaf nodes, just return it
+			if (!neighbourNode.myFirstChild.IsValid())
+			{
+				oNeighbours.Add(neighbourLink);
+			}
+			else // Otherwise, we need to find the correct subnode
+			{
+				if (sX < 0)
+					sX = 3;
+				else if (sX > 3)
+					sX = 0;
+				else if (sY < 0)
+					sY = 3;
+				else if (sY > 3)
+					sY = 0;
+				else if (sZ < 0)
+					sZ = 3;
+				else if (sZ > 3)
+					sZ = 0;
+				//
+				mortoncode_t subNodeCode = morton3D_64_encode(sX, sY, sZ);
+
+				const SVONLeafNode& leafNode = GetLeafNode(neighbourNode.myFirstChild.GetNodeIndex());
+				// Only return the neighbour if it isn't blocked!
+				if (!leafNode.GetNode(subNodeCode))
+				{
+					oNeighbours.Emplace(0, neighbourLink.GetNodeIndex(), subNodeCode);
+				}
+			}
 		}
 			
 	}
