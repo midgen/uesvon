@@ -415,12 +415,13 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 			if (layer[aNodeIndex + idelta].myCode == thisCode)
 			{
 				const SVONNode& thisNode = layer[aNodeIndex + idelta];
+				// If the node has children, we don't link to it directly
 				if (aLayer > 0 && thisNode.myFirstChild.IsValid())
 				{
 					oLinkToUpdate.SetInvalid();
 					return true;
 				}
-				// Don't use it if it's completely blocked
+				// If it's a leaf node, also don't use it if it's completely blocked
 				if (aLayer == 0)
 				{
 					
@@ -434,6 +435,7 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 						}
 					}
 				}
+				// Otherwise, use this link
 				oLinkToUpdate.myLayerIndex = aLayer;
 				check(aNodeIndex + idelta < layer.Num());
 				oLinkToUpdate.myNodeIndex = aNodeIndex + idelta;
