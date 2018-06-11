@@ -71,10 +71,13 @@ bool SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVO
 	UE_LOG(UESVON, Display, TEXT("Pathfinding failed, iterations : %i"), numIterations);
 	return false;
 }
-
+/* Using manhattan distance for now */
 float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aTarget)
 {
-	return DistanceBetween(aStart, aTarget) * 0.001f;
+	FVector startPos, endPos;
+	myVolume.GetLinkPosition(aStart, startPos);
+	myVolume.GetLinkPosition(aTarget, endPos);
+	return FMath::Abs(endPos.X - startPos.X) + FMath::Abs(endPos.Y - startPos.Y) + FMath::Abs(endPos.Z - startPos.Z);
 }
 
 float SVONPathFinder::DistanceBetween( const SVONLink& aStart, const SVONLink& aTarget)

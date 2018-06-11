@@ -30,4 +30,14 @@ struct UESVON_API SVONLeafNode
 	{
 		return (myVoxelGrid & (1ULL << aIndex)) != 0;
 	}
+
+	inline bool IsCompletelyBlocked() const
+	{
+		return myVoxelGrid == -1;
+	}
+
+	inline bool IsEmpty() const
+	{
+		return myVoxelGrid == 0;
+	}
 };
