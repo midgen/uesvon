@@ -122,7 +122,7 @@ bool ASVONVolume::FirstPassRasterize()
 		GetNodePosition(1, i, position);
 		FCollisionQueryParams params;
 		params.bFindInitialOverlaps = true;
-		params.bTraceComplex = true;
+		params.bTraceComplex = false;
 		params.TraceTag = "SVONFirstPassRasterize";
 		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(1) * 0.5f)), params))
 		{
@@ -498,7 +498,7 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 
 		FCollisionQueryParams params;
 		params.bFindInitialOverlaps = true;
-		params.bTraceComplex = true;
+		params.bTraceComplex = false;
 		params.TraceTag = "SVONLeafRasterize";
 		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(leafVoxelSize * 0.5f)), params))
 		{
@@ -584,7 +584,7 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 
 				FCollisionQueryParams params;
 				params.bFindInitialOverlaps = true;
-				params.bTraceComplex = true;
+				params.bTraceComplex = false;
 				params.TraceTag = "SVONRasterize";
 				if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(0) * 0.5f)), params))
 				{
