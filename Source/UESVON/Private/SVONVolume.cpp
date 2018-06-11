@@ -414,16 +414,24 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 			// This is the node we're looking for
 			if (layer[aNodeIndex + idelta].myCode == thisCode)
 			{
+				const SVONNode& thisNode = layer[aNodeIndex + idelta];
+				if (aLayer > 0 && thisNode.myFirstChild.IsValid())
+				{
+					oLinkToUpdate.SetInvalid();
+					return true;
+				}
 				// Don't use it if it's completely blocked
 				if (aLayer == 0)
 				{
-					const SVONNode& thisNode = layer[aNodeIndex + idelta];
+					
 					if (thisNode.myFirstChild.IsValid())
 					{
 						const SVONLeafNode& thisLeaf = GetLeafNode(thisNode.myFirstChild.GetNodeIndex());
 						if (thisLeaf.IsCompletelyBlocked())
+						{
 							oLinkToUpdate.SetInvalid();
 							return true;
+						}
 					}
 				}
 				oLinkToUpdate.myLayerIndex = aLayer;
@@ -455,16 +463,25 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 			// This is the node we're looking for
 			if (layer[aNodeIndex - idelta].myCode == thisCode)
 			{
+				const SVONNode& thisNode = layer[aNodeIndex - idelta];
+
+				if (aLayer > 0 && thisNode.myFirstChild.IsValid())
+				{
+					oLinkToUpdate.SetInvalid();
+					return true;
+				}
 				// Don't use it if it's completely blocked
 				if (aLayer == 0)
 				{
-					const SVONNode& thisNode = layer[aNodeIndex - idelta];
+					
 					if (thisNode.myFirstChild.IsValid())
 					{
 						const SVONLeafNode& thisLeaf = GetLeafNode(thisNode.myFirstChild.GetNodeIndex());
 						if (thisLeaf.IsCompletelyBlocked())
+						{
 							oLinkToUpdate.SetInvalid();
-						return true;
+							return true;
+						}
 					}
 				}
 
