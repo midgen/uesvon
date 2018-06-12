@@ -32,9 +32,9 @@ protected:
 	{
 		SVONPathFinder pathFinder(myVolume, true, myWorld, myDebugOpenPoints);
 
-		pathFinder.FindPath(myStart, myTarget, myPath);
+		int result = pathFinder.FindPath(myStart, myTarget, myPath);
 
-		myOutQueue.Enqueue(0);
+		myOutQueue.Enqueue(result);
 		
 	}
 

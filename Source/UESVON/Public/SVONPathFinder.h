@@ -38,7 +38,7 @@ protected:
 
 public:
 
-	bool FindPath(const SVONLink& aStart, const SVONLink& aTarget, SVONPath& oPath);
+	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, SVONPath& oPath);
 
 	float HeuristicScore(const SVONLink& aStart, const SVONLink& aTarget);
 

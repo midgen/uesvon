@@ -76,20 +76,24 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	int q;
 	if (myJobQueue.Dequeue(q))
 	{
-		myCurrentPath.AddPoint(GetOwner()->GetActorLocation());
-
 		GetWorld()->PersistentLineBatcher->Flush();
-
-		myCurrentPath.DebugDraw(GetWorld());
-
-		myPointDebugIndex = 0;
-
-		//myIsBusy = false;
+		if (q > 0)
+		{
+			myCurrentPath.AddPoint(GetOwner()->GetActorLocation());
+			myCurrentPath.DebugDraw(GetWorld());
+			myPointDebugIndex = 0;
+		}
+		else
+		{
+			myIsBusy = false;
+		}
 	}
 
 	if (myIsBusy && myPointDebugIndex > -1)
 	{
-		DrawDebugSphere(GetWorld(), myDebugPoints[myPointDebugIndex], 100.f, 5, FColor::Red, true);
+		if(myDebugPoints.Num() > 0)
+			DrawDebugSphere(GetWorld(), myDebugPoints[myPointDebugIndex], 100.f, 5, FColor::Red, true);
+
 		if (myPointDebugIndex < myDebugPoints.Num() - 1)
 		{
 			myPointDebugIndex++;
@@ -99,8 +103,6 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 			myIsBusy = false;
 			myPointDebugIndex = -1;
 		}
-
-
 	}
 
 
@@ -164,15 +166,13 @@ bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
 			return false;
 		}
 
+		// Reset the path and debug container
 		myCurrentPath.ResetPath();
+
 		myDebugPoints.Empty();
 		myPointDebugIndex = -1;
 
 		myCurrentPath.AddPoint(aTargetPosition);
-		
-		//SVONPathFinder pathFinder(*myCurrentNavVolume, true, GetWorld());
-
-		//pathFinder.FindPath(startNavLink, targetNavLink, newPath);
 
 		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(*myCurrentNavVolume, GetWorld(), startNavLink, targetNavLink, myCurrentPath, myJobQueue, myDebugPoints))->StartBackgroundTask();
 

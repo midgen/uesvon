@@ -40,6 +40,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	bool myShowVoxels = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+	bool myShowLeafVoxels = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	bool myShowMortonCodes = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	bool myShowNeighbourLinks = false;

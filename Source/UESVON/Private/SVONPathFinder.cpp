@@ -2,7 +2,7 @@
 #include "SVONLink.h"
 
 
-bool SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVONPath& oPath)
+int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVONPath& oPath)
 {
 	myOpenSet.Empty();
 	myClosedSet.Empty();
@@ -40,7 +40,7 @@ bool SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVO
 		{
 			BuildPath(myCameFrom, myCurrent, oPath);
 			UE_LOG(UESVON, Display, TEXT("Pathfinding complete, iterations : %i"), numIterations);
-			return true;
+			return 1;
 		}
 
 		const SVONNode& currentNode = myVolume.GetNode(myCurrent);
@@ -69,7 +69,7 @@ bool SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVO
 	}
 
 	UE_LOG(UESVON, Display, TEXT("Pathfinding failed, iterations : %i"), numIterations);
-	return false;
+	return 0;
 }
 /* Using manhattan distance for now */
 float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aTarget)
@@ -100,15 +100,16 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 		if (!myOpenSet.Contains(aNeighbour))
 		{
 			myOpenSet.Add(aNeighbour);
+#if UE_BUILD_DEBUG
 			if (myDebugOpenNodes)
 			{
 				FVector pos;
 				myVolume.GetLinkPosition(aNeighbour, pos);
 				myDebugPoints.Add(pos);
-				//DrawDebugSphere(myWorld, pos, 80.f, 10, FColor::White, false, 0.0f, 0, 20.f);
 			}
+#endif
 		}
-			
+
 
 
 		float t_gScore = FLT_MAX;
@@ -130,8 +131,8 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 {
 	
 	FVector pos;
-	myVolume.GetLinkPosition(myCurrent, pos);
-	oPath.AddPoint(pos);
+	/*myVolume.GetLinkPosition(myCurrent, pos);
+	oPath.AddPoint(pos);*/
 
 	while (aCameFrom.Contains(aCurrent) && !(aCurrent == aCameFrom[aCurrent]))
 	{
@@ -139,8 +140,5 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 		myVolume.GetLinkPosition(aCurrent, pos);
 		oPath.AddPoint(pos);
 	}
-
-	//myVolume.GetLinkPosition(myGoal, pos);
-	//oPath.AddPoint(pos);
 	
 }
