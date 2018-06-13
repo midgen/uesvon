@@ -45,25 +45,22 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVON
 
 		const SVONNode& currentNode = myVolume.GetNode(myCurrent);
 
+		TArray<SVONLink> neighbours;
+
 		if (myCurrent.GetLayerIndex() == 0 && currentNode.myFirstChild.IsValid())
 		{
-			TArray<SVONLink> leafNeighbours;
-			myVolume.GetLeafNeighbours(myCurrent, leafNeighbours);
-			for (const SVONLink& neighbour : leafNeighbours)
-			{
-				ProcessLink(neighbour);
-			}
-
+			
+			myVolume.GetLeafNeighbours(myCurrent, neighbours);
 		}
 		else
 		{
-			for (const SVONLink& neighbour : currentNode.myNeighbours)
-			{
-				ProcessLink(neighbour);
-			}
+			myVolume.GetNeighbours(myCurrent, neighbours);
 		}
 
-
+		for (const SVONLink& neighbour : neighbours)
+		{
+			ProcessLink(neighbour);
+		}
 
 		numIterations++;
 	}
@@ -109,8 +106,6 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 			}
 #endif
 		}
-
-
 
 		float t_gScore = FLT_MAX;
 		if (myGScore.Contains(myCurrent))

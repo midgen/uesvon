@@ -284,6 +284,37 @@ void ASVONVolume::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNe
 
 }
 
+void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const
+{
+	const SVONNode& node = GetNode(aLink);
+
+	for (int i = 0; i < 6; i++)
+	{
+		const SVONLink& neighbourLink = node.myNeighbours[i];
+
+		if (!neighbourLink.IsValid())
+			continue;
+
+		
+		const SVONNode& neighbour = GetNode(neighbourLink);
+
+		// If the neighbour has no children, we just use it
+		if (!neighbour.myFirstChild.IsValid() || aLink.GetLayerIndex() == 0)
+		{
+			oNeighbours.Add(neighbourLink);
+		}
+		else // Otherwise, we need to pick the right children depending on our direction
+		{
+			for (const nodeindex_t& index : SVONStatics::dirChildOffsets[i])
+			{
+				// This is the link to our first child, we just need to add our offsets
+				SVONLink link = neighbour.myFirstChild;
+				oNeighbours.Emplace(link.GetLayerIndex(), link.GetNodeIndex() + index, link.GetSubnodeIndex());
+			}
+		}
+	}
+}
+
 float ASVONVolume::GetVoxelSize(layerindex_t aLayer) const
 {
 	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1));

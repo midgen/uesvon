@@ -76,7 +76,7 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	int q;
 	if (myJobQueue.Dequeue(q))
 	{
-		GetWorld()->PersistentLineBatcher->Flush();
+		//GetWorld()->PersistentLineBatcher->Flush();
 		if (q > 0)
 		{
 			myCurrentPath.AddPoint(GetOwner()->GetActorLocation());
