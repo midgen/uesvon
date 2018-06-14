@@ -58,7 +58,7 @@ bool USVONNavigationComponent::FindVolume()
 void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	return;
+	//return;
 
 	if (!HasNavVolume())
 	{
@@ -92,21 +92,32 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 	if (myIsBusy && myPointDebugIndex > -1)
 	{
-		if (myDebugPoints.Num() > 0)
+		if (DebugDrawOpenNodes)
 		{
-			DrawDebugSphere(GetWorld(), myDebugPoints[myPointDebugIndex], 100.f, 5, FColor::Red, true);
-			DrawDebugString(GetWorld(), myDebugPoints[myPointDebugIndex], FString::FromInt(myPointDebugIndex));
-		}
-
-		if (myPointDebugIndex < myDebugPoints.Num() - 1)
-		{
-			myPointDebugIndex++;
+			if (myDebugPoints.Num() > 0)
+			{
+				DrawDebugSphere(GetWorld(), myDebugPoints[myPointDebugIndex], 100.f, 5, FColor::Red, true);
+				DrawDebugString(GetWorld(), myDebugPoints[myPointDebugIndex], FString::FromInt(myPointDebugIndex));
+			}
+			if (myPointDebugIndex < myDebugPoints.Num() - 1)
+			{
+				myPointDebugIndex++;
+			}
+			else
+			{
+				myIsBusy = false;
+				myPointDebugIndex = -1;
+			}
 		}
 		else
 		{
 			myIsBusy = false;
 			myPointDebugIndex = -1;
 		}
+
+
+
+
 	}
 
 

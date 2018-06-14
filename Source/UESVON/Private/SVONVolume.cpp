@@ -315,7 +315,13 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 		// If the neighbour has children and is a leaf node, we need to add 16 leaf voxels 
 		else if (neighbour.myFirstChild.GetLayerIndex() == 0)
 		{
-			
+			for (const nodeindex_t& index : SVONStatics::dirLeafChildOffsets[i])
+			{
+				// This is the link to our first child, we just need to add our offsets
+				SVONLink link = neighbour.myFirstChild;
+				if(!GetLeafNode(link.GetNodeIndex()).GetNode(index))
+					oNeighbours.Emplace(link.GetLayerIndex(), link.GetNodeIndex(), index );
+			}
 		}
 		else // If the neighbour has children and isn't a leaf, we just add 4
 		{
@@ -461,11 +467,11 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 			{
 				const SVONNode& thisNode = layer[aNodeIndex + idelta];
 				// If the node has children, we don't link to it directly
-				if (aLayer > 0 && thisNode.myFirstChild.IsValid())
-				{
-					oLinkToUpdate.SetInvalid();
-					return true;
-				}
+				//if (aLayer > 0 && thisNode.myFirstChild.IsValid())
+				//{
+				//	oLinkToUpdate.SetInvalid();
+				//	return true;
+				//}
 				// If it's a leaf node, also don't use it if it's completely blocked
 				if (aLayer == 0)
 				{
@@ -512,11 +518,11 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 			{
 				const SVONNode& thisNode = layer[aNodeIndex - idelta];
 
-				if (aLayer > 0 && thisNode.myFirstChild.IsValid())
+			/*	if (aLayer > 0 && thisNode.myFirstChild.IsValid())
 				{
 					oLinkToUpdate.SetInvalid();
 					return true;
-				}
+				}*/
 				// Don't use it if it's completely blocked
 				if (aLayer == 0)
 				{

@@ -23,6 +23,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
 	bool DebugPrintMortonCodes;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
+	bool DebugDrawOpenNodes = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
 	bool DebugPathToOverride = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
 	FVector DebugPathTo;
