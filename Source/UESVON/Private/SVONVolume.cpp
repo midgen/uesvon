@@ -566,11 +566,11 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(leafVoxelSize * 0.5f)), params))
 		{
 			myLeafNodes[aLeafIndex].SetNode(i);
-#if UE_BUILD_DEBUG
+
 			if (myShowLeafVoxels) {
 				DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, .0f);
 			}
-#endif
+
 		}
 	}
 }
