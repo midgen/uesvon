@@ -458,6 +458,7 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 	int32 idelta = 1;
 
 	// If the code we want is higher, start looking up the array for it
+	// TODO: Yeah, I know this should be refactored
 	if (isHigher)
 	{
 		while (aNodeIndex + idelta < layer.Num())
@@ -466,24 +467,14 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 			if (layer[aNodeIndex + idelta].myCode == thisCode)
 			{
 				const SVONNode& thisNode = layer[aNodeIndex + idelta];
-				// If the node has children, we don't link to it directly
-				//if (aLayer > 0 && thisNode.myFirstChild.IsValid())
-				//{
-				//	oLinkToUpdate.SetInvalid();
-				//	return true;
-				//}
-				// If it's a leaf node, also don't use it if it's completely blocked
-				if (aLayer == 0)
+				// This is a leaf node
+				if (aLayer == 0 && thisNode.HasChildren())
 				{
-					
-					if (thisNode.myFirstChild.IsValid())
+					// Set invalid link if the leaf node is completely blocked, no point linking to it
+					if (GetLeafNode(thisNode.myFirstChild.GetNodeIndex()).IsCompletelyBlocked())
 					{
-						const SVONLeafNode& thisLeaf = GetLeafNode(thisNode.myFirstChild.GetNodeIndex());
-						if (thisLeaf.IsCompletelyBlocked())
-						{
-							oLinkToUpdate.SetInvalid();
-							return true;
-						}
+						oLinkToUpdate.SetInvalid();
+						return true;
 					}
 				}
 				// Otherwise, use this link
@@ -518,24 +509,14 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 			{
 				const SVONNode& thisNode = layer[aNodeIndex - idelta];
 
-			/*	if (aLayer > 0 && thisNode.myFirstChild.IsValid())
-				{
-					oLinkToUpdate.SetInvalid();
-					return true;
-				}*/
 				// Don't use it if it's completely blocked
-				if (aLayer == 0)
+				if (aLayer == 0 && thisNode.myFirstChild.IsValid())
 				{
-					
-					if (thisNode.myFirstChild.IsValid())
+					if (GetLeafNode(thisNode.myFirstChild.GetNodeIndex()).IsCompletelyBlocked())
 					{
-						const SVONLeafNode& thisLeaf = GetLeafNode(thisNode.myFirstChild.GetNodeIndex());
-						if (thisLeaf.IsCompletelyBlocked())
-						{
-							oLinkToUpdate.SetInvalid();
-							return true;
-						}
-					}
+						oLinkToUpdate.SetInvalid();
+						return true;
+					}	
 				}
 
 				oLinkToUpdate.myLayerIndex = aLayer;
@@ -579,18 +560,13 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 		if (aLeafIndex >= myLeafNodes.Num() - 1)
 			myLeafNodes.AddDefaulted(1);
 
-		FCollisionQueryParams params;
-		params.bFindInitialOverlaps = true;
-		params.bTraceComplex = false;
-		params.TraceTag = "SVONLeafRasterize";
-		if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(leafVoxelSize * 0.5f)), params))
+		if(IsBlocked(position, leafVoxelSize * 0.5f))
 		{
 			myLeafNodes[aLeafIndex].SetNode(i);
 
 			if (myShowLeafVoxels) {
 				DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, .0f);
 			}
-
 		}
 	}
 }
@@ -621,6 +597,16 @@ bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode)
 	}
 
 	return false;
+}
+
+bool ASVONVolume::IsBlocked(const FVector& aPosition, const float aSize) const
+{
+	FCollisionQueryParams params;
+	params.bFindInitialOverlaps = true;
+	params.bTraceComplex = false;
+	params.TraceTag = "SVONLeafRasterize";
+
+	return GetWorld()->OverlapBlockingTestByChannel(aPosition, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(aSize)), params);
 }
 
 bool ASVONVolume::SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArrayIndex, const dir aDirection)
@@ -670,7 +656,9 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				params.bFindInitialOverlaps = true;
 				params.bTraceComplex = false;
 				params.TraceTag = "SVONRasterize";
-				if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(0) * 0.5f)), params))
+
+				if(IsBlocked(position, GetVoxelSize(0) * 0.5f))
+				//if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(0) * 0.5f)), params))
 				{
 					// Rasterize my leaf nodes
 					FVector leafOrigin = nodePos - (FVector(GetVoxelSize(aLayer) * 0.5f));

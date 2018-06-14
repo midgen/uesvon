@@ -103,4 +103,6 @@ private:
 	bool SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArrayIndex, const dir aDirection);
 
 	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode);
+
+	bool IsBlocked(const FVector& aPosition, const float aSize) const;
 };

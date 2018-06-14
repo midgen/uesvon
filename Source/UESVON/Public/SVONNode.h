@@ -13,12 +13,10 @@ struct UESVON_API SVONNode
 
 	SVONLink myNeighbours[6];
 
-	SVONNode(uint8 aLayer) :
-		myParent(SVONLink::GetInvalidLink()),
-		myFirstChild(SVONLink::GetInvalidLink()) {}
-
 	SVONNode() :
 		myParent(SVONLink::GetInvalidLink()),
 		myFirstChild(SVONLink::GetInvalidLink()) {}
+
+	bool HasChildren() const { return myFirstChild.IsValid(); }
 
 };

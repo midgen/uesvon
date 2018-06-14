@@ -15,7 +15,13 @@ public:
 		myWorld(aWorld),
 		myDebugPoints(aDebugPoints) {};
 	~SVONPathFinder() {};
-protected:
+
+	/* Performs an A* search from start to target navlink */
+	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, SVONPath& oPath);
+
+	const SVONPath& GetPath() const { return myPath; }
+
+private:
 	SVONPath myPath;
 
 	TArray<SVONLink> myOpenSet;
@@ -36,20 +42,15 @@ protected:
 	bool myDebugOpenNodes;
 	UWorld* myWorld;
 
-public:
-
-	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, SVONPath& oPath);
-
+	/* A* heuristic calculation */
 	float HeuristicScore(const SVONLink& aStart, const SVONLink& aTarget);
 
+	/* Distance between two links */
 	float DistanceBetween(const SVONLink& aStart, const SVONLink& aTarget);
 
 	void ProcessLink(const SVONLink& aNeighbour);
 
+	/* Constructs the path by navigating back through our CameFrom map */
 	void BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, SVONPath& oPoints);
 
-
-	const SVONPath& GetPath() const {
-		return myPath;
-	};
 };

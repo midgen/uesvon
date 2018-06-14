@@ -68,9 +68,11 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVON
 	UE_LOG(UESVON, Display, TEXT("Pathfinding failed, iterations : %i"), numIterations);
 	return 0;
 }
-/* Using manhattan distance for now */
+
 float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aTarget)
 {
+	/* Just using manhattan distance for now */
+
 	FVector startPos, endPos;
 	myVolume.GetLinkPosition(aStart, startPos);
 	myVolume.GetLinkPosition(aTarget, endPos);
@@ -126,8 +128,6 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 {
 	
 	FVector pos;
-	/*myVolume.GetLinkPosition(myCurrent, pos);
-	oPath.AddPoint(pos);*/
 
 	while (aCameFrom.Contains(aCurrent) && !(aCurrent == aCameFrom[aCurrent]))
 	{
