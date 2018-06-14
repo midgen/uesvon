@@ -253,6 +253,15 @@ void ASVONVolume::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNe
 			if (!neighbourNode.myFirstChild.IsValid())
 			{
 				oNeighbours.Add(neighbourLink);
+				continue;
+			}
+
+			const SVONLeafNode& leafNode = GetLeafNode(neighbourNode.myFirstChild.GetNodeIndex());
+
+			if (leafNode.IsCompletelyBlocked())
+			{
+				// The leaf node is completely blocked, we don't return it
+				continue;
 			}
 			else // Otherwise, we need to find the correct subnode
 			{
@@ -271,11 +280,11 @@ void ASVONVolume::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNe
 				//
 				mortoncode_t subNodeCode = morton3D_64_encode(sX, sY, sZ);
 
-				const SVONLeafNode& leafNode = GetLeafNode(neighbourNode.myFirstChild.GetNodeIndex());
+				;
 				// Only return the neighbour if it isn't blocked!
 				if (!leafNode.GetNode(subNodeCode))
 				{
-					oNeighbours.Emplace(0, neighbourLink.GetNodeIndex(), subNodeCode);
+					oNeighbours.Emplace(0, neighbourNode.myFirstChild.GetNodeIndex(), subNodeCode);
 				}
 			}
 		}
@@ -299,11 +308,16 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 		const SVONNode& neighbour = GetNode(neighbourLink);
 
 		// If the neighbour has no children, we just use it
-		if (!neighbour.myFirstChild.IsValid() || aLink.GetLayerIndex() == 0)
+		if (!neighbour.myFirstChild.IsValid())
 		{
 			oNeighbours.Add(neighbourLink);
 		}
-		else // Otherwise, we need to pick the right children depending on our direction
+		// If the neighbour has children and is a leaf node, we need to add 16 leaf voxels 
+		else if (neighbour.myFirstChild.GetLayerIndex() == 0)
+		{
+			
+		}
+		else // If the neighbour has children and isn't a leaf, we just add 4
 		{
 			for (const nodeindex_t& index : SVONStatics::dirChildOffsets[i])
 			{
@@ -662,8 +676,11 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				}
 				else
 				{
+					myLeafNodes.AddDefaulted(1);
+					leafIndex++;
 					node.myFirstChild.SetInvalid();
 				}
+
 
 			}
 		}

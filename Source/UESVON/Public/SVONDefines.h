@@ -27,6 +27,7 @@ class UESVON_API SVONStatics
 public:
 	static const FIntVector dirs[];
 	static const nodeindex_t dirChildOffsets[6][4];
+	static const nodeindex_t dirLeafChildOffsets[6][16];
 	static const FColor myLayerColors[];
 	static const FColor myLinkColors[];
 

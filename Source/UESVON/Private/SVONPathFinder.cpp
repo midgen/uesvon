@@ -97,14 +97,14 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 		if (!myOpenSet.Contains(aNeighbour))
 		{
 			myOpenSet.Add(aNeighbour);
-#if UE_BUILD_DEBUG
+
 			if (myDebugOpenNodes)
 			{
 				FVector pos;
 				myVolume.GetLinkPosition(aNeighbour, pos);
 				myDebugPoints.Add(pos);
 			}
-#endif
+
 		}
 
 		float t_gScore = FLT_MAX;
