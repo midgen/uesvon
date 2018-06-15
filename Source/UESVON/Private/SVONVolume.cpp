@@ -311,7 +311,63 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 		if (!neighbour.myFirstChild.IsValid())
 		{
 			oNeighbours.Add(neighbourLink);
+			continue;
 		}
+
+		// This recursive section should be the most accurate, ensuring that when pathfinding down multiple levels (say, 2 to leaf),
+		// That all valid edge nodes (with no children) in that direction are considered
+		// Is does mean that the search *explodes* in this scenario.
+
+		//TArray<SVONLink> workingSet;
+
+		//workingSet.Push(neighbourLink);
+
+		//// Otherwise, we gotta recurse down 
+
+		//while (workingSet.Num() > 0)
+		//{
+		//	// Pop off the neighbour
+		//	SVONLink thisLink = workingSet.Pop();
+
+		//	// If it's above layer 0, we need to add 4 children to explore
+		//	if (thisLink.GetLayerIndex() > 0)
+		//	{
+		//		for (const nodeindex_t& index : SVONStatics::dirChildOffsets[i])
+		//		{
+		//			// Each of the childnodes
+		//			SVONLink link = neighbour.myFirstChild;
+		//			link.myNodeIndex += index;
+		//			const SVONNode& linkNode = GetNode(link);
+
+		//			if (linkNode.HasChildren()) // If it has children, add them to the list to keep going down
+		//			{
+		//				workingSet.Emplace(link.GetLayerIndex(), link.GetNodeIndex(), link.GetSubnodeIndex());
+		//			}
+		//			else // Or just add to the outgoing links
+		//			{
+		//				oNeighbours.Add(link);
+		//			}
+		//		}
+		//	}
+		//	else
+		//	{
+		//		for (const nodeindex_t& leafIndex : SVONStatics::dirLeafChildOffsets[i])
+		//		{
+		//			// Each of the childnodes
+		//			SVONLink link = neighbour.myFirstChild;
+		//			//link.mySubnodeIndex = leafIndex;
+		//			const SVONLeafNode& leafNode = GetLeafNode(link.myNodeIndex);
+
+		//			if (!leafNode.GetNode(leafIndex))
+		//			{
+		//				oNeighbours.Add(link);
+		//			}
+		//		}
+		//	}
+		//}
+
+
+
 		// If the neighbour has children and is a leaf node, we need to add 16 leaf voxels 
 		else if (neighbour.myFirstChild.GetLayerIndex() == 0)
 		{
