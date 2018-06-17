@@ -221,12 +221,10 @@ void ASVONVolume::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNe
 
 	for (int i = 0; i < 6; i++)
 	{
-
-		int32 sX = x, sY = y, sZ = z;
-		// Add the direction
-		sX += SVONStatics::dirs[i].X;
-		sY += SVONStatics::dirs[i].Y;
-		sZ += SVONStatics::dirs[i].Z;
+		// Need to switch to signed ints
+		int32 sX = x + SVONStatics::dirs[i].X;
+		int32 sY = y + SVONStatics::dirs[i].Y;
+		int32 sZ = z + SVONStatics::dirs[i].Z;
 
 		// If the neighbour is in bounds of this leaf node
 		if (sX >= 0 && sX < 4 && sY >= 0 && sY < 4 && sZ >= 0 && sZ < 4)
@@ -280,7 +278,6 @@ void ASVONVolume::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNe
 				//
 				mortoncode_t subNodeCode = morton3D_64_encode(sX, sY, sZ);
 
-				;
 				// Only return the neighbour if it isn't blocked!
 				if (!leafNode.GetNode(subNodeCode))
 				{
@@ -314,7 +311,7 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 			continue;
 		}
 
-		// This recursive section should be the most accurate, ensuring that when pathfinding down multiple levels (say, 2 to leaf),
+		// TODO: This recursive section should be the most accurate, ensuring that when pathfinding down multiple levels (say, 2 to leaf),
 		// That all valid edge nodes (with no children) in that direction are considered
 		// Is does mean that the search *explodes* in this scenario.
 
@@ -380,6 +377,8 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 			}
 		}
 		else // If the neighbour has children and isn't a leaf, we just add 4
+			//TODO: the problem with this is that you no longer have the direction information to know which subnodes to select,
+			//   in the case that *this* child has children
 		{
 			for (const nodeindex_t& index : SVONStatics::dirChildOffsets[i])
 			{
