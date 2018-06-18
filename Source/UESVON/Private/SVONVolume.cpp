@@ -58,7 +58,7 @@ bool ASVONVolume::Generate()
 
 	// Clear data (for now)
 	myBlockedIndices.Empty();
-	myLayers.Empty();
+	myData.myLayers.Empty();
 
 	myNumLayers = myVoxelPower + 1;
 
@@ -66,13 +66,13 @@ bool ASVONVolume::Generate()
 	FirstPassRasterize();
 
 	// Allocate the leaf node data
-	myLeafNodes.Empty();
-	myLeafNodes.AddDefaulted(myBlockedIndices[0].Num() * 8 * 0.25f);
+	myData.myLeafNodes.Empty();
+	myData.myLeafNodes.AddDefaulted(myBlockedIndices[0].Num() * 8 * 0.25f);
 
 	// Add layers
 	for (int i = 0; i < myNumLayers; i++)
 	{
-		myLayers.Emplace();
+		myData.myLayers.Emplace();
 	}
 
 	// Rasterize layer, bottom up, adding parent/child links
@@ -95,15 +95,15 @@ bool ASVONVolume::Generate()
 
 	for (int i = 0; i < myNumLayers; i++)
 	{
-		totalNodes += myLayers[i].Num();
+		totalNodes += myData.myLayers[i].Num();
 	}
 
 	int32 totalBytes = sizeof(SVONNode) * totalNodes;
-	totalBytes += sizeof(SVONLeafNode) * myLeafNodes.Num();
+	totalBytes += sizeof(SVONLeafNode) * myData.myLeafNodes.Num();
 
 	UE_LOG(UESVON, Display, TEXT("Generation Time : %d"), buildTime);
 	UE_LOG(UESVON, Display, TEXT("Total Layers-Nodes : %d-%d"), myNumLayers, totalNodes);
-	UE_LOG(UESVON, Display, TEXT("Total Leaf Nodes : %d"), myLeafNodes.Num());
+	UE_LOG(UESVON, Display, TEXT("Total Leaf Nodes : %d"), myData.myLeafNodes.Num());
 	UE_LOG(UESVON, Display, TEXT("Total Size (bytes): %d"), totalBytes);
 
 
@@ -206,7 +206,7 @@ const SVONNode& ASVONVolume::GetNode(const SVONLink& aLink) const
 
 const SVONLeafNode& ASVONVolume::GetLeafNode(nodeindex_t aIndex) const
 {
-	return myLeafNodes[aIndex];
+	return myData.myLeafNodes[aIndex];
 }
 
 void ASVONVolume::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const
@@ -457,7 +457,7 @@ void ASVONVolume::BuildNeighbourLinks(layerindex_t aLayer)
 			backtrackIndex = index;
 
 			while (!FindLinkInDirection(searchLayer, index, d, linkToUpdate, nodePos)
-				&& aLayer < myLayers.Num() - 2)
+				&& aLayer < myData.myLayers.Num() - 2)
 			{
 				SVONLink& parent = GetLayer(searchLayer)[index].myParent;
 				if (parent.IsValid())
@@ -566,12 +566,12 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 		float leafVoxelSize = GetVoxelSize(0) * 0.25f;
 		FVector position = aOrigin + FVector(x * leafVoxelSize, y * leafVoxelSize, z * leafVoxelSize) + FVector(leafVoxelSize * 0.5f);
 
-		if (aLeafIndex >= myLeafNodes.Num() - 1)
-			myLeafNodes.AddDefaulted(1);
+		if (aLeafIndex >= myData.myLeafNodes.Num() - 1)
+			myData.myLeafNodes.AddDefaulted(1);
 
 		if(IsBlocked(position, leafVoxelSize * 0.5f))
 		{
-			myLeafNodes[aLeafIndex].SetNode(i);
+			myData.myLeafNodes[aLeafIndex].SetNode(i);
 
 			if (myShowLeafVoxels) {
 				DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, .0f);
@@ -582,12 +582,12 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 
 TArray<SVONNode>& ASVONVolume::GetLayer(layerindex_t aLayer)
 {
-	return myLayers[aLayer];
+	return myData.myLayers[aLayer];
 }
 
 const TArray<SVONNode>& ASVONVolume::GetLayer(layerindex_t aLayer) const
 {
-	return myLayers[aLayer];
+	return myData.myLayers[aLayer];
 }
 
 // Check for blocking...using this cached set for each layer for now for fast lookups
@@ -679,7 +679,7 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				}
 				else
 				{
-					myLeafNodes.AddDefaulted(1);
+					myData.myLeafNodes.AddDefaulted(1);
 					leafIndex++;
 					node.myFirstChild.SetInvalid();
 				}

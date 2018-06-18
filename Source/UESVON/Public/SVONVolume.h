@@ -7,6 +7,7 @@
 #include "SVONDefines.h"
 #include "SVONNode.h"
 #include "SVONLeafNode.h"
+#include "SVONData.h"
 #include "UESVON.h"
 #include "SVONVolume.generated.h"
 
@@ -79,9 +80,8 @@ private:
 
 	uint8 myNumLayers = 0;
 	
-	// SVO data
-	TArray<TArray<SVONNode>> myLayers;
-	TArray<SVONLeafNode> myLeafNodes;
+	SVONData myData;
+
 	// First pass rasterize results
 	TArray<TSet<mortoncode_t>> myBlockedIndices;
 
