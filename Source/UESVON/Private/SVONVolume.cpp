@@ -478,7 +478,7 @@ void ASVONVolume::BuildNeighbourLinks(layerindex_t aLayer)
 	}
 }
 
-bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug)
+bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug)
 {
 	int32 maxCoord = GetNodesPerSide(aLayer);
 	SVONNode& node = GetLayer(aLayer)[aNodeIndex];
@@ -510,95 +510,49 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, nodeindex_t aNodeInde
 	// Get the morton code for the direction
 	mortoncode_t thisCode = morton3D_64_encode(x, y, z);
 	bool isHigher = thisCode > node.myCode;
-	int32 idelta = 1;
+	int32 nodeDelta = (isHigher ?  1 : - 1);
 
-	// If the code we want is higher, start looking up the array for it
-	// TODO: Yeah, I know this should be refactored
-	if (isHigher)
+	while ((aNodeIndex + nodeDelta) < layer.Num() && aNodeIndex + nodeDelta >= 0)
 	{
-		while (aNodeIndex + idelta < layer.Num())
+		// This is the node we're looking for
+		if (layer[aNodeIndex + nodeDelta].myCode == thisCode)
 		{
-			// This is the node we're looking for
-			if (layer[aNodeIndex + idelta].myCode == thisCode)
+			const SVONNode& thisNode = layer[aNodeIndex + nodeDelta];
+			// This is a leaf node
+			if (aLayer == 0 && thisNode.HasChildren())
 			{
-				const SVONNode& thisNode = layer[aNodeIndex + idelta];
-				// This is a leaf node
-				if (aLayer == 0 && thisNode.HasChildren())
+				// Set invalid link if the leaf node is completely blocked, no point linking to it
+				if (GetLeafNode(thisNode.myFirstChild.GetNodeIndex()).IsCompletelyBlocked())
 				{
-					// Set invalid link if the leaf node is completely blocked, no point linking to it
-					if (GetLeafNode(thisNode.myFirstChild.GetNodeIndex()).IsCompletelyBlocked())
-					{
-						oLinkToUpdate.SetInvalid();
-						return true;
-					}
+					oLinkToUpdate.SetInvalid();
+					return true;
 				}
-				// Otherwise, use this link
-				oLinkToUpdate.myLayerIndex = aLayer;
-				check(aNodeIndex + idelta < layer.Num());
-				oLinkToUpdate.myNodeIndex = aNodeIndex + idelta;
-				if (myShowNeighbourLinks)
-				{
-					FVector endPos;
-					GetNodePosition(aLayer, thisCode, endPos);
-					DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, SVONStatics::myLinkColors[aLayer], true, -1.f, 0, .0f);
-				}
-				return true;
 			}
-			// If it's higher than the one we want, then it ain't on this layer
-			else if (layer[aNodeIndex + idelta].myCode > thisCode)
+			// Otherwise, use this link
+			oLinkToUpdate.myLayerIndex = aLayer;
+			check(aNodeIndex + nodeDelta < layer.Num());
+			oLinkToUpdate.myNodeIndex = aNodeIndex + nodeDelta;
+			if (myShowNeighbourLinks)
 			{
-				return false;
+				FVector endPos;
+				GetNodePosition(aLayer, thisCode, endPos);
+				DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, SVONStatics::myLinkColors[aLayer], true, -1.f, 0, .0f);
 			}
-
-			idelta++;
+			return true;
+		}
+		// If we've passed the code we're looking for, it's not on this layer
+		else if ((isHigher && layer[aNodeIndex + nodeDelta].myCode > thisCode) || (!isHigher && layer[aNodeIndex + nodeDelta].myCode < thisCode))
+		{
+			return false;
 		}
 
-		return false;
+		nodeDelta += (isHigher ? 1 : -1);
 	}
-	else // Code is lower, so look down the array
-	{
-		while (aNodeIndex - idelta >= 0)
-		{
-			// This is the node we're looking for
-			if (layer[aNodeIndex - idelta].myCode == thisCode)
-			{
-				const SVONNode& thisNode = layer[aNodeIndex - idelta];
 
-				// Don't use it if it's completely blocked
-				if (aLayer == 0 && thisNode.myFirstChild.IsValid())
-				{
-					if (GetLeafNode(thisNode.myFirstChild.GetNodeIndex()).IsCompletelyBlocked())
-					{
-						oLinkToUpdate.SetInvalid();
-						return true;
-					}	
-				}
 
-				oLinkToUpdate.myLayerIndex = aLayer;
-				check(aNodeIndex - idelta < layer.Num());
-				oLinkToUpdate.myNodeIndex = aNodeIndex - idelta;
-				// subnodes???
-				if (myShowNeighbourLinks)
-				{
-					FVector endPos;
-					GetNodePosition(aLayer, thisCode, endPos);
-					DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, SVONStatics::myLinkColors[aLayer], true, -1.f, 0, .0f);
-				}
-				return true;
-			}
-			// If it's higher than the one we want, then it ain't on this layer
-			else if (layer[aNodeIndex - idelta].myCode < thisCode)
-			{
-				return false;
-			}
-
-			idelta++;
-		}
-		return false;
-	}
 
 	UE_LOG(LogTemp, Error, TEXT("Find link reached the end. Layer : %i Node : %i"), aLayer, aNodeIndex);
-	return true;
+	return false;
 
 }
 
