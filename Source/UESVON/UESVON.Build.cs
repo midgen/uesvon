@@ -28,6 +28,8 @@ public class UESVON : ModuleRules
 			new string[]
 			{
 				"Core",
+                "AIModule",
+                "GameplayTasks"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

@@ -24,7 +24,7 @@ ASVONVolume::ASVONVolume(const FObjectInitializer& ObjectInitializer)
 #if WITH_EDITOR
 
 void ASVONVolume::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
-{
+{ 
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 }
 
@@ -551,7 +551,7 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNo
 
 
 
-	UE_LOG(LogTemp, Error, TEXT("Find link reached the end. Layer : %i Node : %i"), aLayer, aNodeIndex);
+	// I'm not entirely sure if it's valid to reach the end? Hmmm...
 	return false;
 
 }
@@ -667,7 +667,6 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				params.TraceTag = "SVONRasterize";
 
 				if(IsBlocked(position, GetVoxelSize(0) * 0.5f))
-				//if (GetWorld()->OverlapBlockingTestByChannel(position, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(GetVoxelSize(0) * 0.5f)), params))
 				{
 					// Rasterize my leaf nodes
 					FVector leafOrigin = nodePos - (FVector(GetVoxelSize(aLayer) * 0.5f));
