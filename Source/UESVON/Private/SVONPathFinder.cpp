@@ -1,5 +1,6 @@
 #include "SVONPathFinder.h"
 #include "SVONLink.h"
+#include "AI/Navigation/NavigationData.h"
 
 
 int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVONPath& oPath)
@@ -67,6 +68,12 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVON
 
 	UE_LOG(UESVON, Display, TEXT("Pathfinding failed, iterations : %i"), numIterations);
 	return 0;
+}
+
+const FNavigationPath& SVONPathFinder::GetNavPath()
+{
+	myNavPath = FNavigationPath(myDebugPoints);
+	return myNavPath;
 }
 
 float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aTarget)

@@ -128,7 +128,7 @@ EBTNodeResult::Type USVON_BTTask_MoveTo::PerformMoveTask(UBehaviorTreeComponent&
 					{
 						MyMemory->Task = MoveTask;
 						UE_VLOG(MyController, LogBehaviorTree, Verbose, TEXT("\'%s\' task implementing move with task %s"), *GetNodeName(), *MoveTask->GetName());
-						//MoveTask->ReadyForActivation(); // why unresolved??
+						MoveTask->ReadyForActivation(); // why unresolved??
 					}
 
 					MyMemory->bObserverCanFinishTask = true;

@@ -138,7 +138,7 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 		myLastLocation = navLink;
 
 		FVector targetPos = GetOwner()->GetActorLocation() + (GetOwner()->GetActorForwardVector() * 10000.f);
-		FindPath(targetPos);
+		FindPathAsync(targetPos);
 
 		if (DebugPrintCurrentPosition)
 		{
@@ -155,7 +155,7 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	return navLink;
 }
 
-bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
+bool USVONNavigationComponent::FindPathAsync(FVector& aTargetPosition)
 {
 	UE_LOG(UESVON, Display, TEXT("Finding path from %s and %s"), *GetOwner()->GetActorLocation().ToString(), *aTargetPosition.ToString());
 
@@ -195,6 +195,58 @@ bool USVONNavigationComponent::FindPath(FVector& aTargetPosition)
 
 		return true;
 
+
+	}
+
+	return false;
+}
+
+bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr& oNavPath)
+{
+	//UE_LOG(UESVON, Display, TEXT("Finding path immediate from %s and %s"), aStartPosition.ToString(), aTargetPosition.ToString());
+
+	SVONLink startNavLink;
+	SVONLink targetNavLink;
+	if (HasNavVolume())
+	{
+		// Get the nav link from our volume
+		if (!SVONMediator::GetLinkFromPosition(aStartPosition, *myCurrentNavVolume, startNavLink))
+		{
+			UE_LOG(UESVON, Display, TEXT("Path finder failed to find start nav link"));
+			return false;
+		}
+
+
+
+		if (!SVONMediator::GetLinkFromPosition(aTargetPosition, *myCurrentNavVolume, targetNavLink))
+		{
+			UE_LOG(UESVON, Display, TEXT("Path finder failed to find target nav link"));
+			return false;
+		}
+
+		// Reset the path and debug container
+		myCurrentPath.ResetPath();
+
+		myDebugPoints.Empty();
+		myPointDebugIndex = -1;
+
+		myCurrentPath.AddPoint(aTargetPosition);
+
+		TArray<FVector> debugOpenPoints;
+
+		SVONPathFinder pathFinder(*myCurrentNavVolume, true, GetWorld(), debugOpenPoints);
+
+		int result = pathFinder.FindPath(startNavLink, targetNavLink, myCurrentPath);
+
+		oNavPath->GetPathPoints().Reset();
+		for (const FVector& point : myCurrentPath.GetPoints())
+		{
+			oNavPath->GetPathPoints().Add(FNavPathPoint(point));
+		}
+
+		oNavPath->MarkReady();
+
+		return true;
 
 	}
 

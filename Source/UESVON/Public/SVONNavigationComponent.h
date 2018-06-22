@@ -65,6 +65,8 @@ public:
 	// Get a Nav position
 	SVONLink GetNavPosition(FVector& aPosition);
 
-	bool FindPath(FVector& aTargetPosition);
+	bool FindPathAsync(FVector& aTargetPosition);
+
+	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr& oNavPath);
 
 };

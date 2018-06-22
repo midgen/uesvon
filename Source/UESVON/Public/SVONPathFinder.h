@@ -2,9 +2,12 @@
 #pragma once
 #include "CoreMinimal.h"
 
+
 struct SVONPath;
 class ASVONVolume;
 struct SVONLink;
+
+struct FNavigationPath;
 
 class UESVON_API SVONPathFinder
 {
@@ -20,9 +23,12 @@ public:
 	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, SVONPath& oPath);
 
 	const SVONPath& GetPath() const { return myPath; }
+	const FNavigationPath& GetNavPath();  
 
 private:
 	SVONPath myPath;
+
+	FNavigationPath myNavPath;
 
 	TArray<SVONLink> myOpenSet;
 	TSet<SVONLink> myClosedSet;
