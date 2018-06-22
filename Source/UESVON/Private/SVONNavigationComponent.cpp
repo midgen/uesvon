@@ -238,10 +238,12 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 
 		int result = pathFinder.FindPath(startNavLink, targetNavLink, myCurrentPath);
 
+		
+
 		oNavPath->GetPathPoints().Reset();
-		for (const FVector& point : myCurrentPath.GetPoints())
+		for (int i = myCurrentPath.GetPoints().Num() - 1; i >= 0; i--)
 		{
-			oNavPath->GetPathPoints().Add(FNavPathPoint(point));
+			oNavPath->GetPathPoints().Add(myCurrentPath.GetPoints()[i]);
 		}
 
 		oNavPath->MarkReady();
