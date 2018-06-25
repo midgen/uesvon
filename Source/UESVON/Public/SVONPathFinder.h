@@ -20,7 +20,7 @@ public:
 	~SVONPathFinder() {};
 
 	/* Performs an A* search from start to target navlink */
-	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, SVONPath& oPath);
+	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, FNavPathSharedPtr* oPath);
 
 	const SVONPath& GetPath() const { return myPath; }
 	const FNavigationPath& GetNavPath();  
@@ -57,6 +57,6 @@ private:
 	void ProcessLink(const SVONLink& aNeighbour);
 
 	/* Constructs the path by navigating back through our CameFrom map */
-	void BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, SVONPath& oPoints);
+	void BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, FNavPathSharedPtr* oPath);
 
 };

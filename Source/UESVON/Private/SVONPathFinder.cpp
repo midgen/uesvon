@@ -3,7 +3,7 @@
 #include "AI/Navigation/NavigationData.h"
 
 
-int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, SVONPath& oPath)
+int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, FNavPathSharedPtr* oPath)
 {
 	myOpenSet.Empty();
 	myClosedSet.Empty();
@@ -131,16 +131,28 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 	}
 }
 
-void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, SVONPath& oPath)
+void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, FNavPathSharedPtr* oPath)
 {
 	
 	FVector pos;
+
+	TArray<FVector> points;
+
+	if (!oPath || !oPath->IsValid())
+		return;
 
 	while (aCameFrom.Contains(aCurrent) && !(aCurrent == aCameFrom[aCurrent]))
 	{
 		aCurrent = aCameFrom[aCurrent];
 		myVolume.GetLinkPosition(aCurrent, pos);
-		oPath.AddPoint(pos);
+		points.Add(pos);
+		
 	}
+
+	for (int i = points.Num() - 1; i >= 0; i--)
+	{
+		oPath->Get()->GetPathPoints().Add(points[i]);
+	}
+	
 	
 }

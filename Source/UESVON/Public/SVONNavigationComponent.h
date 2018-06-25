@@ -24,10 +24,7 @@ public:
 	bool DebugPrintMortonCodes;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
 	bool DebugDrawOpenNodes = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
-	bool DebugPathToOverride = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
-	FVector DebugPathTo;
+
 	// Sets default values for this component's properties
 	USVONNavigationComponent();
 
@@ -47,8 +44,6 @@ protected:
 	// Print current layer/morton code information
 	void DebugLocalPosition(FVector& aPosition);
 
-	SVONPath myCurrentPath;
-
 	SVONLink myLastLocation;
 
 	TQueue<int> myJobQueue;
@@ -65,8 +60,9 @@ public:
 	// Get a Nav position
 	SVONLink GetNavPosition(FVector& aPosition);
 
-	bool FindPathAsync(FVector& aTargetPosition);
+	/* This method isn't hooked up at the moment, pending integration with existing systems */
+	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath);
 
-	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr& oNavPath);
+	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath);
 
 };

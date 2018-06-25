@@ -18,13 +18,9 @@ ASVONAIController::ASVONAIController(const FObjectInitializer& ObjectInitializer
 	: Super(ObjectInitializer)
 {
 	
-
-
 	SVONNavComponent = CreateDefaultSubobject<USVONNavigationComponent>(TEXT("SVONNavigationComponent"));
 
 	myNavPath = MakeShareable<FNavigationPath>(new FNavigationPath());
-
-	
 }
 
 FPathFollowingRequestResult ASVONAIController::MoveTo(const FAIMoveRequest& MoveRequest, FNavPathSharedPtr* OutPath /*= nullptr*/)
@@ -78,7 +74,7 @@ FPathFollowingRequestResult ASVONAIController::MoveTo(const FAIMoveRequest& Move
 	}
 	else if (bCanRequestMove)
 	{
-		SVONNavComponent->FindPathImmediate(GetPawn()->GetActorLocation(), MoveRequest.GetGoalLocation(), myNavPath);
+		SVONNavComponent->FindPathImmediate(GetPawn()->GetActorLocation(), MoveRequest.GetGoalLocation(), &myNavPath);
 
 		const FAIRequestID RequestID = myNavPath.IsValid() ? RequestMove(MoveRequest, myNavPath) : FAIRequestID::InvalidRequest;
 

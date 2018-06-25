@@ -9,6 +9,7 @@
 #include "SVONPath.h"
 #include "SVONFindPathTask.h"
 #include "DrawDebugHelpers.h"
+#include "AI/Navigation/NavigationData.h"
 #include "Runtime/Engine/Classes/Components/LineBatchComponent.h "
 
 // Sets default values for this component's properties
@@ -80,8 +81,6 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 		//GetWorld()->PersistentLineBatcher->Flush();
 		if (q > 0)
 		{
-			myCurrentPath.AddPoint(GetOwner()->GetActorLocation());
-			myCurrentPath.DebugDraw(GetWorld());
 			myPointDebugIndex = 0;
 		}
 		else
@@ -138,7 +137,6 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 		myLastLocation = navLink;
 
 		FVector targetPos = GetOwner()->GetActorLocation() + (GetOwner()->GetActorForwardVector() * 10000.f);
-		FindPathAsync(targetPos);
 
 		if (DebugPrintCurrentPosition)
 		{
@@ -155,12 +153,9 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	return navLink;
 }
 
-bool USVONNavigationComponent::FindPathAsync(FVector& aTargetPosition)
+bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath)
 {
 	UE_LOG(UESVON, Display, TEXT("Finding path from %s and %s"), *GetOwner()->GetActorLocation().ToString(), *aTargetPosition.ToString());
-
-	if (DebugPathToOverride)
-		aTargetPosition = DebugPathTo;
 
 	SVONLink startNavLink;
 	SVONLink targetNavLink;
@@ -173,23 +168,16 @@ bool USVONNavigationComponent::FindPathAsync(FVector& aTargetPosition)
 			return false;
 		}
 
-
-
 		if (!SVONMediator::GetLinkFromPosition(aTargetPosition, *myCurrentNavVolume, targetNavLink))
 		{
 			UE_LOG(UESVON, Display, TEXT("Path finder failed to find target nav link"));
 			return false;
 		}
 
-		// Reset the path and debug container
-		myCurrentPath.ResetPath();
-
 		myDebugPoints.Empty();
 		myPointDebugIndex = -1;
 
-		myCurrentPath.AddPoint(aTargetPosition);
-
-		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(*myCurrentNavVolume, GetWorld(), startNavLink, targetNavLink, myCurrentPath, myJobQueue, myDebugPoints))->StartBackgroundTask();
+		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(*myCurrentNavVolume, GetWorld(), startNavLink, targetNavLink, oNavPath, myJobQueue, myDebugPoints))->StartBackgroundTask();
 
 		myIsBusy = true;
 
@@ -201,7 +189,7 @@ bool USVONNavigationComponent::FindPathAsync(FVector& aTargetPosition)
 	return false;
 }
 
-bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr& oNavPath)
+bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath)
 {
 	//UE_LOG(UESVON, Display, TEXT("Finding path immediate from %s and %s"), aStartPosition.ToString(), aTargetPosition.ToString());
 
@@ -224,29 +212,33 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 			return false;
 		}
 
-		// Reset the path and debug container
-		myCurrentPath.ResetPath();
+		if (!oNavPath || !oNavPath->IsValid())
+		{
+			UE_LOG(UESVON, Display, TEXT("Nav path data invalid"));
+			return false;
+		}
+
+		FNavigationPath* path = oNavPath->Get();
+
+		path->ResetForRepath();
 
 		myDebugPoints.Empty();
 		myPointDebugIndex = -1;
-
-		myCurrentPath.AddPoint(aTargetPosition);
 
 		TArray<FVector> debugOpenPoints;
 
 		SVONPathFinder pathFinder(*myCurrentNavVolume, true, GetWorld(), debugOpenPoints);
 
-		int result = pathFinder.FindPath(startNavLink, targetNavLink, myCurrentPath);
+		int result = pathFinder.FindPath(startNavLink, targetNavLink, oNavPath);
 
-		
+		// Add the target point, as the path only includes octree node positions
+		oNavPath->Get()->GetPathPoints().Add(aTargetPosition);
 
-		oNavPath->GetPathPoints().Reset();
-		for (int i = myCurrentPath.GetPoints().Num() - 1; i >= 0; i--)
-		{
-			oNavPath->GetPathPoints().Add(myCurrentPath.GetPoints()[i]);
-		}
+		myIsBusy = true;
+		myPointDebugIndex = 0;
 
-		oNavPath->MarkReady();
+
+		path->MarkReady();
 
 		return true;
 
