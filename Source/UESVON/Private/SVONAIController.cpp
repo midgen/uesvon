@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SVONAIController.h"
-
+#include "VisualLogger.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "SVONNavigationComponent.h"
-
+#include "Tasks/AITask.h"
 #include "Kismet/GameplayStatics.h"
 #include "DisplayDebugHelpers.h"
 
@@ -74,13 +74,13 @@ FPathFollowingRequestResult ASVONAIController::MoveTo(const FAIMoveRequest& Move
 	}
 	else if (bCanRequestMove)
 	{
-		SVONNavComponent->FindPathImmediate(GetPawn()->GetActorLocation(), MoveRequest.GetGoalLocation(), &myNavPath);
+		SVONNavComponent->FindPathImmediate(GetPawn()->GetActorLocation(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), &myNavPath);
 
 		const FAIRequestID RequestID = myNavPath.IsValid() ? RequestMove(MoveRequest, myNavPath) : FAIRequestID::InvalidRequest;
 
 		if(RequestID.IsValid())
 		{
-	
+			UE_VLOG(this, LogAINavigation, Log, TEXT("SVON Pathfinding successful, moving"));
 			*OutPath = myNavPath;
 			bAllowStrafe = MoveRequest.CanStrafe();
 			ResultData.MoveId = RequestID;
