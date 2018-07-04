@@ -31,9 +31,7 @@ struct UESVON_API SVONLink
 	void SetInvalid() { myLayerIndex = 15; }
 
 	bool operator==(const SVONLink& aOther) const {
-		return aOther.myLayerIndex == myLayerIndex &&
-			aOther.myNodeIndex == myNodeIndex &&
-			aOther.mySubnodeIndex == mySubnodeIndex;
+		return memcmp(this, &aOther, sizeof(SVONLink)) == 0;
 	}
 
 	static SVONLink GetInvalidLink() { return SVONLink(15, 0, 0); }
