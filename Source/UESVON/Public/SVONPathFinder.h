@@ -9,21 +9,34 @@ struct SVONLink;
 
 struct FNavigationPath;
 
+struct SVONPathFinderSettings
+{
+	bool myDebugOpenNodes;
+	bool myUseUnitCost;
+	float myUnitCost;
+	TArray<FVector> myDebugPoints;
+	
+
+	SVONPathFinderSettings()
+		: myDebugOpenNodes(false)
+		, myUseUnitCost(false) {}
+};
+
 class UESVON_API SVONPathFinder
 {
 public:
-	SVONPathFinder(const ASVONVolume& aVolume, bool aDebugOpenNodes, UWorld* aWorld, TArray<FVector>& aDebugPoints)
-		: myVolume(aVolume), 
-		myDebugOpenNodes (aDebugOpenNodes),
-		myWorld(aWorld),
-		myDebugPoints(aDebugPoints) {};
+	SVONPathFinder(UWorld* aWorld, const ASVONVolume& aVolume, SVONPathFinderSettings& aSettings)
+		: myWorld(aWorld),
+		myVolume(aVolume),
+		mySettings(aSettings)
+		{};
 	~SVONPathFinder() {};
 
 	/* Performs an A* search from start to target navlink */
 	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, FNavPathSharedPtr* oPath);
 
 	const SVONPath& GetPath() const { return myPath; }
-	const FNavigationPath& GetNavPath();  
+	//const FNavigationPath& GetNavPath();  
 
 private:
 	SVONPath myPath;
@@ -43,9 +56,8 @@ private:
 
 	const ASVONVolume& myVolume;
 
-	TArray<FVector>& myDebugPoints;
+	SVONPathFinderSettings& mySettings;
 
-	bool myDebugOpenNodes;
 	UWorld* myWorld;
 
 	/* A* heuristic calculation */

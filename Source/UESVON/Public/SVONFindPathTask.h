@@ -30,7 +30,9 @@ protected:
 
 	void DoWork()
 	{
-		SVONPathFinder pathFinder(myVolume, true, myWorld, myDebugOpenPoints);
+		SVONPathFinderSettings settings;
+
+		SVONPathFinder pathFinder(myWorld, myVolume, settings);
 
 		int result = pathFinder.FindPath(myStart, myTarget, myPath);
 

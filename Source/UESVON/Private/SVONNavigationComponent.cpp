@@ -191,7 +191,7 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 
 bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath)
 {
-	//UE_LOG(UESVON, Display, TEXT("Finding path immediate from %s and %s"), aStartPosition.ToString(), aTargetPosition.ToString());
+	UE_LOG(UESVON, Display, TEXT("Finding path immediate from %s and %s"), *aStartPosition.ToString(), *aTargetPosition.ToString());
 
 	SVONLink startNavLink;
 	SVONLink targetNavLink;
@@ -203,8 +203,6 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 			UE_LOG(UESVON, Display, TEXT("Path finder failed to find start nav link"));
 			return false;
 		}
-
-
 
 		if (!SVONMediator::GetLinkFromPosition(aTargetPosition, *myCurrentNavVolume, targetNavLink))
 		{
@@ -227,7 +225,11 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 
 		TArray<FVector> debugOpenPoints;
 
-		SVONPathFinder pathFinder(*myCurrentNavVolume, true, GetWorld(), debugOpenPoints);
+		SVONPathFinderSettings settings;
+		settings.myUseUnitCost = UseUnitCost;
+		settings.myUnitCost = UnitCost;
+
+		SVONPathFinder pathFinder(GetWorld(), *myCurrentNavVolume, settings);
 
 		int result = pathFinder.FindPath(startNavLink, targetNavLink, oNavPath);
 

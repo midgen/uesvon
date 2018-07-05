@@ -69,12 +69,12 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, FNav
 	UE_LOG(UESVON, Display, TEXT("Pathfinding failed, iterations : %i"), numIterations);
 	return 0;
 }
-
-const FNavigationPath& SVONPathFinder::GetNavPath()
-{
-	myNavPath = FNavigationPath(myDebugPoints);
-	return myNavPath;
-}
+//
+//const FNavigationPath& SVONPathFinder::GetNavPath()
+//{
+//	myNavPath = FNavigationPath(myDebugPoints);
+//	return myNavPath;
+//}
 
 float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aTarget)
 {
@@ -88,6 +88,10 @@ float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aT
 
 float SVONPathFinder::DistanceBetween( const SVONLink& aStart, const SVONLink& aTarget)
 {
+	// Unit cost implementation
+	if (mySettings.myUseUnitCost)
+		return mySettings.myUnitCost;
+
 	FVector startPos(0.f), endPos(0.f);
 	const SVONNode& startNode = myVolume.GetNode(aStart);
 	const SVONNode& endNode = myVolume.GetNode(aTarget);
@@ -107,11 +111,11 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 		{
 			myOpenSet.Add(aNeighbour);
 
-			if (myDebugOpenNodes)
+			if (mySettings.myDebugOpenNodes)
 			{
 				FVector pos;
 				myVolume.GetLinkPosition(aNeighbour, pos);
-				myDebugPoints.Add(pos);
+				mySettings.myDebugPoints.Add(pos);
 			}
 
 		}

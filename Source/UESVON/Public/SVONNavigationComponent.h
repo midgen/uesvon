@@ -18,12 +18,17 @@ class UESVON_API USVONNavigationComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Debug")
 	bool DebugPrintCurrentPosition;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Debug")
 	bool DebugPrintMortonCodes;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Debug")
 	bool DebugDrawOpenNodes = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Heuristics")
+	bool UseUnitCost = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Heuristics")
+	float UnitCost = 10.f;
 
 	// Sets default values for this component's properties
 	USVONNavigationComponent();
