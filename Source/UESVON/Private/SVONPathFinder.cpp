@@ -69,35 +69,46 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, FNav
 	UE_LOG(UESVON, Display, TEXT("Pathfinding failed, iterations : %i"), numIterations);
 	return 0;
 }
-//
-//const FNavigationPath& SVONPathFinder::GetNavPath()
-//{
-//	myNavPath = FNavigationPath(myDebugPoints);
-//	return myNavPath;
-//}
 
 float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aTarget)
 {
 	/* Just using manhattan distance for now */
+	float score = 0.f;
 
 	FVector startPos, endPos;
 	myVolume.GetLinkPosition(aStart, startPos);
 	myVolume.GetLinkPosition(aTarget, endPos);
-	return FMath::Abs(endPos.X - startPos.X) + FMath::Abs(endPos.Y - startPos.Y) + FMath::Abs(endPos.Z - startPos.Z);
+	score = FMath::Abs(endPos.X - startPos.X) + FMath::Abs(endPos.Y - startPos.Y) + FMath::Abs(endPos.Z - startPos.Z);
+
+	score *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(myVolume.GetMyNumLayers())) * mySettings.myNodeSizeCompensation);
+
+	return score;
 }
 
-float SVONPathFinder::DistanceBetween( const SVONLink& aStart, const SVONLink& aTarget)
+float SVONPathFinder::GetCost( const SVONLink& aStart, const SVONLink& aTarget)
 {
+	float cost = 0.f;
+
 	// Unit cost implementation
 	if (mySettings.myUseUnitCost)
-		return mySettings.myUnitCost;
+	{
+		cost = mySettings.myUnitCost;
+	}
+	else
+	{
 
-	FVector startPos(0.f), endPos(0.f);
-	const SVONNode& startNode = myVolume.GetNode(aStart);
-	const SVONNode& endNode = myVolume.GetNode(aTarget);
-	myVolume.GetLinkPosition(aStart, startPos);
-	myVolume.GetLinkPosition(aTarget, endPos);
-	return (startPos - endPos).Size();
+
+		FVector startPos(0.f), endPos(0.f);
+		const SVONNode& startNode = myVolume.GetNode(aStart);
+		const SVONNode& endNode = myVolume.GetNode(aTarget);
+		myVolume.GetLinkPosition(aStart, startPos);
+		myVolume.GetLinkPosition(aTarget, endPos);
+		cost = (startPos - endPos).Size();
+	}
+
+	cost *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(myVolume.GetMyNumLayers())) * mySettings.myNodeSizeCompensation);
+		
+	return cost;
 }
 
 void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
@@ -122,7 +133,7 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 
 		float t_gScore = FLT_MAX;
 		if (myGScore.Contains(myCurrent))
-			t_gScore = myGScore[myCurrent] + DistanceBetween(myCurrent, aNeighbour);
+			t_gScore = myGScore[myCurrent] + GetCost(myCurrent, aNeighbour);
 		else
 			myGScore.Add(myCurrent, FLT_MAX);
 
@@ -131,7 +142,7 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 
 		myCameFrom.Add(aNeighbour, myCurrent);
 		myGScore.Add(aNeighbour, t_gScore);
-		myFScore.Add(aNeighbour, myGScore[aNeighbour] + HeuristicScore(aNeighbour, myGoal));
+		myFScore.Add(aNeighbour, myGScore[aNeighbour] + (mySettings.myEstimateWeight * HeuristicScore(aNeighbour, myGoal)));
 	}
 }
 

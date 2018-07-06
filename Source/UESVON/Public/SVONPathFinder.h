@@ -14,6 +14,8 @@ struct SVONPathFinderSettings
 	bool myDebugOpenNodes;
 	bool myUseUnitCost;
 	float myUnitCost;
+	float myEstimateWeight;
+	float myNodeSizeCompensation;
 	TArray<FVector> myDebugPoints;
 	
 
@@ -64,7 +66,7 @@ private:
 	float HeuristicScore(const SVONLink& aStart, const SVONLink& aTarget);
 
 	/* Distance between two links */
-	float DistanceBetween(const SVONLink& aStart, const SVONLink& aTarget);
+	float GetCost(const SVONLink& aStart, const SVONLink& aTarget);
 
 	void ProcessLink(const SVONLink& aNeighbour);
 

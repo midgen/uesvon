@@ -29,6 +29,12 @@ public:
 	bool UseUnitCost = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Heuristics")
 	float UnitCost = 10.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Heuristics")
+	float EstimateWeight = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Heuristics")
+	float NodeSizeCompensation = 1.0f;
+
+
 
 	// Sets default values for this component's properties
 	USVONNavigationComponent();
