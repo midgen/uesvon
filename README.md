@@ -2,11 +2,12 @@
 Sparse Voxel Octree navigation plugin for UnrealEngine
 
 Based on "3D Flight Navigation Using Sparse Voxel Octrees" by Daniel Brewer in Game AI Pro 3.
+
 [Game AI Pro](https://www.gameaipro.com)
 
 and his related GDC talk :
 
-[GDC Vault - Getting Off The Navmesh]https://www.gdcvault.com/play/1022016/Getting-off-the-NavMesh-Navigating
+[GDC Vault - Getting Off The Navmesh](https://www.gdcvault.com/play/1022016/Getting-off-the-NavMesh-Navigating)
 
 Status : Alpha
 
