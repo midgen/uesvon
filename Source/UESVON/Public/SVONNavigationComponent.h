@@ -33,6 +33,8 @@ public:
 	float EstimateWeight = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Heuristics")
 	float NodeSizeCompensation = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Heuristics")
+	ESVONPathCostType PathCostType = ESVONPathCostType::EUCLIDEAN;
 
 
 

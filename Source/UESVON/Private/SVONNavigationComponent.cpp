@@ -230,6 +230,7 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 		settings.myUnitCost = UnitCost;
 		settings.myEstimateWeight = EstimateWeight;
 		settings.myNodeSizeCompensation = NodeSizeCompensation;
+		settings.myPathCostType = PathCostType;
 
 		SVONPathFinder pathFinder(GetWorld(), *myCurrentNavVolume, settings);
 

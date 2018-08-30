@@ -1,6 +1,13 @@
 #pragma once
 #include "CoreMinimal.h"
 
+UENUM(BlueprintType)
+enum class ESVONPathCostType : uint8
+{
+	MANHATTAN,
+	EUCLIDEAN
+};
+
 struct UESVON_API SVONPath
 {
 protected:

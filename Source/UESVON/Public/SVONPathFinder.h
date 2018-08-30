@@ -9,6 +9,7 @@ struct SVONLink;
 
 struct FNavigationPath;
 
+
 struct SVONPathFinderSettings
 {
 	bool myDebugOpenNodes;
@@ -16,12 +17,17 @@ struct SVONPathFinderSettings
 	float myUnitCost;
 	float myEstimateWeight;
 	float myNodeSizeCompensation;
+	ESVONPathCostType myPathCostType;
 	TArray<FVector> myDebugPoints;
 	
 
 	SVONPathFinderSettings()
 		: myDebugOpenNodes(false)
-		, myUseUnitCost(false) {}
+		, myUseUnitCost(false)
+		, myUnitCost(1.0f)
+		, myEstimateWeight(1.0f)
+		, myNodeSizeCompensation(1.0f)
+		, myPathCostType(ESVONPathCostType::EUCLIDEAN) {}
 };
 
 class UESVON_API SVONPathFinder
@@ -72,5 +78,7 @@ private:
 
 	/* Constructs the path by navigating back through our CameFrom map */
 	void BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, FNavPathSharedPtr* oPath);
+
+	void Smooth_Chaikin(TArray<FVector>& somePoints, int aNumIterations);
 
 };

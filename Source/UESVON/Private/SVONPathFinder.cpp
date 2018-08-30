@@ -78,8 +78,17 @@ float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aT
 	FVector startPos, endPos;
 	myVolume.GetLinkPosition(aStart, startPos);
 	myVolume.GetLinkPosition(aTarget, endPos);
-	score = FMath::Abs(endPos.X - startPos.X) + FMath::Abs(endPos.Y - startPos.Y) + FMath::Abs(endPos.Z - startPos.Z);
-
+	switch (mySettings.myPathCostType)
+	{
+		case ESVONPathCostType::MANHATTAN:
+			score = FMath::Abs(endPos.X - startPos.X) + FMath::Abs(endPos.Y - startPos.Y) + FMath::Abs(endPos.Z - startPos.Z);
+			break;
+		case ESVONPathCostType::EUCLIDEAN:
+		default:
+			score = (startPos - endPos).Size();
+			break;
+	}
+	
 	score *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(myVolume.GetMyNumLayers())) * mySettings.myNodeSizeCompensation);
 
 	return score;
@@ -170,4 +179,9 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 	}
 	
 	
+}
+
+void SVONPathFinder::Smooth_Chaikin(TArray<FVector>& somePoints, int aNumIterations)
+{
+	//TODO
 }
