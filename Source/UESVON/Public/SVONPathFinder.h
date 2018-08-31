@@ -17,6 +17,7 @@ struct SVONPathFinderSettings
 	float myUnitCost;
 	float myEstimateWeight;
 	float myNodeSizeCompensation;
+	int mySmoothingIterations;
 	ESVONPathCostType myPathCostType;
 	TArray<FVector> myDebugPoints;
 	
@@ -27,6 +28,7 @@ struct SVONPathFinderSettings
 		, myUnitCost(1.0f)
 		, myEstimateWeight(1.0f)
 		, myNodeSizeCompensation(1.0f)
+		, mySmoothingIterations(0.f)
 		, myPathCostType(ESVONPathCostType::EUCLIDEAN) {}
 };
 

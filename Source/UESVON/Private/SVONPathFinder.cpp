@@ -173,6 +173,8 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 		
 	}
 
+	Smooth_Chaikin(points, mySettings.mySmoothingIterations);
+
 	for (int i = points.Num() - 1; i >= 0; i--)
 	{
 		oPath->Get()->GetPathPoints().Add(points[i]);
@@ -183,5 +185,17 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 
 void SVONPathFinder::Smooth_Chaikin(TArray<FVector>& somePoints, int aNumIterations)
 {
-	//TODO
+	for (int i = 0; i < aNumIterations; i++)
+	{
+		for (int j = 0; j < somePoints.Num() - 1; j += 2)
+		{
+			FVector start = somePoints[j];
+			FVector end = somePoints[j + 1];
+			if (j > 0)
+				somePoints[j] = FMath::Lerp(start, end, 0.25f);
+			FVector secondVal = FMath::Lerp(start, end, 0.75f);
+			somePoints.Insert(secondVal, j + 1);
+		}
+		somePoints.RemoveAt(somePoints.Num() - 1);
+	}
 }
