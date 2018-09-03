@@ -177,7 +177,7 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 		myDebugPoints.Empty();
 		myPointDebugIndex = -1;
 
-		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(*myCurrentNavVolume, GetWorld(), startNavLink, targetNavLink, oNavPath, myJobQueue, myDebugPoints))->StartBackgroundTask();
+		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(*myCurrentNavVolume, GetWorld(), startNavLink, targetNavLink, aStartPosition, aTargetPosition, oNavPath, myJobQueue, myDebugPoints))->StartBackgroundTask();
 
 		myIsBusy = true;
 
@@ -235,10 +235,15 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 
 		SVONPathFinder pathFinder(GetWorld(), *myCurrentNavVolume, settings);
 
-		int result = pathFinder.FindPath(startNavLink, targetNavLink, oNavPath);
+		int result = pathFinder.FindPath(startNavLink, targetNavLink, aStartPosition, aTargetPosition, oNavPath);
 
-		// Add the target point, as the path only includes octree node positions
-		oNavPath->Get()->GetPathPoints().Add(aTargetPosition);
+		//// Add the target point, as the path only includes octree node positions
+		//if (oNavPath->Get()->GetPathPoints().Num() > 0)
+		//{
+		//	oNavPath->Get()->GetPathPoints()[0] = aStartPosition;
+		//	oNavPath->Get()->GetPathPoints()[oNavPath->Get()->GetPathPoints().Num() - 1] = aTargetPosition;
+		//}
+
 
 		myIsBusy = true;
 		myPointDebugIndex = 0;

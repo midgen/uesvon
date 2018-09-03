@@ -3,7 +3,7 @@
 #include "AI/Navigation/NavigationData.h"
 
 
-int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, FNavPathSharedPtr* oPath)
+int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, const FVector& aStartPos, const FVector& aTargetPos, FNavPathSharedPtr* oPath)
 {
 	myOpenSet.Empty();
 	myClosedSet.Empty();
@@ -39,7 +39,7 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, FNav
 
 		if (myCurrent == myGoal)
 		{
-			BuildPath(myCameFrom, myCurrent, oPath);
+			BuildPath(myCameFrom, myCurrent, aStartPos, aTargetPos, oPath);
 			UE_LOG(UESVON, Display, TEXT("Pathfinding complete, iterations : %i"), numIterations);
 			return 1;
 		}
@@ -155,7 +155,7 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 	}
 }
 
-void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, FNavPathSharedPtr* oPath)
+void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, const FVector& aStartPos, const FVector& aTargetPos, FNavPathSharedPtr* oPath)
 {
 	
 	FVector pos;
@@ -171,6 +171,12 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 		myVolume.GetLinkPosition(aCurrent, pos);
 		points.Add(pos);
 		
+	}
+
+	if (points.Num() > 1)
+	{
+		points[0] = aTargetPos;
+		points[points.Num() - 1] = aStartPos;
 	}
 
 	Smooth_Chaikin(points, mySettings.mySmoothingIterations);
