@@ -237,14 +237,6 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 
 		int result = pathFinder.FindPath(startNavLink, targetNavLink, aStartPosition, aTargetPosition, oNavPath);
 
-		//// Add the target point, as the path only includes octree node positions
-		//if (oNavPath->Get()->GetPathPoints().Num() > 0)
-		//{
-		//	oNavPath->Get()->GetPathPoints()[0] = aStartPosition;
-		//	oNavPath->Get()->GetPathPoints()[oNavPath->Get()->GetPathPoints().Num() - 1] = aTargetPosition;
-		//}
-
-
 		myIsBusy = true;
 		myPointDebugIndex = 0;
 

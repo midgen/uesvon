@@ -615,7 +615,7 @@ bool ASVONVolume::IsBlocked(const FVector& aPosition, const float aSize) const
 	params.bTraceComplex = false;
 	params.TraceTag = "SVONLeafRasterize";
 
-	return GetWorld()->OverlapBlockingTestByChannel(aPosition, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(aSize)), params);
+	return GetWorld()->OverlapBlockingTestByChannel(aPosition, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(aSize + myClearance)), params);
 }
 
 bool ASVONVolume::SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArrayIndex, const dir aDirection)

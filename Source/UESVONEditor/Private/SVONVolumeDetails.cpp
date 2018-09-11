@@ -41,6 +41,7 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	TSharedPtr<IPropertyHandle> showParentChildLinksProperty = DetailBuilder.GetProperty("myShowParentChildLinks");
 	TSharedPtr<IPropertyHandle> voxelPowerProperty = DetailBuilder.GetProperty("myVoxelPower");
 	TSharedPtr<IPropertyHandle> collisionChannelProperty = DetailBuilder.GetProperty("myCollisionChannel");
+	TSharedPtr<IPropertyHandle> clearanceProperty = DetailBuilder.GetProperty("myClearance");
 	
 	showVoxelProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Voxels", "Debug Voxels"));
 	showVoxelLeafProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Leaf Voxels", "Debug Leaf Voxels"));
@@ -51,9 +52,11 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	voxelPowerProperty->SetInstanceMetaData("UIMin", TEXT("1"));
 	voxelPowerProperty->SetInstanceMetaData("UIMax", TEXT("12"));
 	collisionChannelProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Collision Channel", "Collision Channel"));
+	clearanceProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Clearance", "Clearance"));
 
 	navigationCategory.AddProperty(voxelPowerProperty);
 	navigationCategory.AddProperty(collisionChannelProperty);
+	navigationCategory.AddProperty(clearanceProperty);
 
 	const TArray< TWeakObjectPtr<UObject> >& SelectedObjects = DetailBuilder.GetSelectedObjects();
 

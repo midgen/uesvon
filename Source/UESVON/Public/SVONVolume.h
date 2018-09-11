@@ -52,6 +52,8 @@ public:
 	int32 myVoxelPower = 3;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	TEnumAsByte<ECollisionChannel> myCollisionChannel;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+	float myClearance = 0.f;
 
 	bool Generate();
 
