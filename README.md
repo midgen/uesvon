@@ -11,6 +11,11 @@ and his related GDC talk :
 
 Status : Alpha
 
+Todo List :
+
+* Baking of navigation data
+* Add a separate BTTask and Action so you don't have to override MoveTo
+
 Plugin is mostly working, just some edge cases where pathfinding can go wrong at the moment. Simple instructions :
 
 * Install the plugin
