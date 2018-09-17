@@ -2,7 +2,8 @@
 
 #include "SVONAIController.h"
 #include "VisualLogger.h"
-#include "AI/Navigation/NavigationSystem.h"
+#include "NavigationSystem/Public/NavigationData.h"
+#include "NavigationSystem/Public/NavFilters/NavigationQueryFilter.h"
 #include "SVONNavigationComponent.h"
 #include "Tasks/AITask.h"
 #include "Kismet/GameplayStatics.h"

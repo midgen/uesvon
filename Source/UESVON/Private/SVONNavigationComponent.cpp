@@ -9,8 +9,8 @@
 #include "SVONPath.h"
 #include "SVONFindPathTask.h"
 #include "DrawDebugHelpers.h"
-#include "AI/Navigation/NavigationData.h"
-#include "Runtime/Engine/Classes/Components/LineBatchComponent.h "
+#include "Runtime/NavigationSystem/Public/NavigationData.h"
+#include "Runtime/Engine/Classes/Components/LineBatchComponent.h"
 
 // Sets default values for this component's properties
 USVONNavigationComponent::USVONNavigationComponent()

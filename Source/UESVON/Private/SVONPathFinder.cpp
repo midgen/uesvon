@@ -1,7 +1,6 @@
 #include "SVONPathFinder.h"
 #include "SVONLink.h"
-#include "AI/Navigation/NavigationData.h"
-
+#include "Runtime/NavigationSystem/Public/NavigationData.h"
 
 int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, const FVector& aStartPos, const FVector& aTargetPos, FNavPathSharedPtr* oPath)
 {

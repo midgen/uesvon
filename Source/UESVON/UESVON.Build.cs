@@ -29,6 +29,7 @@ public class UESVON : ModuleRules
 			{
 				"Core",
                 "AIModule",
+                "NavigationSystem",
                 "GameplayTasks"
 				// ... add other public dependencies that you statically link with here ...
 			}
