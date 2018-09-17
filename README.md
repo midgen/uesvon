@@ -11,6 +11,8 @@ and his related GDC talk :
 
 Status : Alpha
 
+Engine Version : 4.19
+
 Todo List :
 
 * Baking of navigation data
