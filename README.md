@@ -10,6 +10,7 @@ and his related GDC talk :
 [GDC Vault - Getting Off The Navmesh](https://www.gdcvault.com/play/1022016/Getting-off-the-NavMesh-Navigating)
 
 Status : Alpha
+
 Engine Version : 4.20 (See branches for previous versions)
 
 Todo List :
