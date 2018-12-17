@@ -3,6 +3,7 @@
 #include "SVONVolume.h"
 #include "Engine/CollisionProfile.h"
 #include "Components/BrushComponent.h"
+#include "Components/LineBatchComponent.h"
 #include "DrawDebugHelpers.h"
 #include <chrono>
 
@@ -45,11 +46,15 @@ void ASVONVolume::OnPostShapeChanged()
 /************************************************************************/
 bool ASVONVolume::Generate()
 {
+#if WITH_EDITOR
+
+	GetWorld()->PersistentLineBatcher->SetComponentTickEnabled(false);
+#endif // WITH_EDITOR
+
 	FlushPersistentDebugLines(GetWorld());
 
-	// Get bounds and extent
-	FBox bounds = GetComponentsBoundingBox(true);
-	bounds.GetCenterAndExtents(myOrigin, myExtent);
+	SetupVolume();
+
 
 	// Setup timing
 	milliseconds startMs = duration_cast<milliseconds>(
@@ -106,8 +111,17 @@ bool ASVONVolume::Generate()
 	UE_LOG(UESVON, Display, TEXT("Total Leaf Nodes : %d"), myData.myLeafNodes.Num());
 	UE_LOG(UESVON, Display, TEXT("Total Size (bytes): %d"), totalBytes);
 
+	myNumBytes = myData.GetSize();
 
 	return true;
+}
+
+void ASVONVolume::SetupVolume()
+{
+	// Get bounds and extent
+	FBox bounds = GetComponentsBoundingBox(true);
+	bounds.GetCenterAndExtents(myOrigin, myExtent);
+
 }
 
 bool ASVONVolume::FirstPassRasterize()
@@ -390,6 +404,20 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 	}
 }
 
+void ASVONVolume::Serialize(FArchive& Ar)
+{
+	// Serialize the usual UPROPERTIES
+	Super::Serialize(Ar);
+
+	if (myGenerationStrategy == ESVOGenerationStrategy::UseBaked)
+	{
+		Ar << myData;
+
+		myNumLayers = myData.myLayers.Num();
+		myNumBytes = myData.GetSize();
+	}
+}
+
 float ASVONVolume::GetVoxelSize(layerindex_t aLayer) const
 {
 	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1));
@@ -414,11 +442,17 @@ int32 ASVONVolume::GetNodesPerSide(layerindex_t aLayer)
 
 void ASVONVolume::BeginPlay()
 {
-	if (!myIsReadyForNavigation)
+	if (!myIsReadyForNavigation && myGenerationStrategy == ESVOGenerationStrategy::GenerateOnBeginPlay)
 	{
 		Generate();
-		myIsReadyForNavigation = true;
 	}
+	else
+	{
+		SetupVolume();
+	}
+
+
+	myIsReadyForNavigation = true;
 }
 
 void ASVONVolume::PostRegisterAllComponents()
@@ -589,6 +623,8 @@ const TArray<SVONNode>& ASVONVolume::GetLayer(layerindex_t aLayer) const
 {
 	return myData.myLayers[aLayer];
 }
+
+
 
 // Check for blocking...using this cached set for each layer for now for fast lookups
 bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode)

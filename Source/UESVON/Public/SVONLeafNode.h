@@ -41,3 +41,9 @@ struct UESVON_API SVONLeafNode
 		return myVoxelGrid == 0;
 	}
 };
+
+FORCEINLINE FArchive &operator <<(FArchive &Ar, SVONLeafNode& aSVONLeafNode)
+{
+	Ar << aSVONLeafNode.myVoxelGrid;
+	return Ar;
+}

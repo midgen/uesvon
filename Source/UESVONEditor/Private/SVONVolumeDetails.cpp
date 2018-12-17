@@ -42,7 +42,10 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	TSharedPtr<IPropertyHandle> voxelPowerProperty = DetailBuilder.GetProperty("myVoxelPower");
 	TSharedPtr<IPropertyHandle> collisionChannelProperty = DetailBuilder.GetProperty("myCollisionChannel");
 	TSharedPtr<IPropertyHandle> clearanceProperty = DetailBuilder.GetProperty("myClearance");
-	
+	TSharedPtr<IPropertyHandle> generationStrategyProperty = DetailBuilder.GetProperty("myGenerationStrategy");
+	TSharedPtr<IPropertyHandle> numLayersProperty = DetailBuilder.GetProperty("myNumLayers");
+	TSharedPtr<IPropertyHandle> numBytesProperty = DetailBuilder.GetProperty("myNumBytes");
+
 	showVoxelProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Voxels", "Debug Voxels"));
 	showVoxelLeafProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Leaf Voxels", "Debug Leaf Voxels"));
 	showMortonCodesProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Morton Codes", "Debug Morton Codes"));
@@ -53,10 +56,16 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	voxelPowerProperty->SetInstanceMetaData("UIMax", TEXT("12"));
 	collisionChannelProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Collision Channel", "Collision Channel"));
 	clearanceProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Clearance", "Clearance"));
+	generationStrategyProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Generation Strategy", "Generation Strategy"));
+	numLayersProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Num Layers", "Num Layers"));
+	numBytesProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Num Bytes", "Num Bytes"));
 
 	navigationCategory.AddProperty(voxelPowerProperty);
 	navigationCategory.AddProperty(collisionChannelProperty);
 	navigationCategory.AddProperty(clearanceProperty);
+	navigationCategory.AddProperty(generationStrategyProperty);
+	navigationCategory.AddProperty(numLayersProperty);
+	navigationCategory.AddProperty(numBytesProperty);
 
 	const TArray< TWeakObjectPtr<UObject> >& SelectedObjects = DetailBuilder.GetSelectedObjects();
 

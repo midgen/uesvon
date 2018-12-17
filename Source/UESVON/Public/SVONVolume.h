@@ -12,6 +12,14 @@
 #include "SVONVolume.generated.h"
 
 
+
+UENUM(BlueprintType)
+enum class ESVOGenerationStrategy : uint8
+{
+	UseBaked UMETA(DisplayName = "Use Baked"),
+	GenerateOnBeginPlay UMETA(DisplayName = "Generate OnBeginPlay")
+};
+
 /**
  * 
  */
@@ -55,6 +63,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	float myClearance = 0.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+	ESVOGenerationStrategy myGenerationStrategy = ESVOGenerationStrategy::UseBaked;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UESVON" )
+	uint8 myNumLayers = 0;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UESVON")
+	int myNumBytes = 0;
+
+	
+
 	bool Generate();
 
 	const FVector& GetOrigin() const { return myOrigin; }
@@ -73,6 +90,8 @@ public:
 	void GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
 	void GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
 
+	virtual void Serialize(FArchive& Ar) override;
+
 	
 private:
 	bool myIsReadyForNavigation = false;
@@ -80,7 +99,7 @@ private:
 	FVector myOrigin;
 	FVector myExtent;
 
-	uint8 myNumLayers = 0;
+
 	
 	SVONData myData;
 
@@ -88,6 +107,8 @@ private:
 	TArray<TSet<mortoncode_t>> myBlockedIndices;
 
 	TArray<SVONNode>& GetLayer(layerindex_t aLayer);
+
+	void SetupVolume();
 
 	bool FirstPassRasterize();
 	void RasterizeLayer(layerindex_t aLayer);

@@ -20,3 +20,17 @@ struct UESVON_API SVONNode
 	bool HasChildren() const { return myFirstChild.IsValid(); }
 
 };
+
+FORCEINLINE FArchive &operator <<(FArchive &Ar, SVONNode& aSVONNode)
+{
+	Ar << aSVONNode.myCode;
+	Ar << aSVONNode.myParent;
+	Ar << aSVONNode.myFirstChild;
+
+	for (int i = 0; i < 6; i++)
+	{
+		Ar << aSVONNode.myNeighbours[i];
+	}
+
+	return Ar;
+}

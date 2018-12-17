@@ -48,3 +48,9 @@ FORCEINLINE uint32 GetTypeHash(const SVONLink& b)
 	return FCrc::MemCrc_DEPRECATED(&b, sizeof(SVONLink));
 }
 
+
+FORCEINLINE FArchive &operator <<(FArchive &Ar, SVONLink& aSVONLink)
+{
+	Ar.Serialize(&aSVONLink, sizeof(SVONLink));
+	return Ar;
+}
