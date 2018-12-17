@@ -13,9 +13,14 @@ Status : Alpha. OCtree generation and pathfinding implemented as per the article
 
 Engine Version : 4.21 (See branches for previous versions)
 
+New - *Baking navigation data*
+
+In the SVOVolume properties, there is a new Generation Strategy option.
+* Generate OnBeginPlay - Rebuilds the navigation data when you start the game (not recommended)
+* Use Baked - Generate navigation data in the editor, save, and load it when you start the game (recommended!)
+
 Todo List :
 
-* Baking of navigation data
 * Add a separate BTTask and Action so you don't have to override MoveTo
 
 Plugin is mostly working, just some edge cases where pathfinding can go wrong at the moment. Simple instructions :
