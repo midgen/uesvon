@@ -155,8 +155,9 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 
 bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath)
 {
+#if WITH_EDITOR
 	UE_LOG(UESVON, Display, TEXT("Finding path from %s and %s"), *GetOwner()->GetActorLocation().ToString(), *aTargetPosition.ToString());
-
+#endif
 	SVONLink startNavLink;
 	SVONLink targetNavLink;
 	if (HasNavVolume())
@@ -164,13 +165,17 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 		// Get the nav link from our volume
 		if (!SVONMediator::GetLinkFromPosition(GetOwner()->GetActorLocation(), *myCurrentNavVolume, startNavLink))
 		{
+#if WITH_EDITOR
 			UE_LOG(UESVON, Display, TEXT("Path finder failed to find start nav link"));
+#endif
 			return false;
 		}
 
 		if (!SVONMediator::GetLinkFromPosition(aTargetPosition, *myCurrentNavVolume, targetNavLink))
 		{
+#if WITH_EDITOR
 			UE_LOG(UESVON, Display, TEXT("Path finder failed to find target nav link"));
+#endif
 			return false;
 		}
 
@@ -191,7 +196,9 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 
 bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath)
 {
+#if WITH_EDITOR
 	UE_LOG(UESVON, Display, TEXT("Finding path immediate from %s and %s"), *aStartPosition.ToString(), *aTargetPosition.ToString());
+#endif
 
 	SVONLink startNavLink;
 	SVONLink targetNavLink;
@@ -200,19 +207,25 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 		// Get the nav link from our volume
 		if (!SVONMediator::GetLinkFromPosition(aStartPosition, *myCurrentNavVolume, startNavLink))
 		{
+#if WITH_EDITOR
 			UE_LOG(UESVON, Display, TEXT("Path finder failed to find start nav link"));
+#endif
 			return false;
 		}
 
 		if (!SVONMediator::GetLinkFromPosition(aTargetPosition, *myCurrentNavVolume, targetNavLink))
 		{
+#if WITH_EDITOR
 			UE_LOG(UESVON, Display, TEXT("Path finder failed to find target nav link"));
+#endif
 			return false;
 		}
 
 		if (!oNavPath || !oNavPath->IsValid())
 		{
+#if WITH_EDITOR
 			UE_LOG(UESVON, Display, TEXT("Nav path data invalid"));
+#endif
 			return false;
 		}
 

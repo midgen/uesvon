@@ -6,10 +6,9 @@
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "SVONNavigationComponent.h"
+#include "UESVON.h"
 #include "SVONAIController.generated.h"
 
-
-DECLARE_LOG_CATEGORY_EXTERN(LogAINavigation, Warning, All);
 
 /**
  * 

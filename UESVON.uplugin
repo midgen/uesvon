@@ -16,7 +16,7 @@
 	"Modules": [
 		{
 			"Name": "UESVON",
-			"Type": "Developer",
+			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		},
 		{

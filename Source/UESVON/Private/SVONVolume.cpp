@@ -49,17 +49,21 @@ bool ASVONVolume::Generate()
 #if WITH_EDITOR
 
 	GetWorld()->PersistentLineBatcher->SetComponentTickEnabled(false);
-#endif // WITH_EDITOR
+
 
 	FlushPersistentDebugLines(GetWorld());
 
+#endif // WITH_EDITOR
+
 	SetupVolume();
 
-
+#if WITH_EDITOR
 	// Setup timing
 	milliseconds startMs = duration_cast<milliseconds>(
 		system_clock::now().time_since_epoch()
 		);
+
+#endif
 
 	// Clear data (for now)
 	myBlockedIndices.Empty();
@@ -92,6 +96,8 @@ bool ASVONVolume::Generate()
 		BuildNeighbourLinks(i);
 	}
 
+#if WITH_EDITOR
+
 	int32 buildTime = (duration_cast<milliseconds>(
 		system_clock::now().time_since_epoch()
 		) - startMs).count();
@@ -110,6 +116,8 @@ bool ASVONVolume::Generate()
 	UE_LOG(UESVON, Display, TEXT("Total Layers-Nodes : %d-%d"), myNumLayers, totalNodes);
 	UE_LOG(UESVON, Display, TEXT("Total Leaf Nodes : %d"), myData.myLeafNodes.Num());
 	UE_LOG(UESVON, Display, TEXT("Total Size (bytes): %d"), totalBytes);
+
+#endif
 
 	myNumBytes = myData.GetSize();
 

@@ -12,8 +12,6 @@
 
 DECLARE_CYCLE_STAT(TEXT("SVONMoveTo"), STAT_SVONMoveTo, STATGROUP_AI);
 
-DEFINE_LOG_CATEGORY(LogAINavigation);
-
 
 ASVONAIController::ASVONAIController(const FObjectInitializer& ObjectInitializer /*= FObjectInitializer::Get()*/)
 	: Super(ObjectInitializer)
@@ -30,20 +28,26 @@ FPathFollowingRequestResult ASVONAIController::MoveTo(const FAIMoveRequest& Move
 	// this function is entry point of all movement mechanics - do NOT abort in here, since movement may be handled by AITasks, which support stacking 
 
 	SCOPE_CYCLE_COUNTER(STAT_SVONMoveTo);
-	UE_VLOG(this, LogAINavigation, Log, TEXT("MoveTo: %s"), *MoveRequest.ToString());
+#if WITH_EDITOR
+	UE_VLOG(this, VUESVON, Log, TEXT("MoveTo: %s"), *MoveRequest.ToString());
+#endif
 
 	FPathFollowingRequestResult ResultData;
 	ResultData.Code = EPathFollowingRequestResult::Failed;
 
 	if (MoveRequest.IsValid() == false)
 	{
-		UE_VLOG(this, LogAINavigation, Error, TEXT("MoveTo request failed due MoveRequest not being valid. Most probably desireg Goal Actor not longer exists"), *MoveRequest.ToString());
+#if WITH_EDITOR
+		UE_VLOG(this, VUESVON, Error, TEXT("MoveTo request failed due MoveRequest not being valid. Most probably desireg Goal Actor not longer exists"), *MoveRequest.ToString());
+#endif
 		return ResultData;
 	}
 
 	if (GetPathFollowingComponent() == nullptr)
 	{
-		UE_VLOG(this, LogAINavigation, Error, TEXT("MoveTo request failed due missing PathFollowingComponent"));
+#if WITH_EDITOR
+		UE_VLOG(this, VUESVON, Error, TEXT("MoveTo request failed due missing PathFollowingComponent"));
+#endif
 		return ResultData;
 	}
 
@@ -56,7 +60,9 @@ FPathFollowingRequestResult ASVONAIController::MoveTo(const FAIMoveRequest& Move
 	{
 		if (MoveRequest.GetGoalLocation().ContainsNaN() || FAISystem::IsValidLocation(MoveRequest.GetGoalLocation()) == false)
 		{
-			UE_VLOG(this, LogAINavigation, Error, TEXT("AAIController::MoveTo: Destination is not valid! Goal(%s)"), TEXT_AI_LOCATION(MoveRequest.GetGoalLocation()));
+#if WITH_EDITOR
+			UE_VLOG(this, VUESVON, Error, TEXT("AAIController::MoveTo: Destination is not valid! Goal(%s)"), TEXT_AI_LOCATION(MoveRequest.GetGoalLocation()));
+#endif
 			bCanRequestMove = false;
 		}
 
@@ -69,7 +75,9 @@ FPathFollowingRequestResult ASVONAIController::MoveTo(const FAIMoveRequest& Move
 
 	if (bAlreadyAtGoal)
 	{
-		UE_VLOG(this, LogAINavigation, Log, TEXT("MoveTo: already at goal!"));
+#if WITH_EDITOR
+		UE_VLOG(this, VUESVON, Log, TEXT("MoveTo: already at goal!"));
+#endif
 		ResultData.MoveId = GetPathFollowingComponent()->RequestMoveWithImmediateFinish(EPathFollowingResult::Success);
 		ResultData.Code = EPathFollowingRequestResult::AlreadyAtGoal;
 	}
@@ -81,7 +89,9 @@ FPathFollowingRequestResult ASVONAIController::MoveTo(const FAIMoveRequest& Move
 
 		if(RequestID.IsValid())
 		{
-			UE_VLOG(this, LogAINavigation, Log, TEXT("SVON Pathfinding successful, moving"));
+#if WITH_EDITOR
+			UE_VLOG(this, VUESVON, Log, TEXT("SVON Pathfinding successful, moving"));
+#endif
 			*OutPath = myNavPath;
 			bAllowStrafe = MoveRequest.CanStrafe();
 			ResultData.MoveId = RequestID;

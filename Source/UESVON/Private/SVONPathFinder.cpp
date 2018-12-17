@@ -39,7 +39,9 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, cons
 		if (myCurrent == myGoal)
 		{
 			BuildPath(myCameFrom, myCurrent, aStartPos, aTargetPos, oPath);
+#if WITH_EDITOR
 			UE_LOG(UESVON, Display, TEXT("Pathfinding complete, iterations : %i"), numIterations);
+#endif
 			return 1;
 		}
 
@@ -64,8 +66,9 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, cons
 
 		numIterations++;
 	}
-
+#if WITH_EDITOR
 	UE_LOG(UESVON, Display, TEXT("Pathfinding failed, iterations : %i"), numIterations);
+#endif
 	return 0;
 }
 
