@@ -10,10 +10,6 @@ public class UESVONEditor : ModuleRules
     PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "PropertyEditor", "EditorStyle", "UnrealEd", "GraphEditor", "BlueprintGraph" });
 	
 	PrivateIncludePaths.AddRange(new string[] { "UESVONEditor/Private"	} );
-	
-	PrivateIncludePaths.AddRange(new string[] { "UESVONEditor/Public" } );
-
-    PublicIncludePaths.AddRange(new string[] { "UESVONEditor/Public" });
 
     PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 

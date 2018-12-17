@@ -1,6 +1,7 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
+using System.IO;
 
 public class UESVON : ModuleRules
 {
@@ -10,7 +11,7 @@ public class UESVON : ModuleRules
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
-				"UESVON/Public"
+                Path.Combine(ModuleDirectory, "Public")
 				// ... add public include paths required here ...
 			}
 			);
