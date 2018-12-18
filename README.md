@@ -19,18 +19,20 @@ In the SVOVolume properties, there is a new Generation Strategy option.
 * Generate OnBeginPlay - Rebuilds the navigation data when you start the game (not recommended)
 * Use Baked - Generate navigation data in the editor, save, and load it when you start the game (recommended!)
 
-Todo List :
-
-* Add a separate BTTask and Action so you don't have to override MoveTo
-
 Plugin is mostly working, just some edge cases where pathfinding can go wrong at the moment. Simple instructions :
 
 * Install the plugin
-* Create a new AIController from SVONAIController
 * Add an SVONVolume to your scene
+* Choose the GenerationStrategy (UseBaked is preferred).
 * Adjust the SVONVolume properties, enable some debug viz and click 'Generate' to check it
-* On play, the SVONVolume will generate the octree (so you will get a pause with a large number of layers)
-* Use the SVONAIController MoveTo (through BT if you want) to pathfind and follow the 3D path
+* Save the volume to serialize the nav data
+
+Then EITHER
+
+* Create a new AIController from SVONAIController and use the regular MoveTo method or BT Task
+OR
+* Add an SVONavigationComponent to your standard AI Controller.
+* Use the SVO Move To BT Task Node
 
 [![UESVON Demo](http://img.youtube.com/vi/84AFdg0ykwY/0.jpg)](http://www.youtube.com/watch?v=84AFdg0ykwY "Video Title")
 
