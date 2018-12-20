@@ -309,6 +309,7 @@ FPathFollowingRequestResult UAITask_SVONMoveTo::RequestPath(const FAIMoveRequest
 /** Renders the octree path as a 3d tunnel in the visual logger */
 void UAITask_SVONMoveTo::LogPathHelper()
 {
+#if WITH_EDITOR
 #if ENABLE_VISUAL_LOG
 
 	USVONNavigationComponent* svonNavComponent = Cast<USVONNavigationComponent>(GetOwnerActor()->GetComponentByClass(USVONNavigationComponent::StaticClass()));
@@ -349,6 +350,7 @@ void UAITask_SVONMoveTo::LogPathHelper()
 
 	}
 #endif // ENABLE_VISUAL_LOG
+#endif // WITH_EDITOR
 }
 
 void UAITask_SVONMoveTo::ResetObservers()

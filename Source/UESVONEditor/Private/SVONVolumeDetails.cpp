@@ -33,7 +33,8 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	PrimaryTickProperty->MarkHiddenByCustomization();
 
 	IDetailCategoryBuilder& navigationCategory = DetailBuilder.EditCategory("SVO Navigation");
-
+	
+	TSharedPtr<IPropertyHandle> debugDistanceProperty = DetailBuilder.GetProperty("myDebugDistance");
 	TSharedPtr<IPropertyHandle> showVoxelProperty = DetailBuilder.GetProperty("myShowVoxels");
 	TSharedPtr<IPropertyHandle> showVoxelLeafProperty = DetailBuilder.GetProperty("myShowLeafVoxels");
 	TSharedPtr<IPropertyHandle> showMortonCodesProperty = DetailBuilder.GetProperty("myShowMortonCodes");
@@ -46,6 +47,7 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 	TSharedPtr<IPropertyHandle> numLayersProperty = DetailBuilder.GetProperty("myNumLayers");
 	TSharedPtr<IPropertyHandle> numBytesProperty = DetailBuilder.GetProperty("myNumBytes");
 
+	debugDistanceProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Distance", "Debug Distance"));
 	showVoxelProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Voxels", "Debug Voxels"));
 	showVoxelLeafProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Leaf Voxels", "Debug Leaf Voxels"));
 	showMortonCodesProperty->SetPropertyDisplayName(NSLOCTEXT("SVO Volume", "Debug Morton Codes", "Debug Morton Codes"));
@@ -107,6 +109,7 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 		]
 		];
 
+	navigationCategory.AddProperty(debugDistanceProperty);
 	navigationCategory.AddProperty(showVoxelProperty);
 	navigationCategory.AddProperty(showVoxelLeafProperty);
 	navigationCategory.AddProperty(showMortonCodesProperty);
