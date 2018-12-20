@@ -12,7 +12,6 @@
 #include "SVONVolume.generated.h"
 
 
-
 UENUM(BlueprintType)
 enum class ESVOGenerationStrategy : uint8
 {
@@ -47,6 +46,8 @@ public:
 #endif // WITH_EDITOR
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
+	float myDebugDistance = 5000.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	bool myShowVoxels = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	bool myShowLeafVoxels = false;
@@ -70,8 +71,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UESVON")
 	int myNumBytes = 0;
 
-	
-
 	bool Generate();
 
 	const FVector& GetOrigin() const { return myOrigin; }
@@ -92,15 +91,14 @@ public:
 
 	virtual void Serialize(FArchive& Ar) override;
 
-	
 private:
 	bool myIsReadyForNavigation = false;
 
 	FVector myOrigin;
 	FVector myExtent;
 
+	FVector myDebugPosition;
 
-	
 	SVONData myData;
 
 	// First pass rasterize results
@@ -128,4 +126,6 @@ private:
 	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode);
 
 	bool IsBlocked(const FVector& aPosition, const float aSize) const;
+
+	bool IsInDebugRange(const FVector& aPosition) const;
 };

@@ -5,12 +5,15 @@
 #include "Components/BrushComponent.h"
 #include "Components/LineBatchComponent.h"
 #include "DrawDebugHelpers.h"
+#include "GameFramework/PlayerController.h"
 #include <chrono>
 
 using namespace std::chrono;
 
 ASVONVolume::ASVONVolume(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
+	, myDebugPosition(FVector())
+	
 {
 	GetBrushComponent()->Mobility = EComponentMobility::Static;
 
@@ -48,7 +51,19 @@ bool ASVONVolume::Generate()
 {
 #if WITH_EDITOR
 
+
 	GetWorld()->PersistentLineBatcher->SetComponentTickEnabled(false);
+
+	// If we're running the game, use the first player controller position for debugging
+	APlayerController* pc = GetWorld()->GetFirstPlayerController();
+	if (pc) {
+		myDebugPosition = pc->GetPawn()->GetActorLocation();
+	}
+	// try using the viewport camera location if we're just in the editor
+	else if(GetWorld()->ViewLocationsRenderedLastFrame.Num() > 0)
+	{
+		myDebugPosition = GetWorld()->ViewLocationsRenderedLastFrame[0];
+	}
 
 
 	FlushPersistentDebugLines(GetWorld());
@@ -326,89 +341,99 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 		
 		const SVONNode& neighbour = GetNode(neighbourLink);
 
-		// If the neighbour has no children, we just use it
+		// If the neighbour has no children, it's empty, we just use it
 		if (!neighbour.HasChildren())
 		{
 			oNeighbours.Add(neighbourLink);
 			continue;
 		}
 
-		// TODO: This recursive section should be the most accurate, ensuring that when pathfinding down multiple levels (say, 2 to leaf),
-		// That all valid edge nodes (with no children) in that direction are considered
-		// Is does mean that the search *explodes* in this scenario.
+		// If the node has children, we need to look down the tree to see which children we want to add to the neighbour set
 
-		//TArray<SVONLink> workingSet;
+		// Start working set, and put the link into it
+		TArray<SVONLink> workingSet;
+		workingSet.Push(neighbourLink);
 
-		//workingSet.Push(neighbourLink);
+		
+		while (workingSet.Num() > 0)
+		{
+			// Pop off the top of the working set
+			SVONLink thisLink = workingSet.Pop();
+			const SVONNode& thisNode = GetNode(thisLink);
 
-		//// Otherwise, we gotta recurse down 
+			// If the node as no children, it's clear, so add to neighbours and continue
+			if (!thisNode.HasChildren())
+			{
+				oNeighbours.Add(neighbourLink);
+				continue;
+			}
 
-		//while (workingSet.Num() > 0)
+			// We know it has children
+			
+			if (thisLink.GetLayerIndex() > 0)
+			{
+				// If it's above layer 0, we will need to potentially add 4 children using our offsets
+				for (const nodeindex_t& childIndex : SVONStatics::dirChildOffsets[i])
+				{
+					// Each of the childnodes
+					SVONLink childLink = thisNode.myFirstChild;
+					childLink.myNodeIndex += childIndex;
+					const SVONNode& childNode = GetNode(childLink);
+
+					if (childNode.HasChildren()) // If it has children, add them to the working set to keep going down
+					{
+						workingSet.Emplace(childLink);
+					}
+					else // Or just add to the outgoing links
+					{
+						oNeighbours.Emplace(childLink);
+					}
+				}
+			}
+			else
+			{
+				// If this is a leaf layer, then we need to add whichever of the 16 facing leaf nodes aren't blocked
+				for (const nodeindex_t& leafIndex : SVONStatics::dirLeafChildOffsets[i])
+				{
+					// Each of the childnodes
+					SVONLink link = neighbour.myFirstChild;
+					const SVONLeafNode& leafNode = GetLeafNode(link.myNodeIndex);
+					link.mySubnodeIndex = leafIndex;
+
+					if (!leafNode.GetNode(leafIndex))
+					{
+						oNeighbours.Emplace(link);
+					}
+				}
+			}
+		}
+
+		// Old....no-worky stuff, will delete soon
+
+		//// If the neighbour has children and is a leaf node, we need to add 16 leaf voxels 
+		//else if (neighbour.myFirstChild.GetLayerIndex() == 0)
 		//{
-		//	// Pop off the neighbour
-		//	SVONLink thisLink = workingSet.Pop();
-
-		//	// If it's above layer 0, we need to add 4 children to explore
-		//	if (thisLink.GetLayerIndex() > 0)
+		//	for (const nodeindex_t& index : SVONStatics::dirLeafChildOffsets[i])
 		//	{
-		//		for (const nodeindex_t& index : SVONStatics::dirChildOffsets[i])
-		//		{
-		//			// Each of the childnodes
-		//			SVONLink link = neighbour.myFirstChild;
-		//			link.myNodeIndex += index;
-		//			const SVONNode& linkNode = GetNode(link);
-
-		//			if (linkNode.HasChildren()) // If it has children, add them to the list to keep going down
-		//			{
-		//				workingSet.Emplace(link.GetLayerIndex(), link.GetNodeIndex(), link.GetSubnodeIndex());
-		//			}
-		//			else // Or just add to the outgoing links
-		//			{
-		//				oNeighbours.Emplace(link);
-		//			}
-		//		}
-		//	}
-		//	else
-		//	{
-		//		for (const nodeindex_t& leafIndex : SVONStatics::dirLeafChildOffsets[i])
-		//		{
-		//			// Each of the childnodes
-		//			SVONLink link = neighbour.myFirstChild;
-		//			//link.mySubnodeIndex = leafIndex;
-		//			const SVONLeafNode& leafNode = GetLeafNode(link.myNodeIndex);
-
-		//			if (!leafNode.GetNode(leafIndex))
-		//			{
-		//				oNeighbours.Emplace(link);
-		//			}
-		//		}
+		//		// This is the link to our first child, we just need to add our offsets
+		//		SVONLink link = neighbour.myFirstChild;
+		//		if(!GetLeafNode(link.GetNodeIndex()).GetNode(index))
+		//			oNeighbours.Emplace(link.GetLayerIndex(), link.GetNodeIndex(), index );
 		//	}
 		//}
-
-
-
-		// If the neighbour has children and is a leaf node, we need to add 16 leaf voxels 
-		else if (neighbour.myFirstChild.GetLayerIndex() == 0)
-		{
-			for (const nodeindex_t& index : SVONStatics::dirLeafChildOffsets[i])
-			{
-				// This is the link to our first child, we just need to add our offsets
-				SVONLink link = neighbour.myFirstChild;
-				if(!GetLeafNode(link.GetNodeIndex()).GetNode(index))
-					oNeighbours.Emplace(link.GetLayerIndex(), link.GetNodeIndex(), index );
-			}
-		}
-		else // If the neighbour has children and isn't a leaf, we just add 4
-			//TODO: the problem with this is that you no longer have the direction information to know which subnodes to select,
-			//   in the case that *this* child has children
-		{
-			for (const nodeindex_t& index : SVONStatics::dirChildOffsets[i])
-			{
-				// This is the link to our first child, we just need to add our offsets
-				SVONLink link = neighbour.myFirstChild;
-				oNeighbours.Emplace(link.GetLayerIndex(), link.GetNodeIndex() + index, link.GetSubnodeIndex());
-			}
-		}
+		//else // If the neighbour has children and isn't a leaf, we just add 4
+		//	//TODO: the problem with this is that you no longer have the direction information to know which subnodes to select,
+		//	//   in the case that *this* child has children
+		//{
+		//	for (const nodeindex_t& index : SVONStatics::dirChildOffsets[i])
+		//	{
+		//		// This is the link to our first child, we just need to add our offsets
+		//		SVONLink link = neighbour.myFirstChild;
+		//		const SVONNode& linkNode = GetNode(link);
+		//		if(!linkNode.HasChildren())
+		//			oNeighbours.Emplace(link.GetLayerIndex(), link.GetNodeIndex() + index, link.GetSubnodeIndex());
+		//	}
+		//}
 	}
 }
 
@@ -539,7 +564,7 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNo
 	if (sX < 0 || sX >= maxCoord || sY < 0 || sY >= maxCoord || sZ < 0 || sZ >= maxCoord)
 	{
 		oLinkToUpdate.SetInvalid();
-		if (myShowNeighbourLinks)
+		if (myShowNeighbourLinks && IsInDebugRange(aStartPosForDebug))
 		{
 			FVector startPos, endPos;
 			GetNodePosition(aLayer, node.myCode, startPos);
@@ -574,7 +599,7 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNo
 			oLinkToUpdate.myLayerIndex = aLayer;
 			check(aNodeIndex + nodeDelta < layer.Num());
 			oLinkToUpdate.myNodeIndex = aNodeIndex + nodeDelta;
-			if (myShowNeighbourLinks)
+			if (myShowNeighbourLinks && IsInDebugRange(aStartPosForDebug))
 			{
 				FVector endPos;
 				GetNodePosition(aLayer, thisCode, endPos);
@@ -615,8 +640,11 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 		{
 			myData.myLeafNodes[aLeafIndex].SetNode(i);
 
-			if (myShowLeafVoxels) {
+			if (myShowLeafVoxels && IsInDebugRange(position)) {
 				DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, .0f);
+			}
+			if (myShowMortonCodes && IsInDebugRange(position)) {
+				DrawDebugString(GetWorld(), position, FString::FromInt(aLeafIndex) + ":" + FString::FromInt(i), nullptr, FColor::Red, -1, false);
 			}
 		}
 	}
@@ -662,11 +690,15 @@ bool ASVONVolume::IsBlocked(const FVector& aPosition, const float aSize) const
 	return GetWorld()->OverlapBlockingTestByChannel(aPosition, FQuat::Identity, myCollisionChannel, FCollisionShape::MakeBox(FVector(aSize + myClearance)), params);
 }
 
+bool ASVONVolume::IsInDebugRange(const FVector& aPosition) const
+{
+	return FVector::DistSquared(myDebugPosition, aPosition) < myDebugDistance * myDebugDistance;
+}
+
 bool ASVONVolume::SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArrayIndex, const dir aDirection)
 {
 	return false;
 }
-
 
 void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 {
@@ -694,10 +726,10 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 				GetNodePosition(aLayer, node.myCode, nodePos);
 
 				// Debug stuff
-				if (myShowMortonCodes) {
-					DrawDebugString(GetWorld(), nodePos, FString::FromInt(node.myCode), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
+				if (myShowMortonCodes && IsInDebugRange(nodePos)) {
+					DrawDebugString(GetWorld(), nodePos, FString::FromInt(aLayer) + ":" + FString::FromInt(index), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
 				}
-				if (myShowVoxels) {
+				if (myShowVoxels && IsInDebugRange(nodePos)) {
 					DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
 				}
 				
@@ -766,7 +798,8 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 						FVector startPos, endPos;
 						GetNodePosition(aLayer, node.myCode, startPos);
 						GetNodePosition(aLayer - 1, node.myCode << 3, endPos);
-						DrawDebugDirectionalArrow(GetWorld(), startPos, endPos, 0.f, SVONStatics::myLinkColors[aLayer], true);
+						if(IsInDebugRange(startPos))
+							DrawDebugDirectionalArrow(GetWorld(), startPos, endPos, 0.f, SVONStatics::myLinkColors[aLayer], true);
 					}
 				}
 				else
@@ -780,16 +813,20 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 					GetNodePosition(aLayer, i, nodePos);
 
 					// Debug stuff
-					if (myShowVoxels) {
+					if (myShowVoxels && IsInDebugRange(nodePos)) {
 						DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
 					}
-					if (myShowMortonCodes) {
-						DrawDebugString(GetWorld(), nodePos, FString::FromInt(node.myCode), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
+					if (myShowMortonCodes && IsInDebugRange(nodePos)) 
+					{
+						DrawDebugString(GetWorld(), nodePos, FString::FromInt(aLayer) + ":" + FString::FromInt(index), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
+						//myDebugHUD->AddDebugText(FString::FromInt(aLayer) + ":" + FString::FromInt(index), GetWorld()->GetWorldSettings(), -1.0f, nodePos, nodePos, SVONStatics::myLayerColors[aLayer], true, true, false, nullptr);
+
 					}
 				}
 
 			}
 		}
 	}
+
 
 }
