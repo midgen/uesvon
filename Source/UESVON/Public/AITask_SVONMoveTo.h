@@ -7,9 +7,11 @@
 #include "AITypes.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "Tasks/AITask.h"
+#include "SVONTypes.h"
 #include "AITask_SVONMoveTo.generated.h"
 
 class AAIController;
+struct FSVONNavigationPath;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSVONMoveTaskCompletedSignature, TEnumAsByte<EPathFollowingResult::Type>, Result, AAIController*, AIController);
 
@@ -32,11 +34,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AI|Tasks", meta = (AdvancedDisplay = "AcceptanceRadius,StopOnOverlap,AcceptPartialPath,bUsePathfinding,bUseContinuosGoalTracking", DefaultToSelf = "Controller", BlueprintInternalUseOnly = "TRUE", DisplayName = "SVON Move To Location or Actor"))
 		static UAITask_SVONMoveTo* SVONAIMoveTo(AAIController* Controller, FVector GoalLocation, AActor* GoalActor = nullptr,
-			float AcceptanceRadius = -1.f, EAIOptionFlag::Type StopOnOverlap = EAIOptionFlag::Default, EAIOptionFlag::Type AcceptPartialPath = EAIOptionFlag::Default,
-			bool bUsePathfinding = true, bool bLockAILogic = true, bool bUseContinuosGoalTracking = false);
+			float AcceptanceRadius = -1.f, EAIOptionFlag::Type StopOnOverlap = EAIOptionFlag::Default, bool bLockAILogic = true, bool bUseContinuosGoalTracking = false);
 
 	DEPRECATED(4.12, "This function is now depreacted, please use version with FAIMoveRequest parameter")
-		void SetUp(AAIController* Controller, FVector GoalLocation, AActor* GoalActor = nullptr, float AcceptanceRadius = -1.f, bool bUsePathfinding = true, EAIOptionFlag::Type StopOnOverlap = EAIOptionFlag::Default, EAIOptionFlag::Type AcceptPartialPath = EAIOptionFlag::Default);
+		void SetUp(AAIController* Controller, FVector GoalLocation, AActor* GoalActor = nullptr, float AcceptanceRadius = -1.f, EAIOptionFlag::Type StopOnOverlap = EAIOptionFlag::Default);
 
 	/** Allows custom move request tweaking. Note that all MoveRequest need to
 	*	be performed before PerformMove is called. */
@@ -46,6 +47,8 @@ public:
 	void SetContinuousGoalTracking(bool bEnable);
 
 protected:
+	void LogPathHelper();
+
 	UPROPERTY(BlueprintAssignable)
 		FGenericGameplayTaskDelegate OnRequestFailed;
 
@@ -73,6 +76,10 @@ protected:
 
 	/** currently followed path */
 	FNavPathSharedPtr Path;
+
+	FSVONNavPathSharedPtr mySVONPath;
+
+	TSharedPtr<struct FSVONNavigationPath, ESPMode::ThreadSafe> myPath;
 
 	TEnumAsByte<EPathFollowingResult::Type> MoveResult;
 	uint8 bUseContinuousTracking : 1;

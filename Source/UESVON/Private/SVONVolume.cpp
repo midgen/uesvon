@@ -327,7 +327,7 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 		const SVONNode& neighbour = GetNode(neighbourLink);
 
 		// If the neighbour has no children, we just use it
-		if (!neighbour.myFirstChild.IsValid())
+		if (!neighbour.HasChildren())
 		{
 			oNeighbours.Add(neighbourLink);
 			continue;
@@ -364,7 +364,7 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 		//			}
 		//			else // Or just add to the outgoing links
 		//			{
-		//				oNeighbours.Add(link);
+		//				oNeighbours.Emplace(link);
 		//			}
 		//		}
 		//	}
@@ -379,7 +379,7 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 
 		//			if (!leafNode.GetNode(leafIndex))
 		//			{
-		//				oNeighbours.Add(link);
+		//				oNeighbours.Emplace(link);
 		//			}
 		//		}
 		//	}

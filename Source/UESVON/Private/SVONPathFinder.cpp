@@ -1,8 +1,11 @@
 #include "SVONPathFinder.h"
 #include "SVONLink.h"
-#include "Runtime/NavigationSystem/Public/NavigationData.h"
+#include "SVONNode.h"
+#include "SVONVolume.h"
+//#include "Runtime/NavigationSystem/Public/NavigationData.h"
+#include "SVONNavigationPath.h"
 
-int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, const FVector& aStartPos, const FVector& aTargetPos, FNavPathSharedPtr* oPath)
+int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath)
 {
 	myOpenSet.Empty();
 	myClosedSet.Empty();
@@ -11,6 +14,7 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, cons
 	myGScore.Empty();
 	myCurrent = SVONLink();
 	myGoal = aGoal;
+	myStart = aStart;
 
 
 	myOpenSet.Add(aStart);
@@ -157,12 +161,12 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 	}
 }
 
-void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, const FVector& aStartPos, const FVector& aTargetPos, FNavPathSharedPtr* oPath)
+void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath)
 {
 	
-	FVector pos;
+	FSVONPathPoint pos;
 
-	TArray<FVector> points;
+	TArray<FSVONPathPoint> points;
 
 	if (!oPath || !oPath->IsValid())
 		return;
@@ -170,18 +174,37 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 	while (aCameFrom.Contains(aCurrent) && !(aCurrent == aCameFrom[aCurrent]))
 	{
 		aCurrent = aCameFrom[aCurrent];
-		myVolume.GetLinkPosition(aCurrent, pos);
+		myVolume.GetLinkPosition(aCurrent, pos.myPosition);
 		points.Add(pos);
+		const SVONNode& node = myVolume.GetNode(aCurrent);
+		// This is rank. I really should sort the layers out
+		if (aCurrent.GetLayerIndex() == 0)
+		{
+			if (!node.HasChildren())
+				points[points.Num() - 1].myLayer = 1;
+			else
+				points[points.Num() - 1].myLayer = 0;
+
+		}
+		else
+		{
+			points[points.Num() - 1].myLayer = aCurrent.GetLayerIndex() + 1;
+		}
 		
 	}
 
 	if (points.Num() > 1)
 	{
-		points[0] = aTargetPos;
-		points[points.Num() - 1] = aStartPos;
+		points[0].myPosition = aTargetPos;
+		points[points.Num() - 1].myPosition = aStartPos;
+	}
+	else // If start and end are in the same voxel, just use the start and target positions.
+	{
+		points[0].myPosition = aTargetPos;
+		points.Emplace(aStartPos, myStart.GetLayerIndex());
 	}
 
-	Smooth_Chaikin(points, mySettings.mySmoothingIterations);
+	//Smooth_Chaikin(points, mySettings.mySmoothingIterations);
 
 	for (int i = points.Num() - 1; i >= 0; i--)
 	{
@@ -191,19 +214,19 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 	
 }
 
-void SVONPathFinder::Smooth_Chaikin(TArray<FVector>& somePoints, int aNumIterations)
-{
-	for (int i = 0; i < aNumIterations; i++)
-	{
-		for (int j = 0; j < somePoints.Num() - 1; j += 2)
-		{
-			FVector start = somePoints[j];
-			FVector end = somePoints[j + 1];
-			if (j > 0)
-				somePoints[j] = FMath::Lerp(start, end, 0.25f);
-			FVector secondVal = FMath::Lerp(start, end, 0.75f);
-			somePoints.Insert(secondVal, j + 1);
-		}
-		somePoints.RemoveAt(somePoints.Num() - 1);
-	}
-}
+//void SVONPathFinder::Smooth_Chaikin(TArray<FVector>& somePoints, int aNumIterations)
+//{
+//	for (int i = 0; i < aNumIterations; i++)
+//	{
+//		for (int j = 0; j < somePoints.Num() - 1; j += 2)
+//		{
+//			FVector start = somePoints[j];
+//			FVector end = somePoints[j + 1];
+//			if (j > 0)
+//				somePoints[j] = FMath::Lerp(start, end, 0.25f);
+//			FVector secondVal = FMath::Lerp(start, end, 0.75f);
+//			somePoints.Insert(secondVal, j + 1);
+//		}
+//		somePoints.RemoveAt(somePoints.Num() - 1);
+//	}
+//}

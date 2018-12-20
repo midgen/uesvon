@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "SVONPath.h"
+#include "SVONNavigationPath.h"
 #include "SVONLink.h"
+#include "SVONTypes.h"
 #include "SVONNavigationComponent.generated.h"
 
 class ASVONVolume;
@@ -75,9 +76,11 @@ public:
 	// Get a Nav position
 	SVONLink GetNavPosition(FVector& aPosition);
 
-	/* This method isn't hooked up at the moment, pending integration with existing systems */
-	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath);
+	const ASVONVolume* GetCurrentVolume() const { return myCurrentNavVolume; }
 
-	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath);
+	/* This method isn't hooked up at the moment, pending integration with existing systems */
+	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath);
+
+	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath);
 
 };

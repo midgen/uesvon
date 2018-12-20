@@ -6,7 +6,7 @@
 #include "SVONVolume.h"
 #include "SVONLink.h"
 #include "SVONPathFinder.h"
-#include "SVONPath.h"
+#include "SVONNavigationPath.h"
 #include "SVONFindPathTask.h"
 #include "DrawDebugHelpers.h"
 #include "Runtime/NavigationSystem/Public/NavigationData.h"
@@ -153,7 +153,7 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	return navLink;
 }
 
-bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath)
+bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath)
 {
 #if WITH_EDITOR
 	UE_LOG(UESVON, Display, TEXT("Finding path from %s and %s"), *GetOwner()->GetActorLocation().ToString(), *aTargetPosition.ToString());
@@ -194,7 +194,7 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 	return false;
 }
 
-bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FNavPathSharedPtr* oNavPath)
+bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath)
 {
 #if WITH_EDITOR
 	UE_LOG(UESVON, Display, TEXT("Finding path immediate from %s and %s"), *aStartPosition.ToString(), *aTargetPosition.ToString());
@@ -229,7 +229,9 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 			return false;
 		}
 
-		FNavigationPath* path = oNavPath->Get();
+		//FNavigationPath* path = oNavPath->Get();
+
+		FSVONNavigationPath* path = oNavPath->Get();
 
 		path->ResetForRepath();
 
@@ -254,7 +256,7 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 		myPointDebugIndex = 0;
 
 
-		path->MarkReady();
+		path->SetIsReady(true);
 
 		return true;
 

@@ -7,6 +7,7 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "SVONNavigationComponent.h"
 #include "UESVON.h"
+#include "SVONTypes.h"
 #include "SVONAIController.generated.h"
 
 
@@ -20,7 +21,7 @@ class UESVON_API ASVONAIController : public AAIController
 
 	ASVONAIController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	FNavPathSharedPtr myNavPath;
+	FSVONNavPathSharedPtr myNavPath;
 
 	/** Component used for moving along a path. */
 	UPROPERTY(VisibleDefaultsOnly, Category = SVON)
@@ -28,4 +29,6 @@ class UESVON_API ASVONAIController : public AAIController
 
 	FPathFollowingRequestResult MoveTo(const FAIMoveRequest& MoveRequest, FNavPathSharedPtr* OutPath = nullptr) override;
 	
+
+
 };

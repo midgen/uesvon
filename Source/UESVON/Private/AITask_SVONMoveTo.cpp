@@ -3,6 +3,8 @@
 #include "AITask_SVONMoveTo.h"
 #include "UESVON.h"
 #include "SVONNavigationComponent.h"
+#include "SVONNavigationPath.h"
+#include "SVONVolume.h"
 #include "UObject/Package.h"
 #include "TimerManager.h"
 #include "AISystem.h"
@@ -29,11 +31,12 @@ UAITask_SVONMoveTo::UAITask_SVONMoveTo(const FObjectInitializer& ObjectInitializ
 	bUseContinuousTracking = false;
 
 	Path = MakeShareable<FNavigationPath>(new FNavigationPath());
+
+	mySVONPath = MakeShareable<FSVONNavigationPath>(new FSVONNavigationPath());
 }
 
 UAITask_SVONMoveTo* UAITask_SVONMoveTo::SVONAIMoveTo(AAIController* Controller, FVector InGoalLocation, AActor* InGoalActor,
-	float AcceptanceRadius, EAIOptionFlag::Type StopOnOverlap, EAIOptionFlag::Type AcceptPartialPath,
-	bool bUsePathfinding, bool bLockAILogic, bool bUseContinuosGoalTracking)
+	float AcceptanceRadius, EAIOptionFlag::Type StopOnOverlap, bool bLockAILogic, bool bUseContinuosGoalTracking)
 {
 	UAITask_SVONMoveTo* MyTask = Controller ? UAITask::NewAITask<UAITask_SVONMoveTo>(*Controller, EAITaskPriority::High) : nullptr;
 	if (MyTask)
@@ -50,8 +53,6 @@ UAITask_SVONMoveTo* UAITask_SVONMoveTo::SVONAIMoveTo(AAIController* Controller, 
 
 		MoveReq.SetAcceptanceRadius(AcceptanceRadius);
 		MoveReq.SetReachTestIncludesAgentRadius(FAISystem::PickAIOption(StopOnOverlap, MoveReq.IsReachTestIncludingAgentRadius()));
-		MoveReq.SetAllowPartialPath(FAISystem::PickAIOption(AcceptPartialPath, MoveReq.IsUsingPartialPaths()));
-		MoveReq.SetUsePathfinding(bUsePathfinding);
 		if (Controller)
 		{
 			MoveReq.SetNavigationFilter(Controller->GetDefaultNavigationFilterClass());
@@ -198,20 +199,20 @@ void UAITask_SVONMoveTo::Resume()
 
 void UAITask_SVONMoveTo::SetObservedPath(FNavPathSharedPtr InPath)
 {
-	if (PathUpdateDelegateHandle.IsValid() && Path.IsValid())
-	{
-		Path->RemoveObserver(PathUpdateDelegateHandle);
-	}
+	//if (PathUpdateDelegateHandle.IsValid() && Path.IsValid())
+	//{
+	//	Path->RemoveObserver(PathUpdateDelegateHandle);
+	//}
 
-	PathUpdateDelegateHandle.Reset();
+	//PathUpdateDelegateHandle.Reset();
 
-	Path = InPath;
-	if (Path.IsValid())
-	{
-		// disable auto repaths, it will be handled by move task to include ShouldPostponePathUpdates condition
-		Path->EnableRecalculationOnInvalidation(false);
-		PathUpdateDelegateHandle = Path->AddObserver(FNavigationPath::FPathObserverDelegate::FDelegate::CreateUObject(this, &UAITask_SVONMoveTo::OnPathEvent));
-	}
+	//Path = InPath;
+	//if (Path.IsValid())
+	//{
+	//	// disable auto repaths, it will be handled by move task to include ShouldPostponePathUpdates condition
+	//	Path->EnableRecalculationOnInvalidation(false);
+	//	PathUpdateDelegateHandle = Path->AddObserver(FNavigationPath::FPathObserverDelegate::FDelegate::CreateUObject(this, &UAITask_SVONMoveTo::OnPathEvent));
+	//}
 }
 
 FPathFollowingRequestResult UAITask_SVONMoveTo::RequestPath(const FAIMoveRequest& MoveRequest, FNavPathSharedPtr* OutPath /*= nullptr*/)
@@ -273,9 +274,15 @@ FPathFollowingRequestResult UAITask_SVONMoveTo::RequestPath(const FAIMoveRequest
 		if (!svonNavComponent)
 			return ResultData;
 
-		//FNavPathSharedPtr navPath = MakeShareable<FNavigationPath>(new FNavigationPath());
 
-		svonNavComponent->FindPathImmediate(GetOwnerActor()->GetActorLocation(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), &Path);
+		svonNavComponent->FindPathImmediate(GetOwnerActor()->GetActorLocation(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), &mySVONPath);
+
+		LogPathHelper();
+
+		// Copy the SVO path into a regular path for now, until we implement our own path follower.
+		Path->ResetForRepath();
+		mySVONPath->CreateNavPath(*Path);
+		Path->MarkReady();
 
 		const FAIRequestID RequestID = Path->IsValid() ? OwnerController->RequestMove(MoveRequest, Path) : FAIRequestID::InvalidRequest;
 
@@ -297,6 +304,51 @@ FPathFollowingRequestResult UAITask_SVONMoveTo::RequestPath(const FAIMoveRequest
 	}
 
 	return ResultData;
+}
+
+/** Renders the octree path as a 3d tunnel in the visual logger */
+void UAITask_SVONMoveTo::LogPathHelper()
+{
+#if ENABLE_VISUAL_LOG
+
+	USVONNavigationComponent* svonNavComponent = Cast<USVONNavigationComponent>(GetOwnerActor()->GetComponentByClass(USVONNavigationComponent::StaticClass()));
+	if (!svonNavComponent)
+		return;
+
+	FVisualLogger& Vlog = FVisualLogger::Get();
+	if (Vlog.IsRecording() &&
+		mySVONPath && mySVONPath->GetPathPoints().Num())
+	{
+
+		FVisualLogEntry* Entry = Vlog.GetEntryToWrite(OwnerController->GetPawn(), OwnerController->GetPawn()->GetWorld()->TimeSeconds);
+		if (Entry)
+		{
+			for (int i = 0; i < mySVONPath->GetPathPoints().Num(); i++)
+			{
+				if (i == 0 || i == mySVONPath->GetPathPoints().Num() - 1)
+					continue;
+
+				const FSVONPathPoint& point = mySVONPath->GetPathPoints()[i];
+	
+				float size = 0.f;
+
+				if (point.myLayer == 0)
+				{
+					size = svonNavComponent->GetCurrentVolume()->GetVoxelSize(0) * 0.25f;
+				}
+				else 
+				{
+					size = svonNavComponent->GetCurrentVolume()->GetVoxelSize(point.myLayer - 1);
+				}
+
+
+				UE_VLOG_BOX(OwnerController->GetPawn(), UESVON, Verbose, FBox(point.myPosition + FVector(size * 0.5f), point.myPosition - FVector(size * 0.5f)), FColor::Black, TEXT_EMPTY);
+
+			}
+		}
+
+	}
+#endif // ENABLE_VISUAL_LOG
 }
 
 void UAITask_SVONMoveTo::ResetObservers()

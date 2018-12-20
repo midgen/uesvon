@@ -1,9 +1,10 @@
 
 #pragma once
 #include "CoreMinimal.h"
+#include "SVONTypes.h"
 
 
-struct SVONPath;
+struct FSVONNavigationPath;
 class ASVONVolume;
 struct SVONLink;
 
@@ -43,15 +44,15 @@ public:
 	~SVONPathFinder() {};
 
 	/* Performs an A* search from start to target navlink */
-	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, const FVector& aStartPos, const FVector& aTargetPos, FNavPathSharedPtr* oPath);
+	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath);
 
-	const SVONPath& GetPath() const { return myPath; }
+	//const FSVONNavigationPath& GetPath() const { return myPath; }
 	//const FNavigationPath& GetNavPath();  
 
 private:
-	SVONPath myPath;
+	//FSVONNavigationPath myPath;
 
-	FNavigationPath myNavPath;
+	//FNavigationPath myNavPath;
 
 	TArray<SVONLink> myOpenSet;
 	TSet<SVONLink> myClosedSet;
@@ -61,6 +62,8 @@ private:
 	TMap<SVONLink, float>    myGScore;
 	TMap<SVONLink, float>    myFScore;
 
+
+	SVONLink myStart;
 	SVONLink myCurrent;
 	SVONLink myGoal;
 
@@ -79,8 +82,8 @@ private:
 	void ProcessLink(const SVONLink& aNeighbour);
 
 	/* Constructs the path by navigating back through our CameFrom map */
-	void BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, const FVector& aStartPos, const FVector& aTargetPos, FNavPathSharedPtr* oPath);
+	void BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath);
 
-	void Smooth_Chaikin(TArray<FVector>& somePoints, int aNumIterations);
+	/*void Smooth_Chaikin(TArray<FVector>& somePoints, int aNumIterations);*/
 
 };
