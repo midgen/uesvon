@@ -31,6 +31,7 @@ Plugin is mostly working, just some edge cases where pathfinding can go wrong at
 Then EITHER
 
 * Create a new AIController from SVONAIController and use the regular MoveTo method or BT Task
+
 OR
 * Add an SVONavigationComponent to your standard AI Controller.
 * Use the SVO Move To BT Task Node
