@@ -36,6 +36,8 @@ OR
 * Add an SVONavigationComponent to your standard AI Controller.
 * Use the SVO Move To BT Task Node
 
+Using the latter method is preferred, as new features like Async pathfinding are only implemented there.
+
 [![UESVON Demo](http://img.youtube.com/vi/84AFdg0ykwY/0.jpg)](http://www.youtube.com/watch?v=84AFdg0ykwY "Video Title")
 
 
