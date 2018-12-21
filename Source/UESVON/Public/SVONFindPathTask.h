@@ -1,21 +1,30 @@
 #pragma once
 
+
 #include "Runtime/Core/Public/Async/AsyncWork.h"
+#include "SVONLink.h"
+#include "SVONTypes.h"
+#include "SVONPathFinder.h"
+#include "ThreadSafeBool.h"
+
+class ASVONVolume;
+struct SVONPathFinderSettings;
 
 class FSVONFindPathTask : public FNonAbandonableTask
 {
 	friend class FAutoDeleteAsyncTask<FSVONFindPathTask>;
 
 public:
-	FSVONFindPathTask(ASVONVolume& aVolume, UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath, TQueue<int>& aQueue, TArray<FVector>& aDebugOpenPoints) :
+	FSVONFindPathTask(ASVONVolume& aVolume, SVONPathFinderSettings& aSettings,  UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath, FThreadSafeBool& aCompleteFlag, TArray<FVector>& aDebugOpenPoints) :
 		myVolume(aVolume),
+		mySettings(aSettings),
 		myWorld(aWorld),
 		myStart(aStart),
 		myTarget(aTarget),
 		myStartPos(aStartPos),
 		myTargetPos(aTargetPos),
 		myPath(oPath),
-		myOutQueue(aQueue),
+		myCompleteFlag(aCompleteFlag),
 		myDebugOpenPoints(aDebugOpenPoints)
 	{}
 
@@ -29,20 +38,13 @@ protected:
 	FVector myTargetPos;
 	FSVONNavPathSharedPtr* myPath;
 
-	TQueue<int>& myOutQueue;
+	SVONPathFinderSettings mySettings;
+
+	FThreadSafeBool& myCompleteFlag;
+
 	TArray<FVector>& myDebugOpenPoints;
 
-	void DoWork()
-	{
-		SVONPathFinderSettings settings;
-
-		SVONPathFinder pathFinder(myWorld, myVolume, settings);
-
-		int result = pathFinder.FindPath(myStart, myTarget, myStartPos, myTargetPos, myPath);
-
-		myOutQueue.Enqueue(result);
-		
-	}
+	void DoWork();
 
 	// This next section of code needs to be here.  Not important as to why.
 

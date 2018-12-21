@@ -79,7 +79,7 @@ public:
 	const ASVONVolume* GetCurrentVolume() const { return myCurrentNavVolume; }
 
 	/* This method isn't hooked up at the moment, pending integration with existing systems */
-	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath);
+	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FThreadSafeBool& aCompleteFlag, FSVONNavPathSharedPtr* oNavPath);
 
 	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath);
 

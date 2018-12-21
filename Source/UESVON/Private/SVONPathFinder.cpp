@@ -200,6 +200,9 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 	}
 	else // If start and end are in the same voxel, just use the start and target positions.
 	{
+		if (points.Num() == 0)
+			points.Emplace();
+
 		points[0].myPosition = aTargetPos;
 		points.Emplace(aStartPos, myStart.GetLayerIndex());
 	}

@@ -21,6 +21,7 @@ UBTTask_SVONMoveTo::UBTTask_SVONMoveTo(const FObjectInitializer& ObjectInitializ
 	bReachTestIncludesGoalRadius = bReachTestIncludesAgentRadius = GET_AI_CONFIG_VAR(bFinishMoveOnGoalOverlap);
 	bTrackMovingGoal = true;
 	ObservedBlackboardValueTolerance = AcceptableRadius * 0.95f;
+	bUseAsyncPathfinding = false;
 
 	// accept only actors and vectors
 	BlackboardKey.AddObjectFilter(this, GET_MEMBER_NAME_CHECKED(UBTTask_SVONMoveTo, BlackboardKey), AActor::StaticClass());
@@ -374,7 +375,7 @@ UAITask_SVONMoveTo* UBTTask_SVONMoveTo::PrepareMoveTask(UBehaviorTreeComponent& 
 	UAITask_SVONMoveTo* MoveTask = ExistingTask ? ExistingTask : NewBTAITask<UAITask_SVONMoveTo>(OwnerComp);
 	if (MoveTask)
 	{
-		MoveTask->SetUp(MoveTask->GetAIController(), MoveRequest);
+		MoveTask->SetUp(MoveTask->GetAIController(), MoveRequest, bUseAsyncPathfinding);
 	}
 
 	return MoveTask;

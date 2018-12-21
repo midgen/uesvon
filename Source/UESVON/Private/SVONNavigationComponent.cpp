@@ -153,17 +153,17 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 	return navLink;
 }
 
-bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath)
+bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FThreadSafeBool& aCompleteFlag, FSVONNavPathSharedPtr* oNavPath)
 {
 #if WITH_EDITOR
-	UE_LOG(UESVON, Display, TEXT("Finding path from %s and %s"), *GetOwner()->GetActorLocation().ToString(), *aTargetPosition.ToString());
+	UE_LOG(UESVON, Display, TEXT("Finding path from %s and %s"), *aStartPosition.ToString(), *aTargetPosition.ToString());
 #endif
 	SVONLink startNavLink;
 	SVONLink targetNavLink;
 	if (HasNavVolume())
 	{
 		// Get the nav link from our volume
-		if (!SVONMediator::GetLinkFromPosition(GetOwner()->GetActorLocation(), *myCurrentNavVolume, startNavLink))
+		if (!SVONMediator::GetLinkFromPosition(aStartPosition, *myCurrentNavVolume, startNavLink))
 		{
 #if WITH_EDITOR
 			UE_LOG(UESVON, Display, TEXT("Path finder failed to find start nav link"));
@@ -182,7 +182,15 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 		myDebugPoints.Empty();
 		myPointDebugIndex = -1;
 
-		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(*myCurrentNavVolume, GetWorld(), startNavLink, targetNavLink, aStartPosition, aTargetPosition, oNavPath, myJobQueue, myDebugPoints))->StartBackgroundTask();
+		SVONPathFinderSettings settings;
+		settings.myUseUnitCost = UseUnitCost;
+		settings.myUnitCost = UnitCost;
+		settings.myEstimateWeight = EstimateWeight;
+		settings.myNodeSizeCompensation = NodeSizeCompensation;
+		settings.myPathCostType = PathCostType;
+		settings.mySmoothingIterations = SmoothingIterations;
+
+		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(*myCurrentNavVolume, settings, GetWorld(), startNavLink, targetNavLink, aStartPosition, aTargetPosition, oNavPath, aCompleteFlag, myDebugPoints  ))->StartBackgroundTask();
 
 		myIsBusy = true;
 

@@ -63,6 +63,10 @@ class UESVON_API UBTTask_SVONMoveTo : public UBTTask_BlackboardBase
 	UPROPERTY(Category = Node, EditAnywhere)
 		uint32 bReachTestIncludesGoalRadius : 1;
 
+	/** if set, radius of AI's capsule will be added to threshold between AI and goal location in destination reach test  */
+	UPROPERTY(Category = Node, EditAnywhere)
+		bool bUseAsyncPathfinding;
+
 	/** set automatically if move should use GameplayTasks */
 	uint32 bUseGameplayTasks : 1;
 

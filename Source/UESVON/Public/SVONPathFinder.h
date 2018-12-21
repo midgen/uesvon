@@ -46,13 +46,8 @@ public:
 	/* Performs an A* search from start to target navlink */
 	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath);
 
-	//const FSVONNavigationPath& GetPath() const { return myPath; }
-	//const FNavigationPath& GetNavPath();  
 
 private:
-	//FSVONNavigationPath myPath;
-
-	//FNavigationPath myNavPath;
 
 	TArray<SVONLink> myOpenSet;
 	TSet<SVONLink> myClosedSet;

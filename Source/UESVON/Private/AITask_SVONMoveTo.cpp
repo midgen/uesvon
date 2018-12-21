@@ -24,6 +24,8 @@ UAITask_SVONMoveTo::UAITask_SVONMoveTo(const FObjectInitializer& ObjectInitializ
 	MoveRequest.SetAllowPartialPath(GET_AI_CONFIG_VAR(bAcceptPartialPaths));
 	MoveRequest.SetUsePathfinding(true);
 
+	myResult.Code = EPathFollowingRequestResult::Failed;
+
 	AddRequiredResource(UAIResource_Movement::StaticClass());
 	AddClaimedResource(UAIResource_Movement::StaticClass());
 
@@ -35,12 +37,16 @@ UAITask_SVONMoveTo::UAITask_SVONMoveTo(const FObjectInitializer& ObjectInitializ
 	mySVONPath = MakeShareable<FSVONNavigationPath>(new FSVONNavigationPath());
 }
 
-UAITask_SVONMoveTo* UAITask_SVONMoveTo::SVONAIMoveTo(AAIController* Controller, FVector InGoalLocation, AActor* InGoalActor,
+UAITask_SVONMoveTo* UAITask_SVONMoveTo::SVONAIMoveTo(AAIController* Controller, FVector InGoalLocation, bool aUseAsyncPathfinding, AActor* InGoalActor,
 	float AcceptanceRadius, EAIOptionFlag::Type StopOnOverlap, bool bLockAILogic, bool bUseContinuosGoalTracking)
 {
 	UAITask_SVONMoveTo* MyTask = Controller ? UAITask::NewAITask<UAITask_SVONMoveTo>(*Controller, EAITaskPriority::High) : nullptr;
 	if (MyTask)
 	{
+		MyTask->myUseAsyncPathfinding = aUseAsyncPathfinding;
+		// We need to tick the task if we're using async, to check when results are back
+		MyTask->bTickingTask = aUseAsyncPathfinding;
+
 		FAIMoveRequest MoveReq;
 		if (InGoalActor)
 		{
@@ -58,7 +64,7 @@ UAITask_SVONMoveTo* UAITask_SVONMoveTo::SVONAIMoveTo(AAIController* Controller, 
 			MoveReq.SetNavigationFilter(Controller->GetDefaultNavigationFilterClass());
 		}
 
-		MyTask->SetUp(Controller, MoveReq);
+		MyTask->SetUp(Controller, MoveReq, aUseAsyncPathfinding);
 		MyTask->SetContinuousGoalTracking(bUseContinuosGoalTracking);
 
 		if (bLockAILogic)
@@ -70,15 +76,34 @@ UAITask_SVONMoveTo* UAITask_SVONMoveTo::SVONAIMoveTo(AAIController* Controller, 
 	return MyTask;
 }
 
-void UAITask_SVONMoveTo::SetUp(AAIController* Controller, const FAIMoveRequest& InMoveRequest)
+void UAITask_SVONMoveTo::SetUp(AAIController* Controller, const FAIMoveRequest& InMoveRequest, bool aUseAsyncPathfinding)
 {
 	OwnerController = Controller;
 	MoveRequest = InMoveRequest;
+	myUseAsyncPathfinding = aUseAsyncPathfinding;
+	bTickingTask = aUseAsyncPathfinding;
+
+	// Fail if no nav component
+	myNavComponent = Cast<USVONNavigationComponent>(GetOwnerActor()->GetComponentByClass(USVONNavigationComponent::StaticClass()));
+	if (!myNavComponent)
+	{
+#if WITH_EDITOR
+		UE_VLOG(this, VUESVON, Error, TEXT("SVONMoveTo request failed due missing SVONNavComponent"), *MoveRequest.ToString());
+		return;
+#endif
+	}
+
 }
 
 void UAITask_SVONMoveTo::SetContinuousGoalTracking(bool bEnable)
 {
 	bUseContinuousTracking = bEnable;
+}
+
+void UAITask_SVONMoveTo::TickTask(float DeltaTime)
+{
+	if (myAsyncTaskComplete)
+		HandleAsyncPathTaskComplete();
 }
 
 void UAITask_SVONMoveTo::FinishMoveTask(EPathFollowingResult::Type InResult)
@@ -133,46 +158,100 @@ void UAITask_SVONMoveTo::ConditionalPerformMove()
 
 void UAITask_SVONMoveTo::PerformMove()
 {
-	UPathFollowingComponent* PFComp = OwnerController ? OwnerController->GetPathFollowingComponent() : nullptr;
-	if (PFComp == nullptr)
-	{
-		FinishMoveTask(EPathFollowingResult::Invalid);
-		return;
-	}
+	//UPathFollowingComponent* PFComp = OwnerController ? OwnerController->GetPathFollowingComponent() : nullptr;
+	//if (PFComp == nullptr)
+	//{
+	//	FinishMoveTask(EPathFollowingResult::Invalid);
+	//	return;
+	//}
 
 	ResetObservers();
 	ResetTimers();
+	ResetPaths();
 
-	// start new move request
-	FNavPathSharedPtr FollowedPath;
-	const FPathFollowingRequestResult ResultData = RequestPath(MoveRequest, &FollowedPath);
 
-	switch (ResultData.Code)
+	// Prepare the move first (check for early out)
+	PrepareMove();
+	
+	// If successful, then request the path
+	if (myResult.Code == EPathFollowingRequestResult::RequestSuccessful)
 	{
-	case EPathFollowingRequestResult::Failed:
-		FinishMoveTask(EPathFollowingResult::Invalid);
-		break;
 
-	case EPathFollowingRequestResult::AlreadyAtGoal:
-		MoveRequestID = ResultData.MoveId;
-		OnRequestFinished(ResultData.MoveId, FPathFollowingResult(EPathFollowingResult::Success, FPathFollowingResultFlags::AlreadyAtGoal));
-		break;
-
-	case EPathFollowingRequestResult::RequestSuccessful:
-		MoveRequestID = ResultData.MoveId;
-		PathFinishDelegateHandle = PFComp->OnRequestFinished.AddUObject(this, &UAITask_SVONMoveTo::OnRequestFinished);
-		SetObservedPath(FollowedPath);
-
-		if (IsFinished())
+		if (!myUseAsyncPathfinding)
 		{
-			UE_VLOG(GetGameplayTasksComponent(), LogGameplayTasks, Error, TEXT("%s> re-Activating Finished task!"), *GetName());
+			RequestPathSynchronous();
 		}
-		break;
+		else
+		{
+			RequestPathAsync();
+		}
+			
 
-	default:
-		checkNoEntry();
-		break;
+		switch (myResult.Code)
+		{
+		case EPathFollowingRequestResult::Failed:
+			FinishMoveTask(EPathFollowingResult::Invalid);
+			break;
+
+		case EPathFollowingRequestResult::AlreadyAtGoal:
+			MoveRequestID = myResult.MoveId;
+			OnRequestFinished(myResult.MoveId, FPathFollowingResult(EPathFollowingResult::Success, FPathFollowingResultFlags::AlreadyAtGoal));
+			break;
+
+		case EPathFollowingRequestResult::RequestSuccessful:
+			MoveRequestID = myResult.MoveId;
+			if (!myUseAsyncPathfinding && IsFinished())
+			{
+				UE_VLOG(GetGameplayTasksComponent(), LogGameplayTasks, Error, TEXT("%s> re-Activating Finished task!"), *GetName());
+			}
+			else
+			{
+				myAsyncTaskComplete = false;
+			}
+				
+			break;
+
+		default:
+			checkNoEntry();
+			break;
+		}
+
 	}
+		
+
+
+
+	//}
+	//else // Async path
+	//{
+	//	// If successful, then request the path
+
+
+	//	// Handle the same fail conditions
+	//	switch (myResult.Code)
+	//	{
+	//	case EPathFollowingRequestResult::Failed:
+	//		FinishMoveTask(EPathFollowingResult::Invalid);
+	//		break;
+
+	//	case EPathFollowingRequestResult::AlreadyAtGoal:
+	//		MoveRequestID = myResult.MoveId;
+	//		OnRequestFinished(myResult.MoveId, FPathFollowingResult(EPathFollowingResult::Success, FPathFollowingResultFlags::AlreadyAtGoal));
+	//		break;
+
+	//	case EPathFollowingRequestResult::RequestSuccessful:
+	//		MoveRequestID = myResult.MoveId;
+	//		// We're waiting for the task to complete
+	//		myAsyncTaskComplete = false;
+	//		break;
+	//	default:
+	//		checkNoEntry();
+	//		break;
+	//	}
+
+	//}
+
+
 }
 
 void UAITask_SVONMoveTo::Pause()
@@ -199,45 +278,46 @@ void UAITask_SVONMoveTo::Resume()
 
 void UAITask_SVONMoveTo::SetObservedPath(FNavPathSharedPtr InPath)
 {
-	//if (PathUpdateDelegateHandle.IsValid() && Path.IsValid())
-	//{
-	//	Path->RemoveObserver(PathUpdateDelegateHandle);
-	//}
+	if (PathUpdateDelegateHandle.IsValid() && Path.IsValid())
+	{
+		Path->RemoveObserver(PathUpdateDelegateHandle);
+	}
 
-	//PathUpdateDelegateHandle.Reset();
+	PathUpdateDelegateHandle.Reset();
 
-	//Path = InPath;
-	//if (Path.IsValid())
-	//{
-	//	// disable auto repaths, it will be handled by move task to include ShouldPostponePathUpdates condition
-	//	Path->EnableRecalculationOnInvalidation(false);
-	//	PathUpdateDelegateHandle = Path->AddObserver(FNavigationPath::FPathObserverDelegate::FDelegate::CreateUObject(this, &UAITask_SVONMoveTo::OnPathEvent));
-	//}
+	Path = InPath;
+	if (Path.IsValid())
+	{
+		// disable auto repaths, it will be handled by move task to include ShouldPostponePathUpdates condition
+		Path->EnableRecalculationOnInvalidation(false);
+		PathUpdateDelegateHandle = Path->AddObserver(FNavigationPath::FPathObserverDelegate::FDelegate::CreateUObject(this, &UAITask_SVONMoveTo::OnPathEvent));
+	}
 }
 
-FPathFollowingRequestResult UAITask_SVONMoveTo::RequestPath(const FAIMoveRequest& MoveRequest, FNavPathSharedPtr* OutPath /*= nullptr*/)
+
+
+void UAITask_SVONMoveTo::PrepareMove()
 {
 #if WITH_EDITOR
-	UE_VLOG(this, VUESVON, Log, TEXT("MoveTo: %s"), *MoveRequest.ToString());
+	UE_VLOG(this, VUESVON, Log, TEXT("SVONMoveTo: %s"), *MoveRequest.ToString());
 #endif
 
-	FPathFollowingRequestResult ResultData;
-	ResultData.Code = EPathFollowingRequestResult::Failed;
+	myResult.Code = EPathFollowingRequestResult::Failed;
 
 	if (MoveRequest.IsValid() == false)
 	{
 #if WITH_EDITOR
-		UE_VLOG(this, VUESVON, Error, TEXT("MoveTo request failed due MoveRequest not being valid. Most probably desireg Goal Actor not longer exists"), *MoveRequest.ToString());
+		UE_VLOG(this, VUESVON, Error, TEXT("SVONMoveTo request failed due MoveRequest not being valid. Most probably desired Goal Actor not longer exists"), *MoveRequest.ToString());
 #endif
-		return ResultData;
+		return;
 	}
 
 	if (OwnerController->GetPathFollowingComponent() == nullptr)
 	{
 #if WITH_EDITOR
-		UE_VLOG(this, VUESVON, Error, TEXT("MoveTo request failed due missing PathFollowingComponent"));
+		UE_VLOG(this, VUESVON, Error, TEXT("SVONMoveTo request failed due missing PathFollowingComponent"));
 #endif
-		return ResultData;
+		return;
 	}
 
 	bool bCanRequestMove = true;
@@ -248,7 +328,7 @@ FPathFollowingRequestResult UAITask_SVONMoveTo::RequestPath(const FAIMoveRequest
 		if (MoveRequest.GetGoalLocation().ContainsNaN() || FAISystem::IsValidLocation(MoveRequest.GetGoalLocation()) == false)
 		{
 #if WITH_EDITOR
-			UE_VLOG(this, VUESVON, Error, TEXT("AAIController::MoveTo: Destination is not valid! Goal(%s)"), TEXT_AI_LOCATION(MoveRequest.GetGoalLocation()));
+			UE_VLOG(this, VUESVON, Error, TEXT("SVONMoveTo: Destination is not valid! Goal(%s)"), TEXT_AI_LOCATION(MoveRequest.GetGoalLocation()));
 #endif
 			bCanRequestMove = false;
 		}
@@ -263,47 +343,106 @@ FPathFollowingRequestResult UAITask_SVONMoveTo::RequestPath(const FAIMoveRequest
 	if (bAlreadyAtGoal)
 	{
 #if WITH_EDITOR
-		UE_VLOG(this, VUESVON, Log, TEXT("MoveTo: already at goal!"));
+		UE_VLOG(this, VUESVON, Log, TEXT("SVONMoveTo: already at goal!"));
 #endif
-		ResultData.MoveId = OwnerController->GetPathFollowingComponent()->RequestMoveWithImmediateFinish(EPathFollowingResult::Success);
-		ResultData.Code = EPathFollowingRequestResult::AlreadyAtGoal;
+		myResult.MoveId = OwnerController->GetPathFollowingComponent()->RequestMoveWithImmediateFinish(EPathFollowingResult::Success);
+		myResult.Code = EPathFollowingRequestResult::AlreadyAtGoal;
 	}
-	else if (bCanRequestMove)
+
+	if (bCanRequestMove)
 	{
-		USVONNavigationComponent* svonNavComponent = Cast<USVONNavigationComponent>(GetOwnerActor()->GetComponentByClass(USVONNavigationComponent::StaticClass()));
-		if (!svonNavComponent)
-			return ResultData;
+		myResult.Code = EPathFollowingRequestResult::RequestSuccessful;
+	}
 
+	return;
+	
+}
 
-		svonNavComponent->FindPathImmediate(GetOwnerActor()->GetActorLocation(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), &mySVONPath);
+void UAITask_SVONMoveTo::RequestPathSynchronous()
+{
+	myResult.Code = EPathFollowingRequestResult::Failed;
 
-		LogPathHelper();
-
-		// Copy the SVO path into a regular path for now, until we implement our own path follower.
-		Path->ResetForRepath();
-		mySVONPath->CreateNavPath(*Path);
-		Path->MarkReady();
-
-		const FAIRequestID RequestID = Path->IsValid() ? OwnerController->RequestMove(MoveRequest, Path) : FAIRequestID::InvalidRequest;
-
-		if (RequestID.IsValid())
-		{
 #if WITH_EDITOR
-			UE_VLOG(this, VUESVON, Log, TEXT("SVON Pathfinding successful, moving"));
+	UE_VLOG(this, VUESVON, Log, TEXT("SVONMoveTo: Requesting Synchronous pathfinding!"));
 #endif
-			*OutPath = Path;
-			ResultData.MoveId = RequestID;
-			ResultData.Code = EPathFollowingRequestResult::RequestSuccessful;
-		}
 
-	}
+	myNavComponent->FindPathImmediate(GetOwnerActor()->GetActorLocation(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), &mySVONPath);
 
-	if (ResultData.Code == EPathFollowingRequestResult::Failed)
+	RequestMove();
+
+	return;
+}
+
+void UAITask_SVONMoveTo::RequestPathAsync()
+{
+	myResult.Code = EPathFollowingRequestResult::Failed;
+
+	// Fail if no nav component
+	USVONNavigationComponent* svonNavComponent = Cast<USVONNavigationComponent>(GetOwnerActor()->GetComponentByClass(USVONNavigationComponent::StaticClass()));
+	if (!svonNavComponent)
+		return;
+
+	myAsyncTaskComplete = false;
+
+	// Request the async path
+	svonNavComponent->FindPathAsync(GetOwnerActor()->GetActorLocation(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), myAsyncTaskComplete, &mySVONPath);
+
+	myResult.Code = EPathFollowingRequestResult::RequestSuccessful;
+}
+
+/* Requests the move, based on the current path */
+void UAITask_SVONMoveTo::RequestMove()
+{
+	myResult.Code = EPathFollowingRequestResult::Failed;
+
+	LogPathHelper();
+
+	// Copy the SVO path into a regular path for now, until we implement our own path follower.
+	mySVONPath->CreateNavPath(*Path);
+	Path->MarkReady();
+
+	UPathFollowingComponent* PFComp = OwnerController ? OwnerController->GetPathFollowingComponent() : nullptr;
+	if (PFComp == nullptr)
 	{
-		ResultData.MoveId = OwnerController->GetPathFollowingComponent()->RequestMoveWithImmediateFinish(EPathFollowingResult::Invalid);
+		FinishMoveTask(EPathFollowingResult::Invalid);
+		return;
 	}
 
-	return ResultData;
+	PathFinishDelegateHandle = PFComp->OnRequestFinished.AddUObject(this, &UAITask_SVONMoveTo::OnRequestFinished);
+	SetObservedPath(Path);
+
+	
+
+	const FAIRequestID RequestID = Path->IsValid() ? OwnerController->RequestMove(MoveRequest, Path) : FAIRequestID::InvalidRequest;
+
+	if (RequestID.IsValid())
+	{
+#if WITH_EDITOR
+		UE_VLOG(this, VUESVON, Log, TEXT("SVON Pathfinding successful, moving"));
+#endif
+		myResult.MoveId = RequestID;
+		myResult.Code = EPathFollowingRequestResult::RequestSuccessful;
+	}
+
+	if (myResult.Code == EPathFollowingRequestResult::Failed)
+	{
+		myResult.MoveId = OwnerController->GetPathFollowingComponent()->RequestMoveWithImmediateFinish(EPathFollowingResult::Invalid);
+	}
+}
+
+void UAITask_SVONMoveTo::HandleAsyncPathTaskComplete()
+{
+	// Request the move
+	RequestMove();
+	// Flag that we've processed the task
+	myAsyncTaskComplete = false;
+
+}
+
+void UAITask_SVONMoveTo::ResetPaths()
+{
+	Path->ResetForRepath();
+	mySVONPath->ResetForRepath();
 }
 
 /** Renders the octree path as a 3d tunnel in the visual logger */
@@ -318,7 +457,7 @@ void UAITask_SVONMoveTo::LogPathHelper()
 
 	FVisualLogger& Vlog = FVisualLogger::Get();
 	if (Vlog.IsRecording() &&
-		mySVONPath && mySVONPath->GetPathPoints().Num())
+		mySVONPath.IsValid() && mySVONPath.Get()->GetPathPoints().Num())
 	{
 
 		FVisualLogEntry* Entry = Vlog.GetEntryToWrite(OwnerController->GetPawn(), OwnerController->GetPawn()->GetWorld()->TimeSeconds);
@@ -343,7 +482,7 @@ void UAITask_SVONMoveTo::LogPathHelper()
 				}
 
 
-				UE_VLOG_BOX(OwnerController->GetPawn(), UESVON, Verbose, FBox(point.myPosition + FVector(size * 0.5f), point.myPosition - FVector(size * 0.5f)), FColor::Black, TEXT_EMPTY);
+				UE_VLOG_BOX(OwnerController->GetPawn(), VUESVON, Verbose, FBox(point.myPosition + FVector(size * 0.5f), point.myPosition - FVector(size * 0.5f)), FColor::Black, TEXT_EMPTY);
 
 			}
 		}
@@ -428,7 +567,7 @@ void UAITask_SVONMoveTo::OnDestroy(bool bInOwnerFinished)
 
 void UAITask_SVONMoveTo::OnRequestFinished(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
-	if (RequestID == MoveRequestID)
+	if (RequestID == myResult.MoveId)
 	{
 		if (Result.HasFlag(FPathFollowingResultFlags::UserAbort) && Result.HasFlag(FPathFollowingResultFlags::NewRequest) && !Result.HasFlag(FPathFollowingResultFlags::ForcedScript))
 		{
@@ -437,7 +576,7 @@ void UAITask_SVONMoveTo::OnRequestFinished(FAIRequestID RequestID, const FPathFo
 		else
 		{
 			// reset request Id, FinishMoveTask doesn't need to update path following's state
-			MoveRequestID = FAIRequestID::InvalidRequest;
+			myResult.MoveId = FAIRequestID::InvalidRequest;
 
 			if (bUseContinuousTracking && MoveRequest.IsMoveToActorRequest() && Result.IsSuccess())
 			{
