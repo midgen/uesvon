@@ -1,5 +1,5 @@
 # uesvon
-Sparse Voxel Octree navigation plugin for UnrealEngine
+3D navigation plugin for UnrealEngine
 
 Based on "3D Flight Navigation Using Sparse Voxel Octrees" by Daniel Brewer in Game AI Pro 3.
 
@@ -9,11 +9,12 @@ and his related GDC talk :
 
 [GDC Vault - Getting Off The Navmesh](https://www.gdcvault.com/play/1022016/Getting-off-the-NavMesh-Navigating)
 
-Status : Alpha. OCtree generation and pathfinding implemented as per the articles above. Not yet battle-tested, but a good basis for anyone to take further. Contributors welcome.
+Status : Alpha. Octree generation and pathfinding implemented as per the articles above. Not yet battle-tested, but a good basis for anyone to take further. Contributors welcome.
 
 Engine Version : 4.21 (See branches for previous versions)
 
 New - *Baking navigation data*
+New - *Async pathfinding*
 
 In the SVOVolume properties, there is a new Generation Strategy option.
 * Generate OnBeginPlay - Rebuilds the navigation data when you start the game (not recommended)
