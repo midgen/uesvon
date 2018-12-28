@@ -21,6 +21,8 @@ USVONNavigationComponent::USVONNavigationComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	myLastLocation = SVONLink(0, 0, 0);
 
+	mySVONPath = MakeShareable<FSVONNavigationPath>(new FSVONNavigationPath());
+
 	// ...
 }
 

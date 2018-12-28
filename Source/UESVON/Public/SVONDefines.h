@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AITypes.h"
 
 typedef uint8 layerindex_t;
 typedef int32 nodeindex_t;
@@ -31,4 +32,27 @@ public:
 	static const FColor myLayerColors[];
 	static const FColor myLinkColors[];
 
+};
+
+UENUM(BlueprintType)
+namespace ESVONPathfindingRequestResult
+{
+	enum Type
+	{
+		Failed, // Something went wrong
+		ReadyToPath, // Pre-reqs satisfied
+		AlreadyAtGoal, // No need to move
+		Deferred, // Passed request to another thread, need to wait
+		Success // it worked!
+	};
+}
+
+
+struct UESVON_API FSVONPathfindingRequestResult
+{
+	FAIRequestID MoveId;
+	TEnumAsByte<ESVONPathfindingRequestResult::Type> Code;
+
+	FSVONPathfindingRequestResult() : MoveId(FAIRequestID::InvalidRequest), Code(ESVONPathfindingRequestResult::Failed) {}
+	operator ESVONPathfindingRequestResult::Type() const { return Code; }
 };

@@ -8,6 +8,7 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "Tasks/AITask.h"
 #include "SVONTypes.h"
+#include "SVONDefines.h"
 #include "ThreadSafeBool.h"
 #include "AITask_SVONMoveTo.generated.h"
 
@@ -16,6 +17,7 @@ class USVONNavigationComponent;
 struct FSVONNavigationPath;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSVONMoveTaskCompletedSignature, TEnumAsByte<EPathFollowingResult::Type>, Result, AAIController*, AIController);
+
 
 UCLASS()
 class UESVON_API UAITask_SVONMoveTo : public UAITask
@@ -88,8 +90,6 @@ protected:
 
 	FSVONNavPathSharedPtr mySVONPath;
 
-	TSharedPtr<struct FSVONNavigationPath, ESPMode::ThreadSafe> myPath;
-
 	TEnumAsByte<EPathFollowingResult::Type> MoveResult;
 	uint8 bUseContinuousTracking : 1;
 
@@ -105,10 +105,13 @@ protected:
 	/** stores path and starts observing its events */
 	void SetObservedPath(FNavPathSharedPtr InPath);
 
-	FPathFollowingRequestResult myResult;
+	//FPathFollowingRequestResult myResult;
+
+	FSVONPathfindingRequestResult myResult;
+
 	USVONNavigationComponent* myNavComponent;
 
-	void PrepareMove();
+	void CheckPathPreConditions();
 
 	void RequestPathSynchronous();
 	void RequestPathAsync();

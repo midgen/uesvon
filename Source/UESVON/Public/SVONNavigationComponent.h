@@ -60,6 +60,8 @@ protected:
 	// Print current layer/morton code information
 	void DebugLocalPosition(FVector& aPosition);
 
+	FSVONNavPathSharedPtr mySVONPath;
+
 	SVONLink myLastLocation;
 
 	TQueue<int> myJobQueue;
@@ -82,5 +84,7 @@ public:
 	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FThreadSafeBool& aCompleteFlag, FSVONNavPathSharedPtr* oNavPath);
 
 	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath);
+
+	FSVONNavPathSharedPtr& GetPath() { return mySVONPath; }
 
 };
