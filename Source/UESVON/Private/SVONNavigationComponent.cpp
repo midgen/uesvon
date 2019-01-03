@@ -168,7 +168,7 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 		if (!SVONMediator::GetLinkFromPosition(aStartPosition, *myCurrentNavVolume, startNavLink))
 		{
 #if WITH_EDITOR
-			UE_LOG(UESVON, Error, TEXT("Path finder failed to find start nav link"));
+			UE_LOG(UESVON, Error, TEXT("Path finder failed to find start nav link. Is your pawn blocking the channel you've selected to generate the nav data with?"));
 #endif
 			return false;
 		}
