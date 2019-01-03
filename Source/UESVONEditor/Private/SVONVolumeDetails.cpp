@@ -109,6 +109,30 @@ void FSVONVolumeDetails::CustomizeDetails( IDetailLayoutBuilder& DetailBuilder )
 		]
 		];
 
+	DetailBuilder.EditCategory("SVO Navigation")
+		.AddCustomRow(NSLOCTEXT("SVO Volume", "Clear", "Clear"))
+		.NameContent()
+		[
+			SNew(STextBlock)
+			.Font(IDetailLayoutBuilder::GetDetailFont())
+		.Text(NSLOCTEXT("SVO Volume", "Clear", "Clear"))
+		]
+	.ValueContent()
+		.MaxDesiredWidth(125.f)
+		.MinDesiredWidth(125.f)
+		[
+			SNew(SButton)
+			.ContentPadding(2)
+		.VAlign(VAlign_Center)
+		.HAlign(HAlign_Center)
+		.OnClicked(this, &FSVONVolumeDetails::OnClearVolumeClick)
+		[
+			SNew(STextBlock)
+			.Font(IDetailLayoutBuilder::GetDetailFont())
+		.Text(NSLOCTEXT("SVO Volume", "Clear", "Clear"))
+		]
+		];
+
 	navigationCategory.AddProperty(debugDistanceProperty);
 	navigationCategory.AddProperty(showVoxelProperty);
 	navigationCategory.AddProperty(showVoxelLeafProperty);
@@ -122,6 +146,16 @@ FReply FSVONVolumeDetails::OnUpdateVolume()
 	if (myVolume.IsValid())
 	{		
 		myVolume->Generate();
+	}
+
+	return FReply::Handled();
+}
+
+FReply FSVONVolumeDetails::OnClearVolumeClick()
+{
+	if (myVolume.IsValid())
+	{
+		myVolume->ClearData();
 	}
 
 	return FReply::Handled();

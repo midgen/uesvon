@@ -147,6 +147,13 @@ void ASVONVolume::SetupVolume()
 
 }
 
+void ASVONVolume::ClearData()
+{
+	myData.Reset();
+	myNumLayers = 0;
+	myNumBytes = 0;
+}
+
 bool ASVONVolume::FirstPassRasterize()
 {
 	// Add the first layer of blocking

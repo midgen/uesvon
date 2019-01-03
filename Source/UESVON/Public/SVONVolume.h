@@ -91,6 +91,8 @@ public:
 
 	virtual void Serialize(FArchive& Ar) override;
 
+	void ClearData();
+
 private:
 	bool myIsReadyForNavigation = false;
 
@@ -107,6 +109,8 @@ private:
 	TArray<SVONNode>& GetLayer(layerindex_t aLayer);
 
 	void SetupVolume();
+
+	
 
 	bool FirstPassRasterize();
 	void RasterizeLayer(layerindex_t aLayer);

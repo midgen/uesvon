@@ -19,6 +19,8 @@ public:
 
 	FReply OnUpdateVolume();
 
+	FReply OnClearVolumeClick();
+
 private:
 	TWeakObjectPtr<ASVONVolume> myVolume;
 };
