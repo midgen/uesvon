@@ -1,7 +1,7 @@
 # uesvon
 3D navigation plugin for UnrealEngine
 
-Engine Version : 4.21 (See branches for previous versions)
+Engine Version : Tested with 4.21 and 4.20. Should work with earlier versions.
 
 Please view the [Wiki](https://github.com/midgen/uesvon/wiki) for more information
 
