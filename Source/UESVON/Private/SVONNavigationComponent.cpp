@@ -36,7 +36,7 @@ void USVONNavigationComponent::BeginPlay()
 /** Are we inside a valid nav volume ? */
 bool USVONNavigationComponent::HasNavVolume()
 {
-	return myCurrentNavVolume && GetOwner() && myCurrentNavVolume->EncompassesPoint(GetOwner()->GetActorLocation());
+	return myCurrentNavVolume && GetOwner() && myCurrentNavVolume->EncompassesPoint(GetOwner()->GetActorLocation()) && myCurrentNavVolume->GetMyNumLayers() > 0;
 }
 
 bool USVONNavigationComponent::FindVolume()
@@ -158,7 +158,7 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FThreadSafeBool& aCompleteFlag, FSVONNavPathSharedPtr* oNavPath)
 {
 #if WITH_EDITOR
-	UE_LOG(UESVON, Display, TEXT("Finding path from %s and %s"), *aStartPosition.ToString(), *aTargetPosition.ToString());
+	UE_LOG(UESVON, Log, TEXT("Finding path from %s and %s"), *aStartPosition.ToString(), *aTargetPosition.ToString());
 #endif
 	SVONLink startNavLink;
 	SVONLink targetNavLink;
@@ -168,7 +168,7 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 		if (!SVONMediator::GetLinkFromPosition(aStartPosition, *myCurrentNavVolume, startNavLink))
 		{
 #if WITH_EDITOR
-			UE_LOG(UESVON, Display, TEXT("Path finder failed to find start nav link"));
+			UE_LOG(UESVON, Error, TEXT("Path finder failed to find start nav link"));
 #endif
 			return false;
 		}
@@ -176,7 +176,7 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 		if (!SVONMediator::GetLinkFromPosition(aTargetPosition, *myCurrentNavVolume, targetNavLink))
 		{
 #if WITH_EDITOR
-			UE_LOG(UESVON, Display, TEXT("Path finder failed to find target nav link"));
+			UE_LOG(UESVON, Error, TEXT("Path finder failed to find target nav link"));
 #endif
 			return false;
 		}
@@ -200,6 +200,12 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 
 
 	}
+	else
+	{
+#if WITH_EDITOR
+		UE_LOG(UESVON, Error, TEXT("Pawn is not inside an SVON volume, or nav data has not been generated"));
+#endif
+	}
 
 	return false;
 }
@@ -207,7 +213,7 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath)
 {
 #if WITH_EDITOR
-	UE_LOG(UESVON, Display, TEXT("Finding path immediate from %s and %s"), *aStartPosition.ToString(), *aTargetPosition.ToString());
+	UE_LOG(UESVON, Log, TEXT("Finding path immediate from %s and %s"), *aStartPosition.ToString(), *aTargetPosition.ToString());
 #endif
 
 	SVONLink startNavLink;
@@ -218,7 +224,7 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 		if (!SVONMediator::GetLinkFromPosition(aStartPosition, *myCurrentNavVolume, startNavLink))
 		{
 #if WITH_EDITOR
-			UE_LOG(UESVON, Display, TEXT("Path finder failed to find start nav link"));
+			UE_LOG(UESVON, Error, TEXT("Path finder failed to find start nav link"));
 #endif
 			return false;
 		}
@@ -226,7 +232,7 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 		if (!SVONMediator::GetLinkFromPosition(aTargetPosition, *myCurrentNavVolume, targetNavLink))
 		{
 #if WITH_EDITOR
-			UE_LOG(UESVON, Display, TEXT("Path finder failed to find target nav link"));
+			UE_LOG(UESVON, Error, TEXT("Path finder failed to find target nav link"));
 #endif
 			return false;
 		}
@@ -234,7 +240,7 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 		if (!oNavPath || !oNavPath->IsValid())
 		{
 #if WITH_EDITOR
-			UE_LOG(UESVON, Display, TEXT("Nav path data invalid"));
+			UE_LOG(UESVON, Error, TEXT("Nav path data invalid"));
 #endif
 			return false;
 		}
@@ -270,6 +276,12 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 
 		return true;
 
+	}
+	else
+	{
+#if WITH_EDITOR
+		UE_LOG(UESVON, Error, TEXT("Pawn is not inside an SVON volume, or nav data has not been generated"));
+#endif
 	}
 
 	return false;

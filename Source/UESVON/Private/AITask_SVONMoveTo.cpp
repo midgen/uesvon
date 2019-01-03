@@ -87,6 +87,7 @@ void UAITask_SVONMoveTo::SetUp(AAIController* Controller, const FAIMoveRequest& 
 	{
 #if WITH_EDITOR
 		UE_VLOG(this, VUESVON, Error, TEXT("SVONMoveTo request failed due missing SVONNavComponent"), *MoveRequest.ToString());
+		UE_LOG(UESVON, Error, TEXT("SVONMoveTo request failed due missing SVONNavComponent on the pawn"));
 		return;
 #endif
 	}
@@ -158,13 +159,14 @@ void UAITask_SVONMoveTo::ConditionalPerformMove()
 
 void UAITask_SVONMoveTo::PerformMove()
 {
+	// Prepare the move first (check for early out)
+	CheckPathPreConditions();
 
 	ResetObservers();
 	ResetTimers();
 	ResetPaths();
 
-	// Prepare the move first (check for early out)
-	CheckPathPreConditions();
+
 
 
 	if (myResult.Code == ESVONPathfindingRequestResult::AlreadyAtGoal)
@@ -253,10 +255,22 @@ void UAITask_SVONMoveTo::CheckPathPreConditions()
 
 	myResult.Code = ESVONPathfindingRequestResult::Failed;
 
+	// Fail if no nav component
+	myNavComponent = Cast<USVONNavigationComponent>(GetOwnerActor()->GetComponentByClass(USVONNavigationComponent::StaticClass()));
+	if (!myNavComponent)
+	{
+#if WITH_EDITOR
+		UE_VLOG(this, VUESVON, Error, TEXT("SVONMoveTo request failed due missing SVONNavComponent on the pawn"), *MoveRequest.ToString());
+		UE_LOG(UESVON, Error, TEXT("SVONMoveTo request failed due missing SVONNavComponent on the pawn"));
+		return;
+#endif
+	}
+
 	if (MoveRequest.IsValid() == false)
 	{
 #if WITH_EDITOR
 		UE_VLOG(this, VUESVON, Error, TEXT("SVONMoveTo request failed due MoveRequest not being valid. Most probably desired Goal Actor not longer exists"), *MoveRequest.ToString());
+		UE_LOG(UESVON, Error, TEXT("SVONMoveTo request failed due MoveRequest not being valid. Most probably desired Goal Actor not longer exists"));
 #endif
 		return;
 	}
@@ -265,6 +279,7 @@ void UAITask_SVONMoveTo::CheckPathPreConditions()
 	{
 #if WITH_EDITOR
 		UE_VLOG(this, VUESVON, Error, TEXT("SVONMoveTo request failed due missing PathFollowingComponent"));
+		UE_LOG(UESVON, Error, TEXT("SVONMoveTo request failed due missing PathFollowingComponent"));
 #endif
 		return;
 	}
@@ -278,6 +293,7 @@ void UAITask_SVONMoveTo::CheckPathPreConditions()
 		{
 #if WITH_EDITOR
 			UE_VLOG(this, VUESVON, Error, TEXT("SVONMoveTo: Destination is not valid! Goal(%s)"), TEXT_AI_LOCATION(MoveRequest.GetGoalLocation()));
+			UE_LOG(UESVON, Error, TEXT("SVONMoveTo: Destination is not valid! Goal(%s)"));
 #endif
 			bCanRequestMove = false;
 		}
@@ -293,6 +309,7 @@ void UAITask_SVONMoveTo::CheckPathPreConditions()
 	{
 #if WITH_EDITOR
 		UE_VLOG(this, VUESVON, Log, TEXT("SVONMoveTo: already at goal!"));
+		UE_LOG(UESVON, Log, TEXT("SVONMoveTo: already at goal!"));
 #endif
 		myResult.MoveId = OwnerController->GetPathFollowingComponent()->RequestMoveWithImmediateFinish(EPathFollowingResult::Success);
 		myResult.Code = ESVONPathfindingRequestResult::AlreadyAtGoal;
@@ -313,6 +330,7 @@ void UAITask_SVONMoveTo::RequestPathSynchronous()
 
 #if WITH_EDITOR
 	UE_VLOG(this, VUESVON, Log, TEXT("SVONMoveTo: Requesting Synchronous pathfinding!"));
+	UE_LOG(UESVON, Error, TEXT("SVONMoveTo: Requesting Synchronous pathfinding!"));
 #endif
 
 	if (myNavComponent->FindPathImmediate(GetOwnerActor()->GetActorLocation(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), &mySVONPath))
@@ -368,6 +386,7 @@ void UAITask_SVONMoveTo::RequestMove()
 	{
 #if WITH_EDITOR
 		UE_VLOG(this, VUESVON, Log, TEXT("SVON Pathfinding successful, moving"));
+		UE_LOG(UESVON, Log, TEXT("SVON Pathfinding successful, moving"));
 #endif
 		myResult.MoveId = RequestID;
 		myResult.Code = ESVONPathfindingRequestResult::Success;
@@ -391,8 +410,11 @@ void UAITask_SVONMoveTo::HandleAsyncPathTaskComplete()
 
 void UAITask_SVONMoveTo::ResetPaths()
 {
-	Path->ResetForRepath();
-	mySVONPath->ResetForRepath();
+	if(Path.IsValid())
+		Path->ResetForRepath();
+
+	if(mySVONPath.IsValid())
+		mySVONPath->ResetForRepath();
 }
 
 /** Renders the octree path as a 3d tunnel in the visual logger */
