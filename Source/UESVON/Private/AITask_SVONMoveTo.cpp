@@ -333,7 +333,7 @@ void UAITask_SVONMoveTo::RequestPathSynchronous()
 	UE_LOG(UESVON, Error, TEXT("SVONMoveTo: Requesting Synchronous pathfinding!"));
 #endif
 
-	if (myNavComponent->FindPathImmediate(GetOwnerActor()->GetActorLocation(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), &mySVONPath))
+	if (myNavComponent->FindPathImmediate(myNavComponent->GetPawnPosition(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), &mySVONPath))
 	{
 		myResult.Code = ESVONPathfindingRequestResult::Success;
 	}
@@ -354,7 +354,7 @@ void UAITask_SVONMoveTo::RequestPathAsync()
 	myAsyncTaskComplete = false;
 
 	// Request the async path
-	svonNavComponent->FindPathAsync(GetOwnerActor()->GetActorLocation(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), myAsyncTaskComplete, &mySVONPath);
+	svonNavComponent->FindPathAsync(myNavComponent->GetPawnPosition(), MoveRequest.IsMoveToActorRequest() ? MoveRequest.GetGoalActor()->GetActorLocation() : MoveRequest.GetGoalLocation(), myAsyncTaskComplete, &mySVONPath);
 
 	myResult.Code = ESVONPathfindingRequestResult::Deferred;
 }

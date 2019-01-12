@@ -60,6 +60,8 @@ protected:
 	// Print current layer/morton code information
 	void DebugLocalPosition(FVector& aPosition);
 
+
+
 	FSVONNavPathSharedPtr mySVONPath;
 
 	SVONLink myLastLocation;
@@ -72,6 +74,8 @@ protected:
 	int myPointDebugIndex;
 
 public:	
+
+	virtual FVector GetPawnPosition();
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

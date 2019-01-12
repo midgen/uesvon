@@ -23,7 +23,6 @@ USVONNavigationComponent::USVONNavigationComponent()
 
 	mySVONPath = MakeShareable<FSVONNavigationPath>(new FSVONNavigationPath());
 
-	// ...
 }
 
 
@@ -36,7 +35,7 @@ void USVONNavigationComponent::BeginPlay()
 /** Are we inside a valid nav volume ? */
 bool USVONNavigationComponent::HasNavVolume()
 {
-	return myCurrentNavVolume && GetOwner() && myCurrentNavVolume->EncompassesPoint(GetOwner()->GetActorLocation()) && myCurrentNavVolume->GetMyNumLayers() > 0;
+	return myCurrentNavVolume && GetOwner() && myCurrentNavVolume->EncompassesPoint(GetPawnPosition()) && myCurrentNavVolume->GetMyNumLayers() > 0;
 }
 
 bool USVONNavigationComponent::FindVolume()
@@ -48,7 +47,7 @@ bool USVONNavigationComponent::FindVolume()
 	for (AActor* actor : navVolumes)
 	{
 		ASVONVolume* volume = Cast<ASVONVolume>(actor);
-		if (volume && volume->EncompassesPoint(GetOwner()->GetActorLocation()))
+		if (volume && volume->EncompassesPoint(GetPawnPosition()))
 		{
 			myCurrentNavVolume = volume;
 			return true;
@@ -69,7 +68,7 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	}
 	else if (myCurrentNavVolume->IsReadyForNavigation() && !myIsBusy)
 	{
-		FVector location = GetOwner()->GetActorLocation();
+		FVector location = GetPawnPosition();
 		if (DebugPrintMortonCodes)
 		{
 			DebugLocalPosition(location);
@@ -80,7 +79,6 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	int q;
 	if (myJobQueue.Dequeue(q))
 	{
-		//GetWorld()->PersistentLineBatcher->Flush();
 		if (q > 0)
 		{
 			myPointDebugIndex = 0;
@@ -138,7 +136,7 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 
 		myLastLocation = navLink;
 
-		FVector targetPos = GetOwner()->GetActorLocation() + (GetOwner()->GetActorForwardVector() * 10000.f);
+		//FVector targetPos = GetPawnPosition() + (GetOwner()->GetActorForwardVector() * 10000.f);
 
 		if (DebugPrintCurrentPosition)
 		{
@@ -147,8 +145,8 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition)
 
 			bool isValid = myCurrentNavVolume->GetLinkPosition(navLink, currentNodePosition);
 
-			DrawDebugLine(GetWorld(), GetOwner()->GetActorLocation(), currentNodePosition, isValid ? FColor::Green : FColor::Red, false, -1.f, 0, 10.f);
-			DrawDebugString(GetWorld(), GetOwner()->GetActorLocation() + FVector(0.f, 0.f, -50.f), navLink.ToString(), NULL, FColor::Yellow, 0.01f);
+			DrawDebugLine(GetWorld(), GetPawnPosition(), currentNodePosition, isValid ? FColor::Green : FColor::Red, false, -1.f, 0, 10.f);
+			DrawDebugString(GetWorld(), GetPawnPosition() + FVector(0.f, 0.f, -50.f), navLink.ToString(), NULL, FColor::Yellow, 0.01f);
 		}
 		
 	}
@@ -295,10 +293,10 @@ void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition)
 		for (int i = 0; i < myCurrentNavVolume->GetMyNumLayers() - 1; i++)
 		{
 			FIntVector pos;
-			SVONMediator::GetVolumeXYZ(GetOwner()->GetActorLocation(), *myCurrentNavVolume, i,  pos);
+			SVONMediator::GetVolumeXYZ(GetPawnPosition(), *myCurrentNavVolume, i,  pos);
 			uint_fast64_t code = morton3D_64_encode(pos.X, pos.Y, pos.Z);
 			FString codeString = FString::FromInt(code);
-			DrawDebugString(GetWorld(), GetOwner()->GetActorLocation() + FVector(0.f, 0.f, i*50.0f), pos.ToString() + " - " + codeString, NULL, FColor::White, 0.01f);
+			DrawDebugString(GetWorld(), GetPawnPosition() + FVector(0.f, 0.f, i*50.0f), pos.ToString() + " - " + codeString, NULL, FColor::White, 0.01f);
 		}
 	
 
@@ -306,3 +304,19 @@ void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition)
 
 }
  
+
+FVector USVONNavigationComponent::GetPawnPosition()
+{
+	FVector result;
+
+	AController * controller = Cast<AController>(GetOwner());
+
+	if (controller)
+	{
+		if (APawn* pawn = controller->GetPawn())
+			result = pawn->GetActorLocation();
+	}
+
+	return result;
+
+}
