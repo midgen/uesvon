@@ -44,9 +44,8 @@ void ASVONVolume::OnPostShapeChanged()
 
 #endif // WITH_EDITOR
 
-/************************************************************************/
-/* Regenerates the Sparse Voxel Octree Navmesh                          */
-/************************************************************************/
+
+// Regenerates the Sparse Voxel Octree Navmesh                          
 bool ASVONVolume::Generate()
 {
 #if WITH_EDITOR
@@ -70,7 +69,7 @@ bool ASVONVolume::Generate()
 
 #endif // WITH_EDITOR
 
-	SetupVolume();
+	Init();
 
 #if WITH_EDITOR
 	// Setup timing
@@ -139,7 +138,7 @@ bool ASVONVolume::Generate()
 	return true;
 }
 
-void ASVONVolume::SetupVolume()
+void ASVONVolume::Init()
 {
 	// Get bounds and extent
 	FBox bounds = GetComponentsBoundingBox(true);
@@ -159,7 +158,7 @@ bool ASVONVolume::FirstPassRasterize()
 	// Add the first layer of blocking
 	myBlockedIndices.Emplace();
 
-	int32 numNodes = GetNodesInLayer(1);
+	int32 numNodes = GetNumNodesInLayer(1);
 	for (int32 i = 0; i < numNodes; i++)
 	{
 		FVector position;
@@ -414,33 +413,6 @@ void ASVONVolume::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighb
 				}
 			}
 		}
-
-		// Old....no-worky stuff, will delete soon
-
-		//// If the neighbour has children and is a leaf node, we need to add 16 leaf voxels 
-		//else if (neighbour.myFirstChild.GetLayerIndex() == 0)
-		//{
-		//	for (const nodeindex_t& index : SVONStatics::dirLeafChildOffsets[i])
-		//	{
-		//		// This is the link to our first child, we just need to add our offsets
-		//		SVONLink link = neighbour.myFirstChild;
-		//		if(!GetLeafNode(link.GetNodeIndex()).GetNode(index))
-		//			oNeighbours.Emplace(link.GetLayerIndex(), link.GetNodeIndex(), index );
-		//	}
-		//}
-		//else // If the neighbour has children and isn't a leaf, we just add 4
-		//	//TODO: the problem with this is that you no longer have the direction information to know which subnodes to select,
-		//	//   in the case that *this* child has children
-		//{
-		//	for (const nodeindex_t& index : SVONStatics::dirChildOffsets[i])
-		//	{
-		//		// This is the link to our first child, we just need to add our offsets
-		//		SVONLink link = neighbour.myFirstChild;
-		//		const SVONNode& linkNode = GetNode(link);
-		//		if(!linkNode.HasChildren())
-		//			oNeighbours.Emplace(link.GetLayerIndex(), link.GetNodeIndex() + index, link.GetSubnodeIndex());
-		//	}
-		//}
 	}
 }
 
@@ -470,12 +442,12 @@ bool ASVONVolume::IsReadyForNavigation()
 }
 
 
-int32 ASVONVolume::GetNodesInLayer(layerindex_t aLayer)
+int32 ASVONVolume::GetNumNodesInLayer(layerindex_t aLayer)
 {
 	return FMath::Pow(FMath::Pow(2, (myVoxelPower - (aLayer))), 3);
 }
 
-int32 ASVONVolume::GetNodesPerSide(layerindex_t aLayer)
+int32 ASVONVolume::GetNumNodesPerSide(layerindex_t aLayer)
 {
 	return FMath::Pow(2, (myVoxelPower - (aLayer)));
 }
@@ -488,7 +460,7 @@ void ASVONVolume::BeginPlay()
 	}
 	else
 	{
-		SetupVolume();
+		Init();
 	}
 
 
@@ -554,7 +526,7 @@ void ASVONVolume::BuildNeighbourLinks(layerindex_t aLayer)
 
 bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug)
 {
-	int32 maxCoord = GetNodesPerSide(aLayer);
+	int32 maxCoord = GetNumNodesPerSide(aLayer);
 	SVONNode& node = GetLayer(aLayer)[aNodeIndex];
 	TArray<SVONNode>& layer = GetLayer(aLayer);
 
@@ -623,11 +595,8 @@ bool ASVONVolume::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNo
 		nodeDelta += (isHigher ? 1 : -1);
 	}
 
-
-
 	// I'm not entirely sure if it's valid to reach the end? Hmmm...
 	return false;
-
 }
 
 void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
@@ -657,18 +626,6 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 	}
 }
 
-TArray<SVONNode>& ASVONVolume::GetLayer(layerindex_t aLayer)
-{
-	return myData.myLayers[aLayer];
-}
-
-const TArray<SVONNode>& ASVONVolume::GetLayer(layerindex_t aLayer) const
-{
-	return myData.myLayers[aLayer];
-}
-
-
-
 // Check for blocking...using this cached set for each layer for now for fast lookups
 bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode)
 {
@@ -687,6 +644,7 @@ bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode)
 	return false;
 }
 
+// World blocking test here, we're using a physics box trace at the moment
 bool ASVONVolume::IsBlocked(const FVector& aPosition, const float aSize) const
 {
 	FCollisionQueryParams params;
@@ -702,11 +660,6 @@ bool ASVONVolume::IsInDebugRange(const FVector& aPosition) const
 	return FVector::DistSquared(myDebugPosition, aPosition) < myDebugDistance * myDebugDistance;
 }
 
-bool ASVONVolume::SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArrayIndex, const dir aDirection)
-{
-	return false;
-}
-
 void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 {
 	nodeindex_t leafIndex = 0;
@@ -714,7 +667,7 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 	if (aLayer == 0)
 	{
 		// Run through all our coordinates
-		int32 numNodes = GetNodesInLayer(aLayer);
+		int32 numNodes = GetNumNodesInLayer(aLayer);
 		for (int32 i = 0; i < numNodes; i++)
 		{
 			int index = (i);
@@ -774,7 +727,7 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 	else if (GetLayer(aLayer - 1).Num() > 1)
 	{
 		int nodeCounter = 0;
-		int32 numNodes = GetNodesInLayer(aLayer);
+		int32 numNodes = GetNumNodesInLayer(aLayer);
 		for (int32 i = 0; i < numNodes; i++)
 		{
 			// Do we have any blocking children, or siblings?
@@ -826,7 +779,6 @@ void ASVONVolume::RasterizeLayer(layerindex_t aLayer)
 					if (myShowMortonCodes && IsInDebugRange(nodePos)) 
 					{
 						DrawDebugString(GetWorld(), nodePos, FString::FromInt(aLayer) + ":" + FString::FromInt(index), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
-						//myDebugHUD->AddDebugText(FString::FromInt(aLayer) + ":" + FString::FromInt(index), GetWorld()->GetWorldSettings(), -1.0f, nodePos, nodePos, SVONStatics::myLayerColors[aLayer], true, true, false, nullptr);
 
 					}
 				}

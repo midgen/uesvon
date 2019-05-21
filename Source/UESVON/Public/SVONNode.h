@@ -14,6 +14,7 @@ struct UESVON_API SVONNode
 	SVONLink myNeighbours[6];
 
 	SVONNode() :
+		myCode(0),
 		myParent(SVONLink::GetInvalidLink()),
 		myFirstChild(SVONLink::GetInvalidLink()) {}
 

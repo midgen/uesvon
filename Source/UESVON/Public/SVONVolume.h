@@ -20,13 +20,14 @@ enum class ESVOGenerationStrategy : uint8
 };
 
 /**
- * 
+ *  SVONVolume contains the navigation data for the volume, and the methods for generating that data
+		See SVONMediator for public query functions
  */
 UCLASS(hidecategories = (Tags, Cooking, Actor, HLOD, Mobile, LOD))
 class UESVON_API ASVONVolume : public AVolume
 {
 	GENERATED_UCLASS_BODY()
-	
+
 public:
 
 	virtual void BeginPlay() override;
@@ -45,6 +46,7 @@ public:
 	//~ End UObject Interface
 #endif // WITH_EDITOR
 
+	// Debug Info
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	float myDebugDistance = 5000.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
@@ -57,15 +59,18 @@ public:
 	bool myShowNeighbourLinks = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	bool myShowParentChildLinks = false;
+
+	// Generation parameters
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	int32 myVoxelPower = 3;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	TEnumAsByte<ECollisionChannel> myCollisionChannel;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	float myClearance = 0.f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
 	ESVOGenerationStrategy myGenerationStrategy = ESVOGenerationStrategy::UseBaked;
+
+	// Generated data attributes
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UESVON" )
 	uint8 myNumLayers = 0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UESVON")
@@ -76,16 +81,16 @@ public:
 	const FVector& GetOrigin() const { return myOrigin; }
 	const FVector& GetExtent() const { return myExtent; }
 	const uint8 GetMyNumLayers() const { return myNumLayers; }
-	const TArray<SVONNode>& GetLayer(layerindex_t aLayer) const;
 	float GetVoxelSize(layerindex_t aLayer) const;
 
 	bool IsReadyForNavigation();
 	
-	bool GetLinkPosition(const SVONLink& aLink, FVector& oPosition) const;
-	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition) const;
+	// Public const getters
 	const SVONNode& GetNode(const SVONLink& aLink) const;
 	const SVONLeafNode& GetLeafNode(nodeindex_t aIndex) const;
-
+	bool GetLinkPosition(const SVONLink& aLink, FVector& oPosition) const;
+	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition) const;
+	const TArray<SVONNode>& GetLayer(layerindex_t aLayer) const { return myData.myLayers[aLayer]; };
 	void GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
 	void GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
 
@@ -94,42 +99,39 @@ public:
 	void ClearData();
 
 private:
-	bool myIsReadyForNavigation = false;
 
+	// The navigation data
+	SVONData myData;
+	// temporary data used during nav data generation first pass rasterize
+	TArray<TSet<mortoncode_t>> myBlockedIndices;
+	// Helper members
 	FVector myOrigin;
 	FVector myExtent;
-
+	// Used for defining debug visualiation range
 	FVector myDebugPosition;
-
-	SVONData myData;
-
-	// First pass rasterize results
-	TArray<TSet<mortoncode_t>> myBlockedIndices;
-
-	TArray<SVONNode>& GetLayer(layerindex_t aLayer);
-
-	void SetupVolume();
-
+	bool myIsReadyForNavigation = false;
 	
+	TArray<SVONNode>& GetLayer(layerindex_t aLayer) { return myData.myLayers[aLayer]; };
 
+
+	void Init();
+
+	// Generation methods
 	bool FirstPassRasterize();
 	void RasterizeLayer(layerindex_t aLayer);
-
-
-	int32 GetNodesInLayer(layerindex_t aLayer);
-	int32 GetNodesPerSide(layerindex_t aLayer);
-
-
 	bool GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oIndex) const;
-
 	void BuildNeighbourLinks(layerindex_t aLayer);
 	bool FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug);
 	void RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex);
-	bool SetNeighbour(const layerindex_t aLayer, const nodeindex_t aArrayIndex, const dir aDirection);
-
 	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode);
+	bool IsBlocked(const FVector& aPosition, const float aSize) const;	
 
-	bool IsBlocked(const FVector& aPosition, const float aSize) const;
 
+	// Getters
+	int32 GetNumNodesInLayer(layerindex_t aLayer);
+	int32 GetNumNodesPerSide(layerindex_t aLayer);
+
+
+	// Debug methods
 	bool IsInDebugRange(const FVector& aPosition) const;
 };
