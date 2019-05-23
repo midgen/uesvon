@@ -40,7 +40,7 @@ public:
 		static UAITask_SVONMoveTo* SVONAIMoveTo(AAIController* Controller, FVector GoalLocation, bool aUseAsyncPathfinding, AActor* GoalActor = nullptr,
 			float AcceptanceRadius = -1.f, EAIOptionFlag::Type StopOnOverlap = EAIOptionFlag::Default, bool bLockAILogic = true, bool bUseContinuosGoalTracking = false);
 
-	DEPRECATED(4.12, "This function is now depreacted, please use version with FAIMoveRequest parameter")
+	UE_DEPRECATED(4.12, "This function is now depreacted, please use version with FAIMoveRequest parameter")
 		void SetUp(AAIController* Controller, FVector GoalLocation, AActor* GoalActor = nullptr, float AcceptanceRadius = -1.f, EAIOptionFlag::Type StopOnOverlap = EAIOptionFlag::Default);
 
 	/** Allows custom move request tweaking. Note that all MoveRequest need to

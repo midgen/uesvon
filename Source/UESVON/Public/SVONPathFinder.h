@@ -37,9 +37,9 @@ class UESVON_API SVONPathFinder
 {
 public:
 	SVONPathFinder(UWorld* aWorld, const ASVONVolume& aVolume, SVONPathFinderSettings& aSettings)
-		: myWorld(aWorld),
-		myVolume(aVolume),
-		mySettings(aSettings)
+		: myVolume(aVolume),
+		mySettings(aSettings),
+		myWorld(aWorld)
 		{};
 	~SVONPathFinder() {};
 

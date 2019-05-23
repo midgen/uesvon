@@ -17,13 +17,13 @@ class FSVONFindPathTask : public FNonAbandonableTask
 public:
 	FSVONFindPathTask(ASVONVolume& aVolume, SVONPathFinderSettings& aSettings,  UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath, FThreadSafeBool& aCompleteFlag, TArray<FVector>& aDebugOpenPoints) :
 		myVolume(aVolume),
-		mySettings(aSettings),
 		myWorld(aWorld),
 		myStart(aStart),
 		myTarget(aTarget),
 		myStartPos(aStartPos),
 		myTargetPos(aTargetPos),
 		myPath(oPath),
+		mySettings(aSettings),
 		myCompleteFlag(aCompleteFlag),
 		myDebugOpenPoints(aDebugOpenPoints)
 	{}
