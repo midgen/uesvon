@@ -50,9 +50,7 @@ protected:
 
 	// The current navigation volume
 	ASVONVolume* myCurrentNavVolume;
-
-	// Do I have a valid nav volume ready?
-	bool HasNavVolume();
+	bool HasNavData() const;
 
 	// Check the scene for a valid volume that I am within the extents of
 	bool FindVolume();
@@ -60,33 +58,22 @@ protected:
 	// Print current layer/morton code information
 	void DebugLocalPosition(FVector& aPosition);
 
-
-
 	FSVONNavPathSharedPtr mySVONPath;
 
-	SVONLink myLastLocation;
-
-	TQueue<int> myJobQueue;
-	TArray<FVector> myDebugPoints;
-
-	bool myIsBusy;
-
-	int myPointDebugIndex;
+	mutable SVONLink myLastLocation;
 
 public:	
-
-	virtual FVector GetPawnPosition();
+	const ASVONVolume* GetCurrentVolume() const { return myCurrentNavVolume; }
+	// Get a Nav position
+	SVONLink GetNavPosition(FVector& aPosition) const;
+	virtual FVector GetPawnPosition() const;
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// Get a Nav position
-	SVONLink GetNavPosition(FVector& aPosition);
-
-	const ASVONVolume* GetCurrentVolume() const { return myCurrentNavVolume; }
+	
 
 	/* This method isn't hooked up at the moment, pending integration with existing systems */
 	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FThreadSafeBool& aCompleteFlag, FSVONNavPathSharedPtr* oNavPath);
-
 	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath);
 
 	FSVONNavPathSharedPtr& GetPath() { return mySVONPath; }

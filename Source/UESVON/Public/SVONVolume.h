@@ -78,19 +78,19 @@ public:
 
 	bool Generate();
 
-	const FVector& GetOrigin() const { return myOrigin; }
-	const FVector& GetExtent() const { return myExtent; }
 	const uint8 GetMyNumLayers() const { return myNumLayers; }
 	float GetVoxelSize(layerindex_t aLayer) const;
 
 	bool IsReadyForNavigation();
 	
 	// Public const getters
+	const TArray<SVONNode>& GetLayer(layerindex_t aLayer) const { return myData.myLayers[aLayer]; };
 	const SVONNode& GetNode(const SVONLink& aLink) const;
 	const SVONLeafNode& GetLeafNode(nodeindex_t aIndex) const;
+	
 	bool GetLinkPosition(const SVONLink& aLink, FVector& oPosition) const;
 	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition) const;
-	const TArray<SVONNode>& GetLayer(layerindex_t aLayer) const { return myData.myLayers[aLayer]; };
+
 	void GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
 	void GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
 
@@ -109,12 +109,11 @@ private:
 	FVector myExtent;
 	// Used for defining debug visualiation range
 	FVector myDebugPosition;
-	bool myIsReadyForNavigation = false;
+	bool myIsReadyForNavigation{ false };
 	
 	TArray<SVONNode>& GetLayer(layerindex_t aLayer) { return myData.myLayers[aLayer]; };
 
-
-	void Init();
+	void UpdateBounds();
 
 	// Generation methods
 	bool FirstPassRasterize();
@@ -123,14 +122,12 @@ private:
 	void BuildNeighbourLinks(layerindex_t aLayer);
 	bool FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug);
 	void RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex);
-	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode);
+	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode) const;
 	bool IsBlocked(const FVector& aPosition, const float aSize) const;	
 
-
 	// Getters
-	int32 GetNumNodesInLayer(layerindex_t aLayer);
-	int32 GetNumNodesPerSide(layerindex_t aLayer);
-
+	int32 GetNumNodesInLayer(layerindex_t aLayer) const;
+	int32 GetNumNodesPerSide(layerindex_t aLayer) const;
 
 	// Debug methods
 	bool IsInDebugRange(const FVector& aPosition) const;

@@ -15,7 +15,7 @@ class FSVONFindPathTask : public FNonAbandonableTask
 	friend class FAutoDeleteAsyncTask<FSVONFindPathTask>;
 
 public:
-	FSVONFindPathTask(ASVONVolume& aVolume, SVONPathFinderSettings& aSettings,  UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath, FThreadSafeBool& aCompleteFlag, TArray<FVector>& aDebugOpenPoints) :
+	FSVONFindPathTask(ASVONVolume& aVolume, SVONPathFinderSettings& aSettings,  UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath, FThreadSafeBool& aCompleteFlag) :
 		myVolume(aVolume),
 		myWorld(aWorld),
 		myStart(aStart),
@@ -24,8 +24,7 @@ public:
 		myTargetPos(aTargetPos),
 		myPath(oPath),
 		mySettings(aSettings),
-		myCompleteFlag(aCompleteFlag),
-		myDebugOpenPoints(aDebugOpenPoints)
+		myCompleteFlag(aCompleteFlag)
 	{}
 
 protected:
@@ -41,8 +40,6 @@ protected:
 	SVONPathFinderSettings mySettings;
 
 	FThreadSafeBool& myCompleteFlag;
-
-	TArray<FVector>& myDebugOpenPoints;
 
 	void DoWork();
 

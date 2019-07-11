@@ -49,8 +49,7 @@ void ASVONVolume::OnPostShapeChanged()
 bool ASVONVolume::Generate()
 {
 #if WITH_EDITOR
-
-
+	// Needed for debug rendering
 	GetWorld()->PersistentLineBatcher->SetComponentTickEnabled(false);
 
 	// If we're running the game, use the first player controller position for debugging
@@ -58,26 +57,22 @@ bool ASVONVolume::Generate()
 	if (pc) {
 		myDebugPosition = pc->GetPawn()->GetActorLocation();
 	}
-	// try using the viewport camera location if we're just in the editor
+	// otherwise, use the viewport camera location if we're just in the editor
 	else if(GetWorld()->ViewLocationsRenderedLastFrame.Num() > 0)
 	{
 		myDebugPosition = GetWorld()->ViewLocationsRenderedLastFrame[0];
 	}
 
-
 	FlushPersistentDebugLines(GetWorld());
 
-#endif // WITH_EDITOR
-
-	Init();
-
-#if WITH_EDITOR
 	// Setup timing
 	milliseconds startMs = duration_cast<milliseconds>(
 		system_clock::now().time_since_epoch()
 		);
 
-#endif
+#endif // WITH_EDITOR
+
+	UpdateBounds();
 
 	// Clear data (for now)
 	myBlockedIndices.Empty();
@@ -138,7 +133,7 @@ bool ASVONVolume::Generate()
 	return true;
 }
 
-void ASVONVolume::Init()
+void ASVONVolume::UpdateBounds()
 {
 	// Get bounds and extent
 	FBox bounds = GetComponentsBoundingBox(true);
@@ -442,12 +437,12 @@ bool ASVONVolume::IsReadyForNavigation()
 }
 
 
-int32 ASVONVolume::GetNumNodesInLayer(layerindex_t aLayer)
+int32 ASVONVolume::GetNumNodesInLayer(layerindex_t aLayer) const
 {
 	return FMath::Pow(FMath::Pow(2, (myVoxelPower - (aLayer))), 3);
 }
 
-int32 ASVONVolume::GetNumNodesPerSide(layerindex_t aLayer)
+int32 ASVONVolume::GetNumNodesPerSide(layerindex_t aLayer) const
 {
 	return FMath::Pow(2, (myVoxelPower - (aLayer)));
 }
@@ -460,7 +455,7 @@ void ASVONVolume::BeginPlay()
 	}
 	else
 	{
-		Init();
+		UpdateBounds();
 	}
 
 
@@ -627,7 +622,7 @@ void ASVONVolume::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex)
 }
 
 // Check for blocking...using this cached set for each layer for now for fast lookups
-bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode)
+bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode) const
 {
 	mortoncode_t parentCode = aCode >> 3;
 

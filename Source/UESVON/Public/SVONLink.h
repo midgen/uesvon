@@ -45,7 +45,7 @@ struct UESVON_API SVONLink
 
 FORCEINLINE uint32 GetTypeHash(const SVONLink& b)
 {
-	return FCrc::MemCrc_DEPRECATED(&b, sizeof(SVONLink));
+	return *(uint32*)&b;
 }
 
 
