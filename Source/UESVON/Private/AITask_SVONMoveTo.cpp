@@ -1,17 +1,20 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
-#include "AITask_SVONMoveTo.h"
-#include "UESVON.h"
-#include "SVONNavigationComponent.h"
-#include "SVONNavigationPath.h"
-#include "SVONVolume.h"
-#include "UObject/Package.h"
-#include "TimerManager.h"
-#include "AISystem.h"
-#include "AIController.h"
-#include "VisualLogger/VisualLogger.h"
-#include "AIResources.h"
-#include "GameplayTasksComponent.h"
+#include "UESVON/Public/AITask_SVONMoveTo.h"
+#include "UESVON/Public/UESVON.h"
+#include "UESVON/Public/SVONNavigationComponent.h"
+#include "UESVON/Public/SVONNavigationPath.h"
+#include "UESVON/Public/SVONVolume.h"
+
+#include <Runtime/AIModule/Classes/AIController.h>
+#include <Runtime/AIModule/Classes/AIResources.h>
+#include <Runtime/AIModule/Classes/AISystem.h>
+#include <Runtime/Engine/Public/VisualLogger/VisualLogger.h>
+#include <Runtime/GameplayTasks/Classes/GameplayTasksComponent.h>
+
+//#include "UObject/Package.h"
+//#include "TimerManager.h"
+//#include "AISystem.h"
 
 UAITask_SVONMoveTo::UAITask_SVONMoveTo(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

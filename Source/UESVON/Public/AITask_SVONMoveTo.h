@@ -1,15 +1,13 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/ObjectMacros.h"
-#include "Engine/EngineTypes.h"
-#include "AITypes.h"
-#include "Navigation/PathFollowingComponent.h"
-#include "Tasks/AITask.h"
-#include "SVONTypes.h"
-#include "SVONDefines.h"
-#include "ThreadSafeBool.h"
+#include "UESVON/Public/SVONDefines.h"
+#include "UESVON/Public/SVONTypes.h"
+
+#include <Runtime/AIModule/Classes/Navigation/PathFollowingComponent.h>
+#include <Runtime/AIModule/Classes/Tasks/AITask.h>
+#include <Runtime/Core/Public/HAL/ThreadSafeBool.h>
+
 #include "AITask_SVONMoveTo.generated.h"
 
 class AAIController;
@@ -17,7 +15,6 @@ class USVONNavigationComponent;
 struct FSVONNavigationPath;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSVONMoveTaskCompletedSignature, TEnumAsByte<EPathFollowingResult::Type>, Result, AAIController*, AIController);
-
 
 UCLASS()
 class UESVON_API UAITask_SVONMoveTo : public UAITask
@@ -37,11 +34,11 @@ public:
 	bool WasMoveSuccessful() const { return MoveResult == EPathFollowingResult::Success; }
 
 	UFUNCTION(BlueprintCallable, Category = "AI|Tasks", meta = (AdvancedDisplay = "AcceptanceRadius,StopOnOverlap,AcceptPartialPath,bUsePathfinding,bUseContinuosGoalTracking", DefaultToSelf = "Controller", BlueprintInternalUseOnly = "TRUE", DisplayName = "SVON Move To Location or Actor"))
-		static UAITask_SVONMoveTo* SVONAIMoveTo(AAIController* Controller, FVector GoalLocation, bool aUseAsyncPathfinding, AActor* GoalActor = nullptr,
-			float AcceptanceRadius = -1.f, EAIOptionFlag::Type StopOnOverlap = EAIOptionFlag::Default, bool bLockAILogic = true, bool bUseContinuosGoalTracking = false);
+	static UAITask_SVONMoveTo* SVONAIMoveTo(AAIController* Controller, FVector GoalLocation, bool aUseAsyncPathfinding, AActor* GoalActor = nullptr,
+		float AcceptanceRadius = -1.f, EAIOptionFlag::Type StopOnOverlap = EAIOptionFlag::Default, bool bLockAILogic = true, bool bUseContinuosGoalTracking = false);
 
 	UE_DEPRECATED(4.12, "This function is now depreacted, please use version with FAIMoveRequest parameter")
-		void SetUp(AAIController* Controller, FVector GoalLocation, AActor* GoalActor = nullptr, float AcceptanceRadius = -1.f, EAIOptionFlag::Type StopOnOverlap = EAIOptionFlag::Default);
+	void SetUp(AAIController* Controller, FVector GoalLocation, AActor* GoalActor = nullptr, float AcceptanceRadius = -1.f, EAIOptionFlag::Type StopOnOverlap = EAIOptionFlag::Default);
 
 	/** Allows custom move request tweaking. Note that all MoveRequest need to
 	*	be performed before PerformMove is called. */
@@ -49,7 +46,6 @@ public:
 
 	/** Switch task into continuous tracking mode: keep restarting move toward goal actor. Only pathfinding failure or external cancel will be able to stop this task. */
 	void SetContinuousGoalTracking(bool bEnable);
-
 
 	void TickTask(float DeltaTime) override;
 
@@ -59,16 +55,15 @@ protected:
 	FThreadSafeBool myAsyncTaskComplete;
 	bool myUseAsyncPathfinding;
 
+	UPROPERTY(BlueprintAssignable)
+	FGenericGameplayTaskDelegate OnRequestFailed;
 
 	UPROPERTY(BlueprintAssignable)
-		FGenericGameplayTaskDelegate OnRequestFailed;
-
-	UPROPERTY(BlueprintAssignable)
-		FSVONMoveTaskCompletedSignature OnMoveFinished;
+	FSVONMoveTaskCompletedSignature OnMoveFinished;
 
 	/** parameters of move request */
 	UPROPERTY()
-		FAIMoveRequest MoveRequest;
+	FAIMoveRequest MoveRequest;
 
 	/** handle of path following's OnMoveFinished delegate */
 	FDelegateHandle PathFinishDelegateHandle;

@@ -1,16 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
-#include "CoreMinimal.h"
-#include "GameFramework/Volume.h"
-#include "SVONDefines.h"
-#include "SVONNode.h"
-#include "SVONLeafNode.h"
-#include "SVONData.h"
-#include "UESVON.h"
-#include "SVONVolume.generated.h"
+#include "UESVON/Public/SVONData.h"
+#include "UESVON/Public/SVONDefines.h"
+#include "UESVON/Public/SVONLeafNode.h"
+#include "UESVON/Public/SVONNode.h"
+#include "UESVON/Public/UESVON.h"
 
+#include <Runtime/Engine/Classes/GameFramework/Volume.h>
+
+#include "SVONVolume.generated.h"
 
 UENUM(BlueprintType)
 enum class ESVOGenerationStrategy : uint8
@@ -26,25 +24,43 @@ enum class ESVOGenerationStrategy : uint8
 UCLASS(hidecategories = (Tags, Cooking, Actor, HLOD, Mobile, LOD))
 class UESVON_API ASVONVolume : public AVolume
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
 
 public:
 
-	virtual void BeginPlay() override;
+	ASVONVolume(const FObjectInitializer& ObjectInitializer);
 
 	//~ Begin AActor Interface
-	virtual void PostRegisterAllComponents() override;
-	virtual void PostUnregisterAllComponents() override;
+	void BeginPlay() override;
+	void PostRegisterAllComponents() override;
+	void PostUnregisterAllComponents() override;
+	bool ShouldTickIfViewportsOnly() const override { return true; }
 	//~ End AActor Interface
+
 #if WITH_EDITOR
 	//~ Begin UObject Interface
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-	virtual void PostEditUndo() override;
-	void OnPostShapeChanged();
-
-	bool ShouldTickIfViewportsOnly() const override { return true; }
+	void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	void PostEditUndo() override;
 	//~ End UObject Interface
-#endif // WITH_EDITOR
+#endif // WITH_EDITOR 
+
+	//~ Begin UObject 
+	void Serialize(FArchive& Ar) override;
+	//~ End UObject 
+
+	bool Generate();
+	void ClearData();
+
+	bool IsReadyForNavigation() const;
+	const TArray<SVONNode>& GetLayer(layerindex_t aLayer) const { return myData.myLayers[aLayer]; };
+	const SVONNode& GetNode(const SVONLink& aLink) const;
+	const SVONLeafNode& GetLeafNode(nodeindex_t aIndex) const;
+	bool GetLinkPosition(const SVONLink& aLink, FVector& oPosition) const;
+	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition) const;
+	void GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
+	void GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
+	float GetVoxelSize(layerindex_t aLayer) const;
+	const uint8 GetMyNumLayers() const { return myNumLayers; }
 
 	// Debug Info
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UESVON")
@@ -71,35 +87,12 @@ public:
 	ESVOGenerationStrategy myGenerationStrategy = ESVOGenerationStrategy::UseBaked;
 
 	// Generated data attributes
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UESVON" )
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UESVON")
 	uint8 myNumLayers = 0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UESVON")
 	int myNumBytes = 0;
 
-	bool Generate();
-
-	const uint8 GetMyNumLayers() const { return myNumLayers; }
-	float GetVoxelSize(layerindex_t aLayer) const;
-
-	bool IsReadyForNavigation();
-	
-	// Public const getters
-	const TArray<SVONNode>& GetLayer(layerindex_t aLayer) const { return myData.myLayers[aLayer]; };
-	const SVONNode& GetNode(const SVONLink& aLink) const;
-	const SVONLeafNode& GetLeafNode(nodeindex_t aIndex) const;
-	
-	bool GetLinkPosition(const SVONLink& aLink, FVector& oPosition) const;
-	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition) const;
-
-	void GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
-	void GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNeighbours) const;
-
-	virtual void Serialize(FArchive& Ar) override;
-
-	void ClearData();
-
 private:
-
 	// The navigation data
 	SVONData myData;
 	// temporary data used during nav data generation first pass rasterize
@@ -109,26 +102,25 @@ private:
 	FVector myExtent;
 	// Used for defining debug visualiation range
 	FVector myDebugPosition;
-	bool myIsReadyForNavigation{ false };
-	
+
 	TArray<SVONNode>& GetLayer(layerindex_t aLayer) { return myData.myLayers[aLayer]; };
+
+	bool myIsReadyForNavigation;
 
 	void UpdateBounds();
 
 	// Generation methods
 	bool FirstPassRasterize();
 	void RasterizeLayer(layerindex_t aLayer);
-	bool GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oIndex) const;
 	void BuildNeighbourLinks(layerindex_t aLayer);
 	bool FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug);
 	void RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex);
-	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode) const;
-	bool IsBlocked(const FVector& aPosition, const float aSize) const;	
 
-	// Getters
+	bool GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oIndex) const;
+	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode) const;
+	bool IsBlocked(const FVector& aPosition, const float aSize) const;
 	int32 GetNumNodesInLayer(layerindex_t aLayer) const;
 	int32 GetNumNodesPerSide(layerindex_t aLayer) const;
 
-	// Debug methods
 	bool IsInDebugRange(const FVector& aPosition) const;
 };

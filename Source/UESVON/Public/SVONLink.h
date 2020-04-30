@@ -1,7 +1,5 @@
 #pragma once
 
-#include "CoreMinimal.h"
-
 struct UESVON_API SVONLink
 {
 	unsigned int myLayerIndex:4;

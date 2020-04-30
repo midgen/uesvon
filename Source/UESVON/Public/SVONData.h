@@ -1,22 +1,21 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "SVONNode.h"
-#include "SVONLeafNode.h"
+#include "UESVON/Public/SVONLeafNode.h"
+#include "UESVON/Public/SVONNode.h"
 
 struct SVONData
 {
 	// SVO data
 	TArray<TArray<SVONNode>> myLayers;
 	TArray<SVONLeafNode> myLeafNodes;
-	
+
 	void Reset()
 	{
 		myLayers.Empty();
 		myLeafNodes.Empty();
 	}
 
-	int GetSize() 
+	int GetSize()
 	{
 		int result = 0;
 		result += myLeafNodes.Num() * sizeof(SVONLeafNode);
@@ -29,7 +28,7 @@ struct SVONData
 	}
 };
 
-FORCEINLINE FArchive &operator <<(FArchive &Ar, SVONData& aSVONData)
+FORCEINLINE FArchive& operator<<(FArchive& Ar, SVONData& aSVONData)
 {
 	Ar << aSVONData.myLayers;
 	Ar << aSVONData.myLeafNodes;

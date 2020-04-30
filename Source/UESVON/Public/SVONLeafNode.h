@@ -1,11 +1,11 @@
 #pragma once
 
-#include "libmorton/morton.h"
+#include "UESVON/Private/libmorton/morton.h"
+#include "UESVON/Public/SVONDefines.h"
 
 struct UESVON_API SVONLeafNode
 {
 	uint_fast64_t myVoxelGrid = 0;
-
 
 	inline bool GetNodeAt(uint_fast32_t aX, uint_fast32_t aY, uint_fast32_t aZ) const
 	{
@@ -42,7 +42,7 @@ struct UESVON_API SVONLeafNode
 	}
 };
 
-FORCEINLINE FArchive &operator <<(FArchive &Ar, SVONLeafNode& aSVONLeafNode)
+FORCEINLINE FArchive& operator<<(FArchive& Ar, SVONLeafNode& aSVONLeafNode)
 {
 	Ar << aSVONLeafNode.myVoxelGrid;
 	return Ar;

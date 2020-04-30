@@ -1,20 +1,20 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "SVONNavigationComponent.h"
-#include "GameFramework/Actor.h"
-#include "Kismet/GameplayStatics.h"
-#include "SVONVolume.h"
-#include "SVONLink.h"
-#include "SVONPathFinder.h"
-#include "SVONNavigationPath.h"
-#include "SVONFindPathTask.h"
-#include "DrawDebugHelpers.h"
-#include "Runtime/NavigationSystem/Public/NavigationData.h"
-#include "Runtime/Engine/Classes/Components/LineBatchComponent.h"
+#include "UESVON/Public/SVONNavigationComponent.h"
+#include "UESVON/Public/SVONFindPathTask.h"
+#include "UESVON/Public/SVONLink.h"
+#include "UESVON/Public/SVONNavigationPath.h"
+#include "UESVON/Public/SVONPathFinder.h"
+#include "UESVON/Public/SVONVolume.h"
+
+#include <Runtime/Engine/Public/DrawDebugHelpers.h>
+#include <Runtime/Engine/Classes/GameFramework/Actor.h>
+#include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
+#include <Runtime/Engine/Classes/Components/LineBatchComponent.h>
+#include <Runtime/NavigationSystem/Public/NavigationData.h>
 
 // Sets default values for this component's properties
-USVONNavigationComponent::USVONNavigationComponent()
-//	: myIsBusy(false)
+USVONNavigationComponent::USVONNavigationComponent(const FObjectInitializer& ObjectInitializer)
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -22,9 +22,7 @@ USVONNavigationComponent::USVONNavigationComponent()
 	myLastLocation = SVONLink(0, 0, 0);
 
 	mySVONPath = MakeShareable<FSVONNavigationPath>(new FSVONNavigationPath());
-
 }
-
 
 // Called when the game starts
 void USVONNavigationComponent::BeginPlay()
@@ -65,7 +63,7 @@ void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	{
 		FindVolume();
 	}
-	else if (myCurrentNavVolume->IsReadyForNavigation())// && !myIsBusy)
+	else if (myCurrentNavVolume->IsReadyForNavigation()) // && !myIsBusy)
 	{
 		FVector location = GetPawnPosition();
 		if (DebugPrintMortonCodes)
@@ -97,7 +95,7 @@ SVONLink USVONNavigationComponent::GetNavPosition(FVector& aPosition) const
 
 			DrawDebugLine(GetWorld(), GetPawnPosition(), currentNodePosition, isValid ? FColor::Green : FColor::Red, false, -1.f, 0, 10.f);
 			DrawDebugString(GetWorld(), GetPawnPosition() + FVector(0.f, 0.f, -50.f), navLink.ToString(), NULL, FColor::Yellow, 0.01f);
-		}	
+		}
 	}
 	return navLink;
 }
@@ -136,7 +134,7 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& aStartPosition, cons
 		settings.myPathCostType = PathCostType;
 		settings.mySmoothingIterations = SmoothingIterations;
 
-		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(*myCurrentNavVolume, settings, GetWorld(), startNavLink, targetNavLink, aStartPosition, aTargetPosition, oNavPath, aCompleteFlag  ))->StartBackgroundTask();
+		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(*myCurrentNavVolume, settings, GetWorld(), startNavLink, targetNavLink, aStartPosition, aTargetPosition, oNavPath, aCompleteFlag))->StartBackgroundTask();
 
 		return true;
 	}
@@ -203,7 +201,6 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 		path->SetIsReady(true);
 
 		return true;
-
 	}
 	else
 	{
@@ -215,7 +212,7 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 	return false;
 }
 
-void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition) 
+void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition)
 {
 
 	if (HasNavData())
@@ -226,17 +223,16 @@ void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition)
 			SVONMediator::GetVolumeXYZ(GetPawnPosition(), *myCurrentNavVolume, i, pos);
 			uint_fast64_t code = morton3D_64_encode(pos.X, pos.Y, pos.Z);
 			FString codeString = FString::FromInt(code);
-			DrawDebugString(GetWorld(), GetPawnPosition() + FVector(0.f, 0.f, i*50.0f), pos.ToString() + " - " + codeString, NULL, FColor::White, 0.01f);
+			DrawDebugString(GetWorld(), GetPawnPosition() + FVector(0.f, 0.f, i * 50.0f), pos.ToString() + " - " + codeString, NULL, FColor::White, 0.01f);
 		}
 	}
 }
- 
 
 FVector USVONNavigationComponent::GetPawnPosition() const
 {
 	FVector result;
 
-	AController * controller = Cast<AController>(GetOwner());
+	AController* controller = Cast<AController>(GetOwner());
 
 	if (controller)
 	{

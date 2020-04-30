@@ -1,8 +1,8 @@
-#include "SVONPathFinder.h"
-#include "SVONLink.h"
-#include "SVONNode.h"
-#include "SVONVolume.h"
-//#include "Runtime/NavigationSystem/Public/NavigationData.h"
+#include "UESVON/Public/SVONPathFinder.h"
+#include "UESVON/Public/SVONLink.h"
+#include "UESVON/Public/SVONNode.h"
+#include "UESVON/Public/SVONVolume.h"
+
 #include "SVONNavigationPath.h"
 
 int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath)
@@ -16,7 +16,6 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, cons
 	myGoal = aGoal;
 	myStart = aStart;
 
-
 	myOpenSet.Add(aStart);
 	myCameFrom.Add(aStart, aStart);
 	myGScore.Add(aStart, 0);
@@ -26,7 +25,7 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, cons
 
 	while (myOpenSet.Num() > 0)
 	{
-		
+
 		float lowestScore = FLT_MAX;
 		for (SVONLink& link : myOpenSet)
 		{
@@ -55,7 +54,7 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, cons
 
 		if (myCurrent.GetLayerIndex() == 0 && currentNode.myFirstChild.IsValid())
 		{
-			
+
 			myVolume.GetLeafNeighbours(myCurrent, neighbours);
 		}
 		else
@@ -76,7 +75,7 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, cons
 	return 0;
 }
 
-float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aTarget)
+float SVONPathFinder::HeuristicScore(const SVONLink& aStart, const SVONLink& aTarget)
 {
 	/* Just using manhattan distance for now */
 	float score = 0.f;
@@ -86,21 +85,21 @@ float SVONPathFinder::HeuristicScore( const SVONLink& aStart, const SVONLink& aT
 	myVolume.GetLinkPosition(aTarget, endPos);
 	switch (mySettings.myPathCostType)
 	{
-		case ESVONPathCostType::MANHATTAN:
-			score = FMath::Abs(endPos.X - startPos.X) + FMath::Abs(endPos.Y - startPos.Y) + FMath::Abs(endPos.Z - startPos.Z);
-			break;
-		case ESVONPathCostType::EUCLIDEAN:
-		default:
-			score = (startPos - endPos).Size();
-			break;
+	case ESVONPathCostType::MANHATTAN:
+		score = FMath::Abs(endPos.X - startPos.X) + FMath::Abs(endPos.Y - startPos.Y) + FMath::Abs(endPos.Z - startPos.Z);
+		break;
+	case ESVONPathCostType::EUCLIDEAN:
+	default:
+		score = (startPos - endPos).Size();
+		break;
 	}
-	
+
 	score *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(myVolume.GetMyNumLayers())) * mySettings.myNodeSizeCompensation);
 
 	return score;
 }
 
-float SVONPathFinder::GetCost( const SVONLink& aStart, const SVONLink& aTarget)
+float SVONPathFinder::GetCost(const SVONLink& aStart, const SVONLink& aTarget)
 {
 	float cost = 0.f;
 
@@ -112,7 +111,6 @@ float SVONPathFinder::GetCost( const SVONLink& aStart, const SVONLink& aTarget)
 	else
 	{
 
-
 		FVector startPos(0.f), endPos(0.f);
 		const SVONNode& startNode = myVolume.GetNode(aStart);
 		const SVONNode& endNode = myVolume.GetNode(aTarget);
@@ -122,7 +120,7 @@ float SVONPathFinder::GetCost( const SVONLink& aStart, const SVONLink& aTarget)
 	}
 
 	cost *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(myVolume.GetMyNumLayers())) * mySettings.myNodeSizeCompensation);
-		
+
 	return cost;
 }
 
@@ -143,7 +141,6 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 				myVolume.GetLinkPosition(aNeighbour, pos);
 				mySettings.myDebugPoints.Add(pos);
 			}
-
 		}
 
 		float t_gScore = FLT_MAX;
@@ -163,7 +160,7 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 
 void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCurrent, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath)
 {
-	
+
 	FSVONPathPoint pos;
 
 	TArray<FSVONPathPoint> points;
@@ -184,13 +181,11 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 				points[points.Num() - 1].myLayer = 1;
 			else
 				points[points.Num() - 1].myLayer = 0;
-
 		}
 		else
 		{
 			points[points.Num() - 1].myLayer = aCurrent.GetLayerIndex() + 1;
 		}
-		
 	}
 
 	if (points.Num() > 1)
@@ -213,8 +208,6 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 	{
 		oPath->Get()->GetPathPoints().Add(points[i]);
 	}
-	
-	
 }
 
 //void SVONPathFinder::Smooth_Chaikin(TArray<FVector>& somePoints, int aNumIterations)

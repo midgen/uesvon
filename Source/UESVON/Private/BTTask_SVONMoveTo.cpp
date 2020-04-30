@@ -1,16 +1,19 @@
 
-#include "BTTask_SVONMoveTo.h"
-#include "GameFramework/Actor.h"
-#include "AISystem.h"
-#include "Navigation/PathFollowingComponent.h"
-#include "BehaviorTree/Blackboard/BlackboardKeyType_Object.h"
-#include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"
-#include "VisualLogger/VisualLogger.h"
-#include "AIController.h"
-#include "BehaviorTree/BlackboardComponent.h"
-#include "AITask_SVONMoveTo.h"
+#include "UESVON/Public/BTTask_SVONMoveTo.h"
+#include "UESVON/Public/AITask_SVONMoveTo.h"
 
-UBTTask_SVONMoveTo::UBTTask_SVONMoveTo(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+#include <Runtime/AIModule/Classes/AIController.h>
+#include <Runtime/AIModule/Classes/AISystem.h>
+#include <Runtime/AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Object.h>
+#include <Runtime/AIModule/Classes/BehaviorTree/Blackboard/BlackboardKeyType_Vector.h>
+#include <Runtime/AIModule/Classes/BehaviorTree/BlackboardComponent.h>
+#include <Runtime/AIModule/Classes/Navigation/PathFollowingComponent.h>
+
+#include <Runtime/Engine/Classes/GameFramework/Actor.h>
+#include <Runtime/Engine/Public/VisualLogger/VisualLogger.h>
+
+UBTTask_SVONMoveTo::UBTTask_SVONMoveTo(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	NodeName = "SVON Move To";
 	bUseGameplayTasks = GET_AI_CONFIG_VAR(bEnableBTAITasks);
@@ -188,7 +191,7 @@ EBlackboardNotificationResult UBTTask_SVONMoveTo::OnBlackboardValueChange(const 
 	{
 		UE_VLOG(BehaviorComp, LogBehaviorTree, Error, TEXT("BT MoveTo \'%s\' task observing BB entry while no longer being active!"), *GetNodeName());
 
-		// resetting BBObserverDelegateHandle without unregistering observer since 
+		// resetting BBObserverDelegateHandle without unregistering observer since
 		// returning EBlackboardNotificationResult::RemoveObserver here will take care of that for us
 		MyMemory->BBObserverDelegateHandle.Reset(); //-V595
 
@@ -196,7 +199,7 @@ EBlackboardNotificationResult UBTTask_SVONMoveTo::OnBlackboardValueChange(const 
 	}
 
 	// this means the move has already started. MyMemory->bWaitingForPath == true would mean we're waiting for right moment to start it anyway,
-	// so we don't need to do anything due to BB value change 
+	// so we don't need to do anything due to BB value change
 	if (MyMemory != nullptr && MyMemory->bWaitingForPath == false && BehaviorComp->GetAIOwner() != nullptr)
 	{
 		check(BehaviorComp->GetAIOwner()->GetPathFollowingComponent());
@@ -241,7 +244,6 @@ EBlackboardNotificationResult UBTTask_SVONMoveTo::OnBlackboardValueChange(const 
 
 void UBTTask_SVONMoveTo::DescribeRuntimeValues(const UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTDescriptionVerbosity::Type Verbosity, TArray<FString>& Values) const
 {
-
 }
 
 FString UBTTask_SVONMoveTo::GetStaticDescription() const
@@ -263,7 +265,6 @@ FName UBTTask_SVONMoveTo::GetNodeIconName() const
 
 void UBTTask_SVONMoveTo::OnNodeCreated()
 {
-
 }
 #endif
 
@@ -343,9 +344,7 @@ EBTNodeResult::Type UBTTask_SVONMoveTo::PerformMoveTask(UBehaviorTreeComponent& 
 					}
 
 					MyMemory->bObserverCanFinishTask = true;
-					NodeResult = (MoveTask->GetState() != EGameplayTaskState::Finished) ? EBTNodeResult::InProgress :
-						MoveTask->WasMoveSuccessful() ? EBTNodeResult::Succeeded :
-						EBTNodeResult::Failed;
+					NodeResult = (MoveTask->GetState() != EGameplayTaskState::Finished) ? EBTNodeResult::InProgress : MoveTask->WasMoveSuccessful() ? EBTNodeResult::Succeeded : EBTNodeResult::Failed;
 				}
 			}
 			else
@@ -380,4 +379,3 @@ UAITask_SVONMoveTo* UBTTask_SVONMoveTo::PrepareMoveTask(UBehaviorTreeComponent& 
 
 	return MoveTask;
 }
-

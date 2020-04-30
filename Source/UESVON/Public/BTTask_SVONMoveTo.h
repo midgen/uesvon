@@ -2,13 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "UObject/ObjectMacros.h"
-#include "InputCoreTypes.h"
-#include "Templates/SubclassOf.h"
-#include "NavFilters/NavigationQueryFilter.h"
-#include "AITypes.h"
-#include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
+#include <Runtime/AIModule/Classes/BehaviorTree/Tasks/BTTask_BlackboardBase.h>
+
 #include "BTTask_SVONMoveTo.generated.h"
 
 class UAITask_SVONMoveTo;
@@ -35,7 +30,9 @@ struct FBTSVONMoveToTaskMemory
 UCLASS(config = Game)
 class UESVON_API UBTTask_SVONMoveTo : public UBTTask_BlackboardBase
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
+
+	UBTTask_SVONMoveTo(const FObjectInitializer& ObjectInitializer);
 
 	/** fixed distance added to threshold between AI and goal location in destination reach test */
 	UPROPERTY(config, Category = Node, EditAnywhere, meta = (ClampMin = "0.0", UIMin = "0.0"))

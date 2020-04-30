@@ -1,11 +1,11 @@
 #pragma once
 
+#include "UESVON/Public/SVONLink.h"
+#include "UESVON/Public/SVONPathFinder.h"
+#include "UESVON/Public/SVONTypes.h"
 
-#include "Runtime/Core/Public/Async/AsyncWork.h"
-#include "SVONLink.h"
-#include "SVONTypes.h"
-#include "SVONPathFinder.h"
-#include "ThreadSafeBool.h"
+#include <Runtime/Core/Public/Async/AsyncWork.h>
+#include <Runtime/Core/Public/HAL/ThreadSafeBool.h>
 
 class ASVONVolume;
 struct SVONPathFinderSettings;
@@ -15,17 +15,18 @@ class FSVONFindPathTask : public FNonAbandonableTask
 	friend class FAutoDeleteAsyncTask<FSVONFindPathTask>;
 
 public:
-	FSVONFindPathTask(ASVONVolume& aVolume, SVONPathFinderSettings& aSettings,  UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath, FThreadSafeBool& aCompleteFlag) :
-		myVolume(aVolume),
-		myWorld(aWorld),
-		myStart(aStart),
-		myTarget(aTarget),
-		myStartPos(aStartPos),
-		myTargetPos(aTargetPos),
-		myPath(oPath),
-		mySettings(aSettings),
-		myCompleteFlag(aCompleteFlag)
-	{}
+	FSVONFindPathTask(ASVONVolume& aVolume, SVONPathFinderSettings& aSettings, UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath, FThreadSafeBool& aCompleteFlag)
+		: myVolume(aVolume)
+		, myWorld(aWorld)
+		, myStart(aStart)
+		, myTarget(aTarget)
+		, myStartPos(aStartPos)
+		, myTargetPos(aTargetPos)
+		, myPath(oPath)
+		, mySettings(aSettings)
+		, myCompleteFlag(aCompleteFlag)
+	{
+	}
 
 protected:
 	ASVONVolume& myVolume;

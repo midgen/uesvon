@@ -1,9 +1,6 @@
-// Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
-
 #pragma once
 
-#include "CoreMinimal.h"
-#include "ModuleManager.h"
+#include <Runtime/Core/Public/Modules/ModuleManager.h>
 
 #if WITH_EDITOR
 DECLARE_LOG_CATEGORY_EXTERN(UESVON, Log, All);
@@ -13,8 +10,6 @@ DECLARE_LOG_CATEGORY_EXTERN(VUESVON, Log, All);
 class FUESVONModule : public IModuleInterface
 {
 public:
-
-	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 };
