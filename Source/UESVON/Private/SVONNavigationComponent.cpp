@@ -212,6 +212,18 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 	return false;
 }
 
+void USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, TArray<FVector>& OutPathPoints)
+{
+	FindPathImmediate(aStartPosition, aTargetPosition, &mySVONPath);
+
+	OutPathPoints.Empty();
+
+	for (const FSVONPathPoint& PathPoint : mySVONPath->GetPathPoints())
+	{
+		OutPathPoints.Emplace(PathPoint.myPosition);
+	}
+}
+
 void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition)
 {
 

@@ -55,6 +55,9 @@ public:
 	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FThreadSafeBool& aCompleteFlag, FSVONNavPathSharedPtr* oNavPath);
 	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath);
 
+	UFUNCTION(BlueprintCallable, Category = UESVON)
+	void FindPathImmediate(const FVector &aStartPosition, const FVector &aTargetPosition, TArray<FVector>& OutPathPoints);
+
 	FSVONNavPathSharedPtr& GetPath() { return mySVONPath; }
 
 protected:
