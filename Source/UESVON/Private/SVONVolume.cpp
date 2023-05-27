@@ -419,7 +419,7 @@ void ASVONVolume::Serialize(FArchive& Ar)
 
 float ASVONVolume::GetVoxelSize(layerindex_t aLayer) const
 {
-	return (myExtent.X / FMath::Pow(2, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1));
+	return (myExtent.X / FMath::Pow(2.f, myVoxelPower)) * (FMath::Pow(2.0f, aLayer + 1));
 }
 
 bool ASVONVolume::IsReadyForNavigation() const
@@ -429,12 +429,12 @@ bool ASVONVolume::IsReadyForNavigation() const
 
 int32 ASVONVolume::GetNumNodesInLayer(layerindex_t aLayer) const
 {
-	return FMath::Pow(FMath::Pow(2, (myVoxelPower - (aLayer))), 3);
+	return FMath::Pow(FMath::Pow(2.f, (myVoxelPower - (aLayer))), 3);
 }
 
 int32 ASVONVolume::GetNumNodesPerSide(layerindex_t aLayer) const
 {
-	return FMath::Pow(2, (myVoxelPower - (aLayer)));
+	return FMath::Pow(2.f, (myVoxelPower - (aLayer)));
 }
 
 void ASVONVolume::BeginPlay()
