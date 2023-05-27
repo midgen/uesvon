@@ -64,9 +64,6 @@ class UESVON_API UBTTask_SVONMoveTo : public UBTTask_BlackboardBase
 	UPROPERTY(Category = Node, EditAnywhere)
 		bool bUseAsyncPathfinding;
 
-	/** set automatically if move should use GameplayTasks */
-	uint32 bUseGameplayTasks : 1;
-
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;

@@ -16,7 +16,7 @@ UBTTask_SVONMoveTo::UBTTask_SVONMoveTo(const FObjectInitializer& ObjectInitializ
 	: Super(ObjectInitializer)
 {
 	NodeName = "SVON Move To";
-	bNotifyTick = ~bUseGameplayTasks;
+	bNotifyTick = false;
 	bNotifyTaskFinished = true;
 
 	AcceptableRadius = GET_AI_CONFIG_VAR(AcceptanceRadius);
@@ -39,7 +39,7 @@ EBTNodeResult::Type UBTTask_SVONMoveTo::ExecuteTask(UBehaviorTreeComponent& Owne
 	MyMemory->MoveRequestID = FAIRequestID::InvalidRequest;
 
 	AAIController* MyController = OwnerComp.GetAIOwner();
-	MyMemory->bWaitingForPath = bUseGameplayTasks ? false : MyController->ShouldPostponePathUpdates();
+	MyMemory->bWaitingForPath = false;
 	if (!MyMemory->bWaitingForPath)
 	{
 		NodeResult = PerformMoveTask(OwnerComp, NodeMemory);
@@ -222,18 +222,10 @@ EBlackboardNotificationResult UBTTask_SVONMoveTo::OnBlackboardValueChange(const 
 				BehaviorComp->GetAIOwner()->GetPathFollowingComponent()->AbortMove(*this, FPathFollowingResultFlags::NewRequest, MyMemory->MoveRequestID, EPathFollowingVelocityMode::Keep);
 			}
 
-			if (!bUseGameplayTasks && BehaviorComp->GetAIOwner()->ShouldPostponePathUpdates())
+			const EBTNodeResult::Type NodeResult = PerformMoveTask(*BehaviorComp, RawMemory);
+			if (NodeResult != EBTNodeResult::InProgress)
 			{
-				// NodeTick will take care of requesting move
-				MyMemory->bWaitingForPath = true;
-			}
-			else
-			{
-				const EBTNodeResult::Type NodeResult = PerformMoveTask(*BehaviorComp, RawMemory);
-				if (NodeResult != EBTNodeResult::InProgress)
-				{
-					FinishLatentTask(*BehaviorComp, NodeResult);
-				}
+				FinishLatentTask(*BehaviorComp, NodeResult);
 			}
 		}
 	}
