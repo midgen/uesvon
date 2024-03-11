@@ -10,6 +10,7 @@
 #include <Runtime/AIModule/Classes/AIResources.h>
 #include <Runtime/AIModule/Classes/AISystem.h>
 #include <Runtime/Engine/Public/VisualLogger/VisualLogger.h>
+#include <Runtime/Engine/Public/TimerManager.h>
 #include <Runtime/GameplayTasks/Classes/GameplayTasksComponent.h>
 
 //#include "UObject/Package.h"
@@ -193,7 +194,9 @@ void UAITask_SVONMoveTo::PerformMove()
 		case ESVONPathfindingRequestResult::Success: // Synchronous pathfinding
 			MoveRequestID = myResult.MoveId;
 			if (IsFinished())
+			{
 				UE_VLOG(GetGameplayTasksComponent(), LogGameplayTasks, Error, TEXT("%s> re-Activating Finished task!"), *GetName());
+			}
 			RequestMove(); // Start the move
 			break;
 		case ESVONPathfindingRequestResult::Deferred: // Async...we're waiting on the task to return

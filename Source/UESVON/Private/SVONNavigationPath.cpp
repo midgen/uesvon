@@ -5,7 +5,7 @@
 #include <Runtime/Engine/Classes/Debug/DebugDrawService.h>
 #include <Runtime/Engine/Public/DrawDebugHelpers.h>
 
-#include "NavigationSystem/Public/NavigationData.h"
+#include <Runtime/NavigationSystem/Public/NavigationData.h>
 
 void FSVONNavigationPath::AddPoint(const FSVONPathPoint& aPoint)
 {
