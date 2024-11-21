@@ -2,6 +2,8 @@
 #pragma once
 
 #include "UESVON/Public/SVONTypes.h"
+#include "UESVON/Public/SVONNavigationPath.h"
+#include "UESVON/Public/SVONLink.h"
 
 class ASVONVolume;
 

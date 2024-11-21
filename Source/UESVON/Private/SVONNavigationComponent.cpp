@@ -6,12 +6,15 @@
 #include "UESVON/Public/SVONNavigationPath.h"
 #include "UESVON/Public/SVONPathFinder.h"
 #include "UESVON/Public/SVONVolume.h"
+#include "UESVON/Public/SVONMediator.h"
+
 
 #include <Runtime/Engine/Public/DrawDebugHelpers.h>
 #include <Runtime/Engine/Classes/GameFramework/Actor.h>
 #include <Runtime/Engine/Classes/Kismet/GameplayStatics.h>
 #include <Runtime/Engine/Classes/Components/LineBatchComponent.h>
 #include <Runtime/NavigationSystem/Public/NavigationData.h>
+
 
 // Sets default values for this component's properties
 USVONNavigationComponent::USVONNavigationComponent(const FObjectInitializer& ObjectInitializer)
