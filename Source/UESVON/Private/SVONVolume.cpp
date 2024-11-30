@@ -621,6 +621,10 @@ bool ASVONVolume::IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode) co
 	{
 		return true;
 	}
+	if(aLayer >= myBlockedIndices.Num())
+	{// fix bug
+		return false;
+	}
 	// The parent of this code is blocked
 	if (myBlockedIndices[aLayer].Contains(parentCode))
 	{
