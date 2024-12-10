@@ -1,37 +1,55 @@
 #pragma once
 
-#include "UESVON/Public/SVONLeafNode.h"
-#include "UESVON/Public/SVONNode.h"
+#include <UESVON/Public/SVONOctreeData.h>
+#include <UESVON/Public/SVONGenerationParameters.h>
 
-struct SVONData
+#include "SVONData.generated.h"
+
+class ISVONCollisionQueryInterface;
+class ISVONDebugDrawInterface;
+struct FSVONGenerationParamaters;
+
+USTRUCT()
+struct UESVON_API FSVONData
 {
+	GENERATED_BODY()
+
 	// SVO data
-	TArray<TArray<SVONNode>> myLayers;
-	TArray<SVONLeafNode> myLeafNodes;
+	UPROPERTY()
+	FSVONOctreeData OctreeData;
 
-	void Reset()
-	{
-		myLayers.Empty();
-		myLeafNodes.Empty();
-	}
+public:
+	void SetExtents(const FVector& Origin, const FVector& Extents);
+	void SetDebugPosition(const FVector& DebugPosition);
 
-	int GetSize()
-	{
-		int result = 0;
-		result += myLeafNodes.Num() * sizeof(SVONLeafNode);
-		for (int i = 0; i < myLayers.Num(); i++)
-		{
-			result += myLayers[i].Num() * sizeof(SVONNode);
-		}
+	void ResetForGeneration();
+	void UpdateGenerationParameters(const FSVONGenerationParameters& Params);
+	const FSVONGenerationParameters& GetParams() const;
+	void Generate(UWorld& World, const ISVONCollisionQueryInterface& CollisionInterface, const ISVONDebugDrawInterface& DebugInterface);
 
-		return result;
-	}
+	bool GetLinkPosition(const SVONLink& aLink, FVector& oPosition) const;
+	bool GetNodePosition(layerindex_t aLayer, mortoncode_t aCode, FVector& oPosition) const;
+	float GetVoxelSize(layerindex_t aLayer) const;
+
+	//~ Begin UObject
+	//void Serialize(FArchive& Ar) override;
+	//~ End UObject 
+
+private:
+	FSVONGenerationParameters GenerationParameters;
+	int32 GetNumNodesInLayer(layerindex_t aLayer) const;
+	int32 GetNumNodesPerSide(layerindex_t aLayer) const;
+
+	bool IsBlocked(const FVector& aPosition, const float aSize) const;
+	bool IsInDebugRange(const FVector& aPosition) const;
+	bool IsAnyMemberBlocked(layerindex_t aLayer, mortoncode_t aCode) const;
+	bool GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeindex_t& oIndex) const;
+
+	void BuildNeighbourLinks(layerindex_t aLayer);
+	bool FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNodeIndex, uint8 aDir, SVONLink& oLinkToUpdate, FVector& aStartPosForDebug);
+
+	void RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex, const ISVONCollisionQueryInterface& CollisionInterface, const ISVONDebugDrawInterface& DebugInterface);
+	void RasteriseLayer(layerindex_t aLayer, const ISVONCollisionQueryInterface& CollisionInterface, const ISVONDebugDrawInterface& DebugInterface);
+
+	void FirstPassRasterise(UWorld& World);
 };
-
-FORCEINLINE FArchive& operator<<(FArchive& Ar, SVONData& aSVONData)
-{
-	Ar << aSVONData.myLayers;
-	Ar << aSVONData.myLeafNodes;
-
-	return Ar;
-}

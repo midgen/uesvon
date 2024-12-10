@@ -48,18 +48,18 @@ int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, cons
 			return 1;
 		}
 
-		const SVONNode& currentNode = myVolume.GetNode(myCurrent);
+		const SVONNode& currentNode = NavigationData.OctreeData.GetNode(myCurrent);
 
 		TArray<SVONLink> neighbours;
 
 		if (myCurrent.GetLayerIndex() == 0 && currentNode.myFirstChild.IsValid())
 		{
 
-			myVolume.GetLeafNeighbours(myCurrent, neighbours);
+			NavigationData.OctreeData.GetLeafNeighbours(myCurrent, neighbours);
 		}
 		else
 		{
-			myVolume.GetNeighbours(myCurrent, neighbours);
+			NavigationData.OctreeData.GetNeighbours(myCurrent, neighbours);
 		}
 
 		for (const SVONLink& neighbour : neighbours)
@@ -81,8 +81,8 @@ float SVONPathFinder::HeuristicScore(const SVONLink& aStart, const SVONLink& aTa
 	float score = 0.f;
 
 	FVector startPos, endPos;
-	myVolume.GetLinkPosition(aStart, startPos);
-	myVolume.GetLinkPosition(aTarget, endPos);
+	NavigationData.GetLinkPosition(aStart, startPos);
+	NavigationData.GetLinkPosition(aTarget, endPos);
 	switch (mySettings.myPathCostType)
 	{
 	case ESVONPathCostType::MANHATTAN:
@@ -94,7 +94,7 @@ float SVONPathFinder::HeuristicScore(const SVONLink& aStart, const SVONLink& aTa
 		break;
 	}
 
-	score *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(myVolume.GetMyNumLayers())) * mySettings.myNodeSizeCompensation);
+	score *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(NavigationData.OctreeData.GetNumLayers())) * mySettings.myNodeSizeCompensation);
 
 	return score;
 }
@@ -112,14 +112,14 @@ float SVONPathFinder::GetCost(const SVONLink& aStart, const SVONLink& aTarget)
 	{
 
 		FVector startPos(0.f), endPos(0.f);
-		const SVONNode& startNode = myVolume.GetNode(aStart);
-		const SVONNode& endNode = myVolume.GetNode(aTarget);
-		myVolume.GetLinkPosition(aStart, startPos);
-		myVolume.GetLinkPosition(aTarget, endPos);
+		const SVONNode& startNode = NavigationData.OctreeData.GetNode(aStart);
+		const SVONNode& endNode = NavigationData.OctreeData.GetNode(aTarget);
+		NavigationData.GetLinkPosition(aStart, startPos);
+		NavigationData.GetLinkPosition(aTarget, endPos);
 		cost = (startPos - endPos).Size();
 	}
 
-	cost *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(myVolume.GetMyNumLayers())) * mySettings.myNodeSizeCompensation);
+	cost *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(NavigationData.OctreeData.GetNumLayers())) * mySettings.myNodeSizeCompensation);
 
 	return cost;
 }
@@ -138,7 +138,7 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 			if (mySettings.myDebugOpenNodes)
 			{
 				FVector pos;
-				myVolume.GetLinkPosition(aNeighbour, pos);
+				NavigationData.GetLinkPosition(aNeighbour, pos);
 				mySettings.myDebugPoints.Add(pos);
 			}
 		}
@@ -171,9 +171,9 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 	while (aCameFrom.Contains(aCurrent) && !(aCurrent == aCameFrom[aCurrent]))
 	{
 		aCurrent = aCameFrom[aCurrent];
-		myVolume.GetLinkPosition(aCurrent, pos.myPosition);
+		NavigationData.GetLinkPosition(aCurrent, pos.myPosition);
 		points.Add(pos);
-		const SVONNode& node = myVolume.GetNode(aCurrent);
+		const SVONNode& node = NavigationData.OctreeData.GetNode(aCurrent);
 		// This is rank. I really should sort the layers out
 		if (aCurrent.GetLayerIndex() == 0)
 		{

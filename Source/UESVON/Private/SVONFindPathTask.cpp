@@ -3,9 +3,9 @@
 
 void FSVONFindPathTask::DoWork()
 {
-	SVONPathFinder pathFinder(myWorld, myVolume, mySettings);
+	SVONPathFinder PathFinder(myWorld, NavigationData, mySettings);
 
-	int result = pathFinder.FindPath(myStart, myTarget, myStartPos, myTargetPos, myPath);
+	int Result = PathFinder.FindPath(myStart, myTarget, myStartPos, myTargetPos, myPath);
 
 	myCompleteFlag = true;
 }

@@ -39,15 +39,15 @@ UAITask_SVONMoveTo::UAITask_SVONMoveTo(const FObjectInitializer& ObjectInitializ
 	Path = MakeShareable<FNavigationPath>(new FNavigationPath());
 }
 
-UAITask_SVONMoveTo* UAITask_SVONMoveTo::SVONAIMoveTo(AAIController* Controller, FVector InGoalLocation, bool aUseAsyncPathfinding, AActor* InGoalActor,
+UAITask_SVONMoveTo* UAITask_SVONMoveTo::SVONAIMoveTo(AAIController* Controller, FVector InGoalLocation, bool bUseAsyncPathfinding, AActor* InGoalActor,
 	float AcceptanceRadius, EAIOptionFlag::Type StopOnOverlap, bool bLockAILogic, bool bUseContinuosGoalTracking)
 {
 	UAITask_SVONMoveTo* MyTask = Controller ? UAITask::NewAITask<UAITask_SVONMoveTo>(*Controller, EAITaskPriority::High) : nullptr;
 	if (MyTask)
 	{
-		MyTask->myUseAsyncPathfinding = aUseAsyncPathfinding;
+		MyTask->myUseAsyncPathfinding = bUseAsyncPathfinding;
 		// We need to tick the task if we're using async, to check when results are back
-		MyTask->bTickingTask = aUseAsyncPathfinding;
+		MyTask->bTickingTask = bUseAsyncPathfinding;
 
 		FAIMoveRequest MoveReq;
 		if (InGoalActor)
@@ -66,7 +66,7 @@ UAITask_SVONMoveTo* UAITask_SVONMoveTo::SVONAIMoveTo(AAIController* Controller, 
 			MoveReq.SetNavigationFilter(Controller->GetDefaultNavigationFilterClass());
 		}
 
-		MyTask->SetUp(Controller, MoveReq, aUseAsyncPathfinding);
+		MyTask->SetUp(Controller, MoveReq, bUseAsyncPathfinding);
 		MyTask->SetContinuousGoalTracking(bUseContinuosGoalTracking);
 
 		if (bLockAILogic)
@@ -78,12 +78,12 @@ UAITask_SVONMoveTo* UAITask_SVONMoveTo::SVONAIMoveTo(AAIController* Controller, 
 	return MyTask;
 }
 
-void UAITask_SVONMoveTo::SetUp(AAIController* Controller, const FAIMoveRequest& InMoveRequest, bool aUseAsyncPathfinding)
+void UAITask_SVONMoveTo::SetUp(AAIController* Controller, const FAIMoveRequest& InMoveRequest, bool bUseAsyncPathfinding)
 {
 	OwnerController = Controller;
 	MoveRequest = InMoveRequest;
-	myUseAsyncPathfinding = aUseAsyncPathfinding;
-	bTickingTask = aUseAsyncPathfinding;
+	myUseAsyncPathfinding = bUseAsyncPathfinding;
+	bTickingTask = bUseAsyncPathfinding;
 
 	// Fail if no nav component
 	myNavComponent = Cast<USVONNavigationComponent>(GetOwnerActor()->GetComponentByClass(USVONNavigationComponent::StaticClass()));
@@ -386,15 +386,15 @@ void UAITask_SVONMoveTo::RequestMove()
 	PathFinishDelegateHandle = PFComp->OnRequestFinished.AddUObject(this, &UAITask_SVONMoveTo::OnRequestFinished);
 	SetObservedPath(Path);
 
-	const FAIRequestID RequestID = Path->IsValid() ? OwnerController->RequestMove(MoveRequest, Path) : FAIRequestID::InvalidRequest;
+	const FAIRequestID RequestId = Path->IsValid() ? OwnerController->RequestMove(MoveRequest, Path) : FAIRequestID::InvalidRequest;
 
-	if (RequestID.IsValid())
+	if (RequestId.IsValid())
 	{
 #if WITH_EDITOR
 		UE_VLOG(this, VUESVON, Log, TEXT("SVON Pathfinding successful, moving"));
 		UE_LOG(UESVON, Log, TEXT("SVON Pathfinding successful, moving"));
 #endif
-		myResult.MoveId = RequestID;
+		myResult.MoveId = RequestId;
 		myResult.Code = ESVONPathfindingRequestResult::Success;
 	}
 
@@ -438,7 +438,7 @@ void UAITask_SVONMoveTo::LogPathHelper()
 		mySVONPath.IsValid() && mySVONPath.Get()->GetPathPoints().Num())
 	{
 
-		FVisualLogEntry* Entry = Vlog.GetEntryToWrite(OwnerController->GetPawn(), OwnerController->GetPawn()->GetWorld()->TimeSeconds);
+		FVisualLogEntry* Entry = FVisualLogger::GetEntryToWrite(OwnerController->GetPawn(), VUESVON);
 		if (Entry)
 		{
 			for (int i = 0; i < mySVONPath->GetPathPoints().Num(); i++)
@@ -446,21 +446,21 @@ void UAITask_SVONMoveTo::LogPathHelper()
 				if (i == 0 || i == mySVONPath->GetPathPoints().Num() - 1)
 					continue;
 
-				const FSVONPathPoint& point = mySVONPath->GetPathPoints()[i];
+				const FSVONPathPoint& Point = mySVONPath->GetPathPoints()[i];
 	
 				float size = 0.f;
 
-				if (point.myLayer == 0)
+				if (Point.myLayer == 0)
 				{
-					size = svonNavComponent->GetCurrentVolume()->GetVoxelSize(0) * 0.25f;
+					size = svonNavComponent->GetCurrentVolume()->GetNavData().GetVoxelSize(0) * 0.25f;
 				}
 				else 
 				{
-					size = svonNavComponent->GetCurrentVolume()->GetVoxelSize(point.myLayer - 1);
+					size = svonNavComponent->GetCurrentVolume()->GetNavData().GetVoxelSize(Point.myLayer - 1);
 				}
 
 
-				UE_VLOG_BOX(OwnerController->GetPawn(), VUESVON, Verbose, FBox(point.myPosition + FVector(size * 0.5f), point.myPosition - FVector(size * 0.5f)), FColor::Black, TEXT_EMPTY);
+				UE_VLOG_BOX(OwnerController->GetPawn(), VUESVON, Verbose, FBox(Point.myPosition + FVector(size * 0.5f), Point.myPosition - FVector(size * 0.5f)), FColor::Black, TEXT_EMPTY);
 
 			}
 		}
@@ -531,10 +531,10 @@ void UAITask_SVONMoveTo::OnDestroy(bool bInOwnerFinished)
 
 	if (MoveRequestID.IsValid())
 	{
-		UPathFollowingComponent* PFComp = OwnerController ? OwnerController->GetPathFollowingComponent() : nullptr;
-		if (PFComp && PFComp->GetStatus() != EPathFollowingStatus::Idle)
+		UPathFollowingComponent* PfComp = OwnerController ? OwnerController->GetPathFollowingComponent() : nullptr;
+		if (PfComp && PfComp->GetStatus() != EPathFollowingStatus::Idle)
 		{
-			PFComp->AbortMove(*this, FPathFollowingResultFlags::OwnerFinished, MoveRequestID);
+			PfComp->AbortMove(*this, FPathFollowingResultFlags::OwnerFinished, MoveRequestID);
 		}
 	}
 
@@ -544,9 +544,9 @@ void UAITask_SVONMoveTo::OnDestroy(bool bInOwnerFinished)
 	mySVONPath = nullptr;
 }
 
-void UAITask_SVONMoveTo::OnRequestFinished(FAIRequestID RequestID, const FPathFollowingResult& Result)
+void UAITask_SVONMoveTo::OnRequestFinished(FAIRequestID RequestId, const FPathFollowingResult& Result)
 {
-	if (RequestID == myResult.MoveId)
+	if (RequestId == myResult.MoveId)
 	{
 		if (Result.HasFlag(FPathFollowingResultFlags::UserAbort) && Result.HasFlag(FPathFollowingResultFlags::NewRequest) && !Result.HasFlag(FPathFollowingResultFlags::ForcedScript))
 		{

@@ -11,7 +11,7 @@ DEFINE_LOG_CATEGORY(UESVONEditor)
 
 void FUESVONEditorModule::StartupModule()
 {
-	UE_LOG(UESVONEditor, Warning, TEXT("UESVONEditorModule: Log Started"));
+	UE_LOG(UESVONEditor, Log, TEXT("UESVONEditorModule: Log Started"));
 
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
@@ -22,7 +22,7 @@ void FUESVONEditorModule::ShutdownModule()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
-	UE_LOG(UESVONEditor, Warning, TEXT("UESVONEditorModule: Log Ended"));
+	UE_LOG(UESVONEditor, Log, TEXT("UESVONEditorModule: Log Ended"));
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -3,7 +3,7 @@
 class ASVONVolume;
 struct SVONLink;
 
-class UESVON_API SVONMediator
+class SVONMediator
 {
 public:
 	static bool GetLinkFromPosition(const FVector& aPosition, const ASVONVolume& aVolume, SVONLink& oLink);

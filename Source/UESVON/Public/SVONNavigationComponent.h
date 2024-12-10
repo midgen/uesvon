@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "UESVON/Public/SVONLink.h"
@@ -46,7 +44,7 @@ public:
 	const ASVONVolume* GetCurrentVolume() const { return myCurrentNavVolume; }
 
 	// Get a Nav position
-	SVONLink GetNavPosition(FVector& aPosition) const;
+	SVONLink GetNavPosition() const;
 	virtual FVector GetPawnPosition() const;
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -65,6 +63,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	// The current navigation volume
+	UPROPERTY()
 	ASVONVolume* myCurrentNavVolume;
 	bool HasNavData() const;
 

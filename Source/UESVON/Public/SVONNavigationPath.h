@@ -34,7 +34,7 @@ public:
 	void AddPoint(const FSVONPathPoint& aPoint);
 	void ResetForRepath();
 
-	void DebugDraw(UWorld* aWorld, const ASVONVolume& aVolume);
+	void DebugDraw(UWorld* World, const FSVONData& Data);
 
 	const TArray<FSVONPathPoint>& GetPathPoints() const
 	{

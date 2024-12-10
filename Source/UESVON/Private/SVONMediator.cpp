@@ -1,5 +1,3 @@
-
-
 #include "UESVON/Public/SVONMediator.h"
 #include "UESVON/Public/SVONLink.h"
 #include "UESVON/Public/SVONVolume.h"
@@ -25,13 +23,13 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 	// The local position of the point in volume space
 	FVector localPos = aPosition - zOrigin;
 
-	int layerIndex = aVolume.GetMyNumLayers() - 1;
+	int layerIndex = aVolume.GetNavData().OctreeData.GetNumLayers() - 1;
 	nodeindex_t nodeIndex = 0;
-	while (layerIndex >= 0 && layerIndex < aVolume.GetMyNumLayers())
+	while (layerIndex >= 0 && layerIndex < aVolume.GetNavData().OctreeData.GetNumLayers())
 	{
 		// Get the layer and voxel size
 
-		const TArray<SVONNode>& layer = aVolume.GetLayer(layerIndex);
+		const TArray<SVONNode>& layer = aVolume.GetNavData().OctreeData.GetLayer(layerIndex);
 		// Calculate the XYZ coordinates
 
 		FIntVector voxel;
@@ -62,12 +60,12 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 				// If this is a leaf node, we need to find our subnode
 				if (layerIndex == 0)
 				{
-					const SVONLeafNode& leaf = aVolume.GetLeafNode(node.myFirstChild.myNodeIndex);
+					const SVONLeafNode& leaf = aVolume.GetNavData().OctreeData.GetLeafNode(node.myFirstChild.myNodeIndex);
 					// We need to calculate the node local position to get the morton code for the leaf
-					float voxelSize = aVolume.GetVoxelSize(layerIndex);
+					float voxelSize = aVolume.GetNavData().GetVoxelSize(layerIndex);
 					// The world position of the 0 node
 					FVector nodePosition;
-					aVolume.GetNodePosition(layerIndex, node.myCode, nodePosition);
+					aVolume.GetNavData().GetNodePosition(layerIndex, node.myCode, nodePosition);
 					// The morton origin of the node
 					FVector nodeOrigin = nodePosition - FVector(voxelSize * 0.5f);
 					// The requested position, relative to the node origin
@@ -85,7 +83,9 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 					mortoncode_t leafIndex = morton3D_64_encode(coord.X, coord.Y, coord.Z); // This morton code is our key into the 64-bit leaf node
 
 					if (leaf.GetNode(leafIndex))
+					{
 						return false; // This voxel is blocked, oops!
+					}						
 
 					oLink.mySubnodeIndex = leafIndex;
 
@@ -120,7 +120,7 @@ void SVONMediator::GetVolumeXYZ(const FVector& aPosition, const ASVONVolume& aVo
 	int layerIndex = aLayer;
 
 	// Get the layer and voxel size
-	float voxelSize = aVolume.GetVoxelSize(layerIndex);
+	float voxelSize = aVolume.GetNavData().GetVoxelSize(layerIndex);
 
 	// Calculate the XYZ coordinates
 

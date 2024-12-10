@@ -7,7 +7,7 @@
 #include <Runtime/Core/Public/Async/AsyncWork.h>
 #include <Runtime/Core/Public/HAL/ThreadSafeBool.h>
 
-class ASVONVolume;
+struct FSVONData;
 struct SVONPathFinderSettings;
 
 class FSVONFindPathTask : public FNonAbandonableTask
@@ -15,8 +15,8 @@ class FSVONFindPathTask : public FNonAbandonableTask
 	friend class FAutoDeleteAsyncTask<FSVONFindPathTask>;
 
 public:
-	FSVONFindPathTask(ASVONVolume& aVolume, SVONPathFinderSettings& aSettings, UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath, FThreadSafeBool& aCompleteFlag)
-		: myVolume(aVolume)
+	FSVONFindPathTask(const FSVONData& Data, SVONPathFinderSettings& aSettings, UWorld* aWorld, const SVONLink aStart, const SVONLink aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath, FThreadSafeBool& aCompleteFlag)
+		: NavigationData(Data)
 		, myWorld(aWorld)
 		, myStart(aStart)
 		, myTarget(aTarget)
@@ -29,7 +29,7 @@ public:
 	}
 
 protected:
-	ASVONVolume& myVolume;
+	const FSVONData& NavigationData;
 	UWorld* myWorld;
 
 	SVONLink myStart;
@@ -38,6 +38,7 @@ protected:
 	FVector myTargetPos;
 	FSVONNavPathSharedPtr* myPath;
 
+	// TODO: const this and have the debug data elsewhere
 	SVONPathFinderSettings mySettings;
 
 	FThreadSafeBool& myCompleteFlag;

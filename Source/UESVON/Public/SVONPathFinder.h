@@ -35,8 +35,8 @@ struct SVONPathFinderSettings
 class UESVON_API SVONPathFinder
 {
 public:
-	SVONPathFinder(UWorld* aWorld, const ASVONVolume& aVolume, SVONPathFinderSettings& aSettings)
-		: myVolume(aVolume)
+	SVONPathFinder(UWorld* aWorld, const FSVONData& Data, SVONPathFinderSettings& aSettings)
+		: NavigationData(Data)
 		, mySettings(aSettings)
 		, myWorld(aWorld){};
 	~SVONPathFinder(){};
@@ -57,7 +57,7 @@ private:
 	SVONLink myCurrent;
 	SVONLink myGoal;
 
-	const ASVONVolume& myVolume;
+	const FSVONData& NavigationData;
 
 	SVONPathFinderSettings& mySettings;
 
