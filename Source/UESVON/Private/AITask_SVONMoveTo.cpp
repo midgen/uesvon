@@ -299,7 +299,7 @@ void UAITask_SVONMoveTo::CheckPathPreConditions()
 		{
 #if WITH_EDITOR
 			UE_VLOG(this, VUESVON, Error, TEXT("SVONMoveTo: Destination is not valid! Goal(%s)"), TEXT_AI_LOCATION(MoveRequest.GetGoalLocation()));
-			UE_LOG(UESVON, Error, TEXT("SVONMoveTo: Destination is not valid! Goal(%s)"));
+			UE_LOG(UESVON, Error, TEXT("SVONMoveTo: Destination is not valid! Goal(%s)"), TEXT_AI_LOCATION(MoveRequest.GetGoalLocation()));
 #endif
 			bCanRequestMove = false;
 		}
@@ -438,7 +438,7 @@ void UAITask_SVONMoveTo::LogPathHelper()
 		mySVONPath.IsValid() && mySVONPath.Get()->GetPathPoints().Num())
 	{
 
-		FVisualLogEntry* Entry = Vlog.GetEntryToWrite(OwnerController->GetPawn(), OwnerController->GetPawn()->GetWorld()->TimeSeconds);
+		FVisualLogEntry* Entry = FVisualLogger::GetEntryToWrite(OwnerController->GetPawn(), VUESVON);
 		if (Entry)
 		{
 			for (int i = 0; i < mySVONPath->GetPathPoints().Num(); i++)
