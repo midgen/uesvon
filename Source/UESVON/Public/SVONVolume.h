@@ -23,6 +23,7 @@ public:
 
 	//~ Begin AActor Interface
 	void BeginPlay() override;
+	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	bool ShouldTickIfViewportsOnly() const override { return true; }
 	//~ End AActor Interface
 
@@ -38,6 +39,7 @@ public:
 	//~ End UObject 
 
 	bool Generate();
+	bool HasData() const;
 	void ClearData();
 
 	const FSVONData& GetNavData() const { return NavigationData; }
@@ -45,7 +47,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation")
 	FSVONGenerationParameters GenerationParameters;
 
-	bool bIsReadyForNavigation;
+	bool bIsReadyForNavigation{false};
 
 private:
 	FSVONData NavigationData;

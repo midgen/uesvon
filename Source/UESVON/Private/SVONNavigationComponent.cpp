@@ -1,6 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #include <UESVON/Public/SVONNavigationComponent.h>
+
+#include <UESVON/Public/Subsystem/SVONSubsystem.h>
 #include <UESVON/Public/SVONFindPathTask.h>
 #include <UESVON/Public/SVONLink.h>
 #include <UESVON/Public/SVONNavigationPath.h>
@@ -30,11 +31,27 @@ USVONNavigationComponent::USVONNavigationComponent(const FObjectInitializer& Obj
 void USVONNavigationComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (USVONSubsystem* SvonSubsystem = GetWorld()->GetSubsystem<USVONSubsystem>())
+	{
+		SvonSubsystem->RegisterNavComponent(this);
+		myCurrentNavVolume = SvonSubsystem->GetVolumeForPosition(GetPawnPosition());
+	}
+}
+
+void USVONNavigationComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (USVONSubsystem* SvonSubsystem = GetWorld()->GetSubsystem<USVONSubsystem>())
+	{
+		SvonSubsystem->UnRegisterNavComponent(this);
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 bool USVONNavigationComponent::HasNavData() const
 {
-	return myCurrentNavVolume && GetOwner() && myCurrentNavVolume->EncompassesPoint(GetPawnPosition()) && myCurrentNavVolume->GetNavData().OctreeData.GetNumLayers() > 0;
+	return myCurrentNavVolume && myCurrentNavVolume;
 }
 
 bool USVONNavigationComponent::FindVolume()
@@ -56,24 +73,6 @@ bool USVONNavigationComponent::FindVolume()
 	return false;
 }
 
-// Called every frame
-void USVONNavigationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (!HasNavData())
-	{
-		FindVolume();
-	}
-	else if (myCurrentNavVolume->bIsReadyForNavigation)
-	{
-		FVector Location = GetPawnPosition();
-		if (DebugPrintMortonCodes)
-		{
-			DebugLocalPosition(Location);
-		}
-	}
-}
 SVONLink USVONNavigationComponent::GetNavPosition() const
 {
 	SVONLink navLink;
@@ -225,9 +224,22 @@ void USVONNavigationComponent::FindPathImmediate(const FVector& aStartPosition, 
 	}
 }
 
+void USVONNavigationComponent::SetCurrentNavVolume(const ASVONVolume* Volume)
+{
+	myCurrentNavVolume = Volume;
+
+	if (myCurrentNavVolume && myCurrentNavVolume->bIsReadyForNavigation)
+	{
+		FVector Location = GetPawnPosition();
+		if (DebugPrintMortonCodes)
+		{
+			DebugLocalPosition(Location);
+		}
+	}
+}
+
 void USVONNavigationComponent::DebugLocalPosition(FVector& aPosition)
 {
-
 	if (HasNavData())
 	{
 		for (int i = 0; i < myCurrentNavVolume->GetNavData().OctreeData.GetNumLayers() - 1; i++)

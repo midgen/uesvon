@@ -1,5 +1,7 @@
 #include "UESVON/Public/SVONVolume.h"
 
+#include <UESVON/Public/Subsystem/SVONSubsystem.h>
+
 #include <Runtime/Engine/Classes/Components/BrushComponent.h>
 #include <Runtime/Engine/Classes/Components/LineBatchComponent.h>
 #include <Runtime/Engine/Classes/Engine/CollisionProfile.h>
@@ -94,6 +96,11 @@ bool ASVONVolume::Generate()
 	return true;
 }
 
+bool ASVONVolume::HasData() const
+{
+	return NavigationData.OctreeData.GetNumLayers() > 0;
+}
+
 void ASVONVolume::UpdateBounds()
 {
 	FVector Origin, Extent;
@@ -132,7 +139,7 @@ void ASVONVolume::Serialize(FArchive& Ar)
 {
 	// Serialize the usual UPROPERTIES
 	Super::Serialize(Ar);
-	 //TODO: Serialization
+
 	if (GenerationParameters.GenerationStrategy == ESVOGenerationStrategy::UseBaked)
 	{
 		Ar << NavigationData.OctreeData;
@@ -151,4 +158,19 @@ void ASVONVolume::BeginPlay()
 	}
 
 	bIsReadyForNavigation = true;
+
+	if (USVONSubsystem* SvonSubsystem = GetWorld()->GetSubsystem<USVONSubsystem>())
+	{
+		SvonSubsystem->RegisterVolume(this);
+	}
+}
+
+void ASVONVolume::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (USVONSubsystem* SvonSubsystem = GetWorld()->GetSubsystem<USVONSubsystem>())
+	{
+		SvonSubsystem->UnRegisterVolume(this);
+	}
+
+	Super::EndPlay(EndPlayReason);
 }

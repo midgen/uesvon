@@ -47,8 +47,6 @@ public:
 	SVONLink GetNavPosition() const;
 	virtual FVector GetPawnPosition() const;
 
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 	/* This method isn't hooked up at the moment, pending integration with existing systems */
 	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FThreadSafeBool& aCompleteFlag, FSVONNavPathSharedPtr* oNavPath);
 	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath);
@@ -58,13 +56,17 @@ public:
 
 	FSVONNavPathSharedPtr& GetPath() { return mySVONPath; }
 
+	void SetCurrentNavVolume(const ASVONVolume* Volume);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	// The current navigation volume
 	UPROPERTY()
-	ASVONVolume* myCurrentNavVolume;
+	const ASVONVolume* myCurrentNavVolume;
+
 	bool HasNavData() const;
 
 	// Check the scene for a valid volume that I am within the extents of
