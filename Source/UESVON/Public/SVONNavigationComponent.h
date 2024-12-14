@@ -1,8 +1,8 @@
 #pragma once
 
-#include "UESVON/Public/SVONLink.h"
-#include "UESVON/Public/SVONNavigationPath.h"
-#include "UESVON/Public/SVONTypes.h"
+#include <UESVON/Public/SVONLink.h>
+#include <UESVON/Public/SVONNavigationPath.h>
+#include <UESVON/Public/SVONTypes.h>
 
 #include <Runtime/Engine/Classes/Components/ActorComponent.h>
 
@@ -16,16 +16,18 @@ class UESVON_API USVONNavigationComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+	USVONNavigationComponent(const FObjectInitializer& ObjectInitializer);
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Debug")
-	bool DebugPrintCurrentPosition;
+	bool bDebugPrintCurrentPosition;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Debug")
-	bool DebugPrintMortonCodes;
+	bool bDebugPrintMortonCodes;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Debug")
-	bool DebugDrawOpenNodes = false;
+	bool bDebugDrawOpenNodes = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Heuristics")
-	bool UseUnitCost = false;
+	bool bUseUnitCost = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Heuristics")
 	float UnitCost = 10.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Heuristics")
@@ -37,45 +39,30 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SVO Navigation | Smoothing")
 	int SmoothingIterations = 0;
 
-	// Sets default values for this component's properties
-	USVONNavigationComponent(const FObjectInitializer& ObjectInitializer);
+	const ASVONVolume* GetCurrentVolume() const { return CurrentNavVolume; }
 
-public:
-	const ASVONVolume* GetCurrentVolume() const { return myCurrentNavVolume; }
-
-	// Get a Nav position
 	SVONLink GetNavPosition() const;
 	virtual FVector GetPawnPosition() const;
-
-	/* This method isn't hooked up at the moment, pending integration with existing systems */
-	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FThreadSafeBool& aCompleteFlag, FSVONNavPathSharedPtr* oNavPath);
-	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath);
-
-	UFUNCTION(BlueprintCallable, Category = UESVON)
-	void FindPathImmediate(const FVector &aStartPosition, const FVector &aTargetPosition, TArray<FVector>& OutPathPoints);
-
-	FSVONNavPathSharedPtr& GetPath() { return mySVONPath; }
-
+	FSVONNavPathSharedPtr& GetPath() { return CurrentPath; }
 	void SetCurrentNavVolume(const ASVONVolume* Volume);
 
+	bool FindPathAsync(const FVector& aStartPosition, const FVector& aTargetPosition, FThreadSafeBool& aCompleteFlag, FSVONNavPathSharedPtr* oNavPath);
+	bool FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, FSVONNavPathSharedPtr* oNavPath);
+	UFUNCTION(BlueprintCallable, Category = UESVON)
+	void FindPathImmediate(const FVector& aStartPosition, const FVector& aTargetPosition, TArray<FVector>& OutPathPoints);
+
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	// The current navigation volume
+	// The current navigation volume that the owned pawn is inside, null if not inside a volume
 	UPROPERTY()
-	const ASVONVolume* myCurrentNavVolume;
+	const ASVONVolume* CurrentNavVolume;
 
 	bool HasNavData() const;
-
-	// Check the scene for a valid volume that I am within the extents of
-	bool FindVolume();
 
 	// Print current layer/morton code information
 	void DebugLocalPosition(FVector& aPosition);
 
-	FSVONNavPathSharedPtr mySVONPath;
-
-	mutable SVONLink myLastLocation;
+	FSVONNavPathSharedPtr CurrentPath;
 };

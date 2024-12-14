@@ -52,8 +52,8 @@ public:
 protected:
 	void LogPathHelper();
 
-	FThreadSafeBool myAsyncTaskComplete;
-	bool myUseAsyncPathfinding;
+	FThreadSafeBool AsyncTaskComplete;
+	bool bUseAsyncPathfinding;
 
 	UPROPERTY(BlueprintAssignable)
 	FGenericGameplayTaskDelegate OnRequestFailed;
@@ -83,10 +83,10 @@ protected:
 	/** currently followed path */
 	FNavPathSharedPtr Path;
 
-	FSVONNavPathSharedPtr mySVONPath;
+	FSVONNavPathSharedPtr SVONPath;
 
 	TEnumAsByte<EPathFollowingResult::Type> MoveResult;
-	uint8 bUseContinuousTracking : 1;
+	bool bUseContinuousTracking{false};
 
 	virtual void Activate() override;
 	virtual void OnDestroy(bool bOwnerFinished) override;
@@ -102,9 +102,9 @@ protected:
 
 	//FPathFollowingRequestResult myResult;
 
-	FSVONPathfindingRequestResult myResult;
+	FSVONPathfindingRequestResult Result;
 
-	USVONNavigationComponent* myNavComponent;
+	USVONNavigationComponent* NavComponent;
 
 	void CheckPathPreConditions();
 
