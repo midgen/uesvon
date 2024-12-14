@@ -1,7 +1,8 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
-#include "SVONVolumeDetails.h"
-#include "SVONVolume.h"
+#include <UESVONEditor/Private/SVONVolumeDetails.h>
+#include <UESVON/Public/Actor/SVONVolume.h>
+
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "DetailCategoryBuilder.h"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Runtime/CoreUObject/Public/UObject/ObjectMacros.h>
+
 #include "SVONGenerationParameters.generated.h"
 
 UENUM(BlueprintType)

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "UESVON/Public/SVONLink.h"
-#include "UESVON/Public/SVONPathFinder.h"
-#include "UESVON/Public/SVONTypes.h"
+#include <UESVON/Public/Data/SVONLink.h>
+#include <UESVON/Public/Data/SVONTypes.h">
+#include <UESVON/Public/Pathfinding/SVONPathFinder.h>
 
 #include <Runtime/Core/Public/Async/AsyncWork.h>
 #include <Runtime/Core/Public/HAL/ThreadSafeBool.h>

@@ -1,6 +1,4 @@
-#include <UESVON/Public/SVONOctreeData.h>
-
-
+#include <UESVON/Public/Data/SVONOctreeData.h>
 
 const SVONNode& FSVONOctreeData::GetNode(const SVONLink& aLink) const
 {

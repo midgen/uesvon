@@ -1,7 +1,7 @@
 #pragma once
 
-#include <UESVON/Public/SVONOctreeData.h>
-#include <UESVON/Public/SVONGenerationParameters.h>
+#include <UESVON/Public/Data/SVONOctreeData.h>
+#include <UESVON/Public/Data/SVONGenerationParameters.h>
 
 #include "SVONData.generated.h"
 

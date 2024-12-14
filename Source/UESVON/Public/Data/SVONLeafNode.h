@@ -1,7 +1,7 @@
 #pragma once
 
-#include "UESVON/Private/libmorton/morton.h"
-#include "UESVON/Public/SVONDefines.h"
+#include <UESVON/Private/Library/libmorton/morton.h>
+#include <UESVON/Public/Data/SVONDefines.h>
 
 struct UESVON_API SVONLeafNode
 {

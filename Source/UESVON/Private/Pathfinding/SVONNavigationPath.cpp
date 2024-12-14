@@ -1,11 +1,9 @@
-
-#include "UESVON/Public/SVONNavigationPath.h"
-#include "UESVON/Public/SVONVolume.h"
+#include <UESVON/Public/Pathfinding/SVONNavigationPath.h>
 
 #include <Runtime/Engine/Classes/Debug/DebugDrawService.h>
 #include <Runtime/Engine/Public/DrawDebugHelpers.h>
-
 #include <Runtime/NavigationSystem/Public/NavigationData.h>
+#include <UESVON/Public/Actor/SVONVolume.h>
 
 void FSVONNavigationPath::AddPoint(const FSVONPathPoint& aPoint)
 {
@@ -26,15 +24,15 @@ void FSVONNavigationPath::DebugDraw(UWorld* World, const FSVONData& Data)
 		if (i < myPoints.Num() - 1)
 		{
 			FVector offSet(0.f);
-			//if (i == 0)
-			//offSet.Z -= 300.f;
+			// if (i == 0)
+			// offSet.Z -= 300.f;
 			float Size = point.myLayer == 0 ? Data.GetVoxelSize(point.myLayer) * 0.25f : Data.GetVoxelSize(point.myLayer) * 0.5f;
 
 			DrawDebugBox(World, point.myPosition, FVector(Size), SVONStatics::myLinkColors[point.myLayer], true, -1.f, 0, 30.f);
 
 			DrawDebugSphere(World, point.myPosition + offSet, 30.f, 20, FColor::Cyan, true, -1.f, 0, 100.f);
 
-			//DrawDebugLine(aWorld, point.myPosition + offSet, myPoints[i+1].myPosition, FColor::Cyan, true, -1.f, 0, 100.f);
+			// DrawDebugLine(aWorld, point.myPosition + offSet, myPoints[i+1].myPosition, FColor::Cyan, true, -1.f, 0, 100.f);
 		}
 	}
 }

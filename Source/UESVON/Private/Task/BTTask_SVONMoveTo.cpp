@@ -1,6 +1,6 @@
 
-#include "UESVON/Public/BTTask_SVONMoveTo.h"
-#include "UESVON/Public/AITask_SVONMoveTo.h"
+#include <UESVON/Public/Task/BTTask_SVONMoveTo.h>
+#include <UESVON/Public/Task/AITask_SVONMoveTo.h>
 
 #include <Runtime/AIModule/Classes/AIController.h>
 #include <Runtime/AIModule/Classes/AISystem.h>

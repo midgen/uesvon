@@ -1,8 +1,7 @@
-#include <UESVON/Public/SVONData.h>
-
-#include <UESVON/Public/SVONCollisionQueryInterface.h>
-#include <UESVON/Public/SVONDebugDrawInterface.h>
-#include <UESVON/Public/SVONGenerationParameters.h>
+#include <UESVON/Public/Data/SVONData.h>
+#include <UESVON/Public/Data/SVONGenerationParameters.h>
+#include <UESVON/Public/Interface/SVONCollisionQueryInterface.h>
+#include <UESVON/Public/Interface/SVONDebugDrawInterface.h>
 
 void FSVONData::SetExtents(const FVector& Origin, const FVector& Extents)
 {
@@ -39,7 +38,7 @@ void FSVONData::Generate(UWorld& World, const ISVONCollisionQueryInterface& Coll
 {
 	FirstPassRasterise(World);
 
-		// Allocate the leaf node data
+	// Allocate the leaf node data
 	OctreeData.LeafNodes.Empty();
 	OctreeData.LeafNodes.AddDefaulted(OctreeData.BlockedIndices[0].Num() * 8 * 0.25f);
 
@@ -211,7 +210,7 @@ bool FSVONData::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNode
 			FVector startPos, endPos;
 			GetNodePosition(aLayer, node.myCode, startPos);
 			endPos = startPos + (FVector(SVONStatics::dirs[aDir]) * 100.f);
-			//DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, FColor::Red, true, -1.f, 0, .0f);
+			// DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, FColor::Red, true, -1.f, 0, .0f);
 		}
 		return true;
 	}
@@ -247,7 +246,7 @@ bool FSVONData::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNode
 			{
 				FVector endPos;
 				GetNodePosition(aLayer, thisCode, endPos);
-				//DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, SVONStatics::myLinkColors[aLayer], true, -1.f, 0, .0f);
+				// DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, SVONStatics::myLinkColors[aLayer], true, -1.f, 0, .0f);
 			}
 			return true;
 		}
@@ -284,12 +283,12 @@ void FSVONData::RasterizeLeafNode(FVector& aOrigin, nodeindex_t aLeafIndex, cons
 			if (GenerationParameters.ShowLeafVoxels && IsInDebugRange(position))
 			{
 				DebugInterface.SVONDrawDebugBox(position, leafVoxelSize * 0.5f, FColor::Red);
-				//DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, .0f);
+				// DrawDebugBox(GetWorld(), position, FVector(leafVoxelSize * 0.5f), FQuat::Identity, FColor::Red, true, -1.f, 0, .0f);
 			}
 			if (GenerationParameters.ShowMortonCodes && IsInDebugRange(position))
 			{
 				DebugInterface.SVONDrawDebugString(position, FString::FromInt(aLeafIndex) + ":" + FString::FromInt(i), FColor::Red);
-				//DrawDebugString(GetWorld(), position, FString::FromInt(aLeafIndex) + ":" + FString::FromInt(i), nullptr, FColor::Red, -1, false);
+				// DrawDebugString(GetWorld(), position, FString::FromInt(aLeafIndex) + ":" + FString::FromInt(i), nullptr, FColor::Red, -1, false);
 			}
 		}
 	}
@@ -324,13 +323,13 @@ void FSVONData::RasteriseLayer(layerindex_t aLayer, const ISVONCollisionQueryInt
 				if (GenerationParameters.ShowMortonCodes && IsInDebugRange(nodePos))
 				{
 					DebugInterface.SVONDrawDebugString(nodePos, FString::FromInt(aLayer) + ":" + FString::FromInt(index), SVONStatics::myLayerColors[aLayer]);
-					//DrawDebugString(GetWorld(), nodePos, FString::FromInt(aLayer) + ":" + FString::FromInt(index), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
+					// DrawDebugString(GetWorld(), nodePos, FString::FromInt(aLayer) + ":" + FString::FromInt(index), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
 				}
 				if (GenerationParameters.ShowVoxels && IsInDebugRange(nodePos))
 				{
-					
+
 					DebugInterface.SVONDrawDebugBox(nodePos, GetVoxelSize(aLayer) * 0.5f, SVONStatics::myLayerColors[aLayer]);
-					//DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
+					// DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
 				}
 
 				// Now check if we have any blocking, and search leaf nodes
@@ -342,7 +341,7 @@ void FSVONData::RasteriseLayer(layerindex_t aLayer, const ISVONCollisionQueryInt
 				params.bTraceComplex = false;
 				params.TraceTag = "SVONRasterize";
 				if (CollisionInterface.IsBlocked(Position, GetVoxelSize(0) * 0.5f, GenerationParameters.CollisionChannel, GenerationParameters.Clearance))
-				//if (IsBlocked(Position, GetVoxelSize(0) * 0.5f))
+				// if (IsBlocked(Position, GetVoxelSize(0) * 0.5f))
 				{
 					// Rasterize my leaf nodes
 					FVector leafOrigin = nodePos - (FVector(GetVoxelSize(aLayer) * 0.5f));
@@ -417,12 +416,12 @@ void FSVONData::RasteriseLayer(layerindex_t aLayer, const ISVONCollisionQueryInt
 					if (GenerationParameters.ShowVoxels && IsInDebugRange(nodePos))
 					{
 						DebugInterface.SVONDrawDebugBox(nodePos, GetVoxelSize(aLayer) * 0.5f, SVONStatics::myLayerColors[aLayer]);
-						//DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
+						// DrawDebugBox(GetWorld(), nodePos, FVector(GetVoxelSize(aLayer) * 0.5f), FQuat::Identity, SVONStatics::myLayerColors[aLayer], true, -1.f, 0, .0f);
 					}
 					if (GenerationParameters.ShowMortonCodes && IsInDebugRange(nodePos))
 					{
 						DebugInterface.SVONDrawDebugString(nodePos, FString::FromInt(aLayer) + ":" + FString::FromInt(index), SVONStatics::myLayerColors[aLayer]);
-						//DrawDebugString(GetWorld(), nodePos, FString::FromInt(aLayer) + ":" + FString::FromInt(index), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
+						// DrawDebugString(GetWorld(), nodePos, FString::FromInt(aLayer) + ":" + FString::FromInt(index), nullptr, SVONStatics::myLayerColors[aLayer], -1, false);
 					}
 				}
 			}

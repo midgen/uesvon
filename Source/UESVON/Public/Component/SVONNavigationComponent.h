@@ -1,8 +1,8 @@
 #pragma once
 
-#include <UESVON/Public/SVONLink.h>
-#include <UESVON/Public/SVONNavigationPath.h>
-#include <UESVON/Public/SVONTypes.h>
+#include <UESVON/Public/Data/SVONLink.h>
+#include <UESVON/Public/Pathfinding/SVONNavigationPath.h>
+#include <UESVON/Public/Data/SVONTypes.h>
 
 #include <Runtime/Engine/Classes/Components/ActorComponent.h>
 

@@ -1,5 +1,5 @@
-#include "UESVON/Public/SVONFindPathTask.h"
-#include "UESVON/Public/SVONPathFinder.h"
+#include <UESVON/Public/Task/SVONFindPathTask.h>
+#include <UESVON/Public/Pathfinding/SVONPathFinder.h>
 
 void FSVONFindPathTask::DoWork()
 {

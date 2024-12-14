@@ -1,8 +1,8 @@
 #pragma once
 
-#include <UESVON/Public/SVONData.h>
-#include <UESVON/Public/SVONCollisionQueryInterface.h>
-#include <UESVON/Public/SVONDebugDrawInterface.h>
+#include <UESVON/Public/Data/SVONData.h>
+#include <UESVON/Public/Interface/SVONCollisionQueryInterface.h>
+#include <UESVON/Public/Interface/SVONDebugDrawInterface.h>
 
 #include <Runtime/Engine/Classes/GameFramework/Volume.h>
 

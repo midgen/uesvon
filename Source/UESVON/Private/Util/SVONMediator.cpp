@@ -1,6 +1,6 @@
-#include "UESVON/Public/SVONMediator.h"
-#include "UESVON/Public/SVONLink.h"
-#include "UESVON/Public/SVONVolume.h"
+#include <UESVON/Public/Util/SVONMediator.h>
+#include <UESVON/Public/Data/SVONLink.h>
+#include <UESVON/Public/Actor/SVONVolume.h>
 
 #include <Runtime/Engine/Public/DrawDebugHelpers.h>
 

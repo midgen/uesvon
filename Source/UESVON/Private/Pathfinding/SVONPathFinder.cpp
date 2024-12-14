@@ -1,9 +1,9 @@
-#include "UESVON/Public/SVONPathFinder.h"
-#include "UESVON/Public/SVONLink.h"
-#include "UESVON/Public/SVONNode.h"
-#include "UESVON/Public/SVONVolume.h"
+#include <UESVON/Public/Pathfinding/SVONPathFinder.h>
 
-#include "SVONNavigationPath.h"
+#include <UESVON/Public/Actor/SVONVolume.h>
+#include <UESVON/Public/Data/SVONLink.h>
+#include <UESVON/Public/Data/SVONNode.h>
+#include <UESVON/Public/Pathfinding/SVONNavigationPath.h>
 
 int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath)
 {
@@ -202,7 +202,7 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 		points.Emplace(aStartPos, myStart.GetLayerIndex());
 	}
 
-	//Smooth_Chaikin(points, mySettings.mySmoothingIterations);
+	// Smooth_Chaikin(points, mySettings.mySmoothingIterations);
 
 	for (int i = points.Num() - 1; i >= 0; i--)
 	{
@@ -210,7 +210,7 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 	}
 }
 
-//void SVONPathFinder::Smooth_Chaikin(TArray<FVector>& somePoints, int aNumIterations)
+// void SVONPathFinder::Smooth_Chaikin(TArray<FVector>& somePoints, int aNumIterations)
 //{
 //	for (int i = 0; i < aNumIterations; i++)
 //	{
@@ -225,4 +225,4 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 //		}
 //		somePoints.RemoveAt(somePoints.Num() - 1);
 //	}
-//}
+// }

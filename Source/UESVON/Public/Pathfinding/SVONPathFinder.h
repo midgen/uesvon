@@ -1,7 +1,6 @@
-
 #pragma once
 
-#include "UESVON/Public/SVONTypes.h"
+#include <UESVON/Public/Data/SVONTypes.h>
 
 class ASVONVolume;
 

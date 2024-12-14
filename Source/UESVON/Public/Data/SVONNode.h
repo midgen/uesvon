@@ -1,8 +1,7 @@
 #pragma once
 
-#include "CoreMinimal.h"
-#include "SVONLink.h"
-#include "SVONDefines.h"
+#include <UESVON/Public/Data/SVONLink.h>
+#include <UESVON/Public/Data/SVONDefines.h>
 
 struct UESVON_API SVONNode
 {

@@ -1,13 +1,13 @@
 
-#include <UESVON/Public/SVONNavigationComponent.h>
+#include <UESVON/Public/Component/SVONNavigationComponent.h>
 
 #include <UESVON/Public/Subsystem/SVONSubsystem.h>
-#include <UESVON/Public/SVONFindPathTask.h>
-#include <UESVON/Public/SVONLink.h>
-#include <UESVON/Public/SVONNavigationPath.h>
-#include <UESVON/Public/SVONPathFinder.h>
-#include <UESVON/Public/SVONVolume.h>
-#include <UESVON/Public/SVONMediator.h>
+#include <UESVON/Public/Task/SVONFindPathTask.h>
+#include <UESVON/Public/Data/SVONLink.h>
+#include <UESVON/Public/Pathfinding/SVONNavigationPath.h>
+#include <UESVON/Public/Pathfinding/SVONPathFinder.h>
+#include <UESVON/Public/Actor/SVONVolume.h>
+#include <UESVON/Public/Util/SVONMediator.h>
 #include <UESVON/Public/UESVON.h>
 
 #include <Runtime/Engine/Classes/Components/LineBatchComponent.h>

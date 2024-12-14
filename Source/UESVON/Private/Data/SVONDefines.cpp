@@ -1,4 +1,4 @@
-#include "SVONDefines.h"
+#include <UESVON/Public/Data/SVONDefines.h>
 
 const FIntVector SVONStatics::dirs[] = {
 	FIntVector(1, 0, 0),

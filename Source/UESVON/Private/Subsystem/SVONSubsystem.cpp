@@ -1,6 +1,7 @@
 #include <UESVON/Public/Subsystem/SVONSubsystem.h>
-#include <UESVON/Public/SVONVolume.h>
-#include <UESVON/Public/SVONNavigationComponent.h>
+
+#include <UESVON/Public/Actor/SVONVolume.h>
+#include <UESVON/Public/Component/SVONNavigationComponent.h>
 
 void USVONSubsystem::RegisterVolume(const ASVONVolume* Volume)
 {
@@ -26,7 +27,7 @@ const ASVONVolume* USVONSubsystem::GetVolumeForPosition(const FVector& Position)
 {
 	for (const ASVONVolume* Volume : RegisteredVolumes)
 	{
-		if (Volume->EncompassesPoint(Position)) 
+		if (Volume->EncompassesPoint(Position))
 		{
 			return Volume;
 		}
@@ -43,8 +44,8 @@ void USVONSubsystem::Tick(float DeltaTime)
 
 		for (const ASVONVolume* Volume : RegisteredVolumes)
 		{
-			//float DistanceToPoint = 0.f;
-			if (Volume->EncompassesPoint(NavComponent->GetPawnPosition()))//, 0.5f));//, &DistanceToPoint))
+			// float DistanceToPoint = 0.f;
+			if (Volume->EncompassesPoint(NavComponent->GetPawnPosition())) //, 0.5f));//, &DistanceToPoint))
 			{
 				NavComponent->SetCurrentNavVolume(Volume);
 				bIsInValidVolume = true;

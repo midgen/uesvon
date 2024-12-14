@@ -1,8 +1,8 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 #pragma once
 
-#include "UESVON/Public/SVONDefines.h"
-#include "UESVON/Public/SVONTypes.h"
+#include <UESVON/Public/Data/SVONDefines.h>
+#include <UESVON/Public/Data/SVONTypes.h>
 
 #include <Runtime/AIModule/Classes/Navigation/PathFollowingComponent.h>
 #include <Runtime/AIModule/Classes/Tasks/AITask.h>

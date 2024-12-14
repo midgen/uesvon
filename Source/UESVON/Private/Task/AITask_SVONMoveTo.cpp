@@ -1,18 +1,17 @@
-// Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
-#include <UESVON/Public/AITask_SVONMoveTo.h>
+#include <UESVON/Public/Task/AITask_SVONMoveTo.h>
+
+#include <UESVON/Public/Actor/SVONVolume.h>
+#include <UESVON/Public/Component/SVONNavigationComponent.h>
+#include <UESVON/Public/Pathfinding/SVONNavigationPath.h>
 #include <UESVON/Public/UESVON.h>
-#include <UESVON/Public/SVONNavigationComponent.h>
-#include <UESVON/Public/SVONNavigationPath.h>
-#include <UESVON/Public/SVONVolume.h>
 
 #include <Runtime/AIModule/Classes/AIController.h>
 #include <Runtime/AIModule/Classes/AIResources.h>
 #include <Runtime/AIModule/Classes/AISystem.h>
-#include <Runtime/Engine/Public/VisualLogger/VisualLogger.h>
 #include <Runtime/Engine/Public/TimerManager.h>
+#include <Runtime/Engine/Public/VisualLogger/VisualLogger.h>
 #include <Runtime/GameplayTasks/Classes/GameplayTasksComponent.h>
-
 
 UAITask_SVONMoveTo::UAITask_SVONMoveTo(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -164,21 +163,18 @@ void UAITask_SVONMoveTo::PerformMove()
 	ResetTimers();
 	ResetPaths();
 
-
-
-
 	if (Result.Code == ESVONPathfindingRequestResult::AlreadyAtGoal)
 	{
 		MoveRequestID = Result.MoveId;
 		OnRequestFinished(Result.MoveId, FPathFollowingResult(EPathFollowingResult::Success, FPathFollowingResultFlags::AlreadyAtGoal));
 		return;
 	}
-	
+
 	// If we're ready to path, then request the path
 	if (Result.Code == ESVONPathfindingRequestResult::ReadyToPath)
 	{
 		bUseAsyncPathfinding ? RequestPathAsync() : RequestPathSynchronous();
-	
+
 		switch (Result.Code)
 		{
 		case ESVONPathfindingRequestResult::Failed:
@@ -200,7 +196,6 @@ void UAITask_SVONMoveTo::PerformMove()
 			checkNoEntry();
 			break;
 		}
-
 	}
 }
 
@@ -243,8 +238,6 @@ void UAITask_SVONMoveTo::SetObservedPath(FNavPathSharedPtr InPath)
 		PathUpdateDelegateHandle = Path->AddObserver(FNavigationPath::FPathObserverDelegate::FDelegate::CreateUObject(this, &UAITask_SVONMoveTo::OnPathEvent));
 	}
 }
-
-
 
 void UAITask_SVONMoveTo::CheckPathPreConditions()
 {
@@ -308,7 +301,6 @@ void UAITask_SVONMoveTo::CheckPathPreConditions()
 	}
 
 	return;
-	
 }
 
 void UAITask_SVONMoveTo::RequestPathSynchronous()
@@ -322,7 +314,6 @@ void UAITask_SVONMoveTo::RequestPathSynchronous()
 	{
 		Result.Code = ESVONPathfindingRequestResult::Success;
 	}
-
 
 	return;
 }
@@ -388,15 +379,14 @@ void UAITask_SVONMoveTo::HandleAsyncPathTaskComplete()
 	RequestMove();
 	// Flag that we've processed the task
 	AsyncTaskComplete = false;
-
 }
 
 void UAITask_SVONMoveTo::ResetPaths()
 {
-	if(Path.IsValid())
+	if (Path.IsValid())
 		Path->ResetForRepath();
 
-	if(SVONPath.IsValid())
+	if (SVONPath.IsValid())
 		SVONPath->ResetForRepath();
 }
 
@@ -424,24 +414,21 @@ void UAITask_SVONMoveTo::LogPathHelper()
 					continue;
 
 				const FSVONPathPoint& Point = SVONPath->GetPathPoints()[i];
-	
+
 				float size = 0.f;
 
 				if (Point.myLayer == 0)
 				{
 					size = svonNavComponent->GetCurrentVolume()->GetNavData().GetVoxelSize(0) * 0.25f;
 				}
-				else 
+				else
 				{
 					size = svonNavComponent->GetCurrentVolume()->GetNavData().GetVoxelSize(Point.myLayer - 1);
 				}
 
-
 				UE_VLOG_BOX(OwnerController->GetPawn(), VUESVON, Verbose, FBox(Point.myPosition + FVector(size * 0.5f), Point.myPosition - FVector(size * 0.5f)), FColor::Black, TEXT_EMPTY);
-
 			}
 		}
-
 	}
 #endif // ENABLE_VISUAL_LOG
 #endif // WITH_EDITOR
@@ -568,7 +555,7 @@ void UAITask_SVONMoveTo::OnPathEvent(FNavigationPath* InPath, ENavPathEvent::Typ
 
 void UAITask_SVONMoveTo::ConditionalUpdatePath()
 {
-	// mark this path as waiting for repath so that PathFollowingComponent doesn't abort the move while we 
+	// mark this path as waiting for repath so that PathFollowingComponent doesn't abort the move while we
 	// micro manage repathing moment
 	// note that this flag fill get cleared upon repathing end
 	if (Path.IsValid())
