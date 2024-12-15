@@ -1,5 +1,7 @@
 #pragma once
 
+struct FSVONData;
+
 UENUM(BlueprintType)
 enum class ESVONPathCostType : uint8
 {

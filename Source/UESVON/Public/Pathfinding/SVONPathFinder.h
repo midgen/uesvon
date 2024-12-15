@@ -1,6 +1,8 @@
 #pragma once
 
+#include <UESVON/Public/Pathfinding/SVONNavigationPath.h>
 #include <UESVON/Public/Data/SVONTypes.h>
+#include <UESVON/Public/Data/SVONLink.h>
 
 class ASVONVolume;
 

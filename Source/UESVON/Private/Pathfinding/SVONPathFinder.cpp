@@ -4,6 +4,7 @@
 #include <UESVON/Public/Data/SVONLink.h>
 #include <UESVON/Public/Data/SVONNode.h>
 #include <UESVON/Public/Pathfinding/SVONNavigationPath.h>
+#include <UESVON/Public/UESVON.h>
 
 int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath)
 {
