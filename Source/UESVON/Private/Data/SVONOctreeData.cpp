@@ -118,7 +118,7 @@ void FSVONOctreeData::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNe
 		// If the node has children, we need to look down the tree to see which children we want to add to the neighbour set
 
 		// Start working set, and put the link into it
-		TArray<SVONLink> workingSet;
+		TArray<SVONLink, TInlineAllocator<16>> workingSet;
 		workingSet.Push(neighbourLink);
 
 		while (workingSet.Num() > 0)
