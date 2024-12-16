@@ -46,26 +46,26 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 		{
 			const SVONNode& node = layer[j];
 			// This is the node we are in
-			if (node.myCode == code)
+			if (node.Code == code)
 			{
 				// There are no child nodes, so this is our nav position
-				if (!node.myFirstChild.IsValid()) // && layerIndex > 0)
+				if (!node.FirstChild.IsValid()) // && layerIndex > 0)
 				{
-					oLink.myLayerIndex = layerIndex;
-					oLink.myNodeIndex = j;
-					oLink.mySubnodeIndex = 0;
+					oLink.LayerIndex = layerIndex;
+					oLink.NodeIndex = j;
+					oLink.SubnodeIndex = 0;
 					return true;
 				}
 
 				// If this is a leaf node, we need to find our subnode
 				if (layerIndex == 0)
 				{
-					const SVONLeafNode& leaf = aVolume.GetNavData().OctreeData.GetLeafNode(node.myFirstChild.myNodeIndex);
+					const SVONLeafNode& leaf = aVolume.GetNavData().OctreeData.GetLeafNode(node.FirstChild.NodeIndex);
 					// We need to calculate the node local position to get the morton code for the leaf
 					float voxelSize = aVolume.GetNavData().GetVoxelSize(layerIndex);
 					// The world position of the 0 node
 					FVector nodePosition;
-					aVolume.GetNavData().GetNodePosition(layerIndex, node.myCode, nodePosition);
+					aVolume.GetNavData().GetNodePosition(layerIndex, node.Code, nodePosition);
 					// The morton origin of the node
 					FVector nodeOrigin = nodePosition - FVector(voxelSize * 0.5f);
 					// The requested position, relative to the node origin
@@ -77,8 +77,8 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 					coord.Z = FMath::FloorToInt((nodeLocalPos.Z / (voxelSize * 0.25f)));
 
 					// So our link is.....*drum roll*
-					oLink.myLayerIndex = 0; // Layer 0 (leaf)
-					oLink.myNodeIndex = j;	// This index
+					oLink.LayerIndex = 0; // Layer 0 (leaf)
+					oLink.NodeIndex = j;	// This index
 
 					mortoncode_t leafIndex = morton3D_64_encode(coord.X, coord.Y, coord.Z); // This morton code is our key into the 64-bit leaf node
 
@@ -87,14 +87,14 @@ bool SVONMediator::GetLinkFromPosition(const FVector& aPosition, const ASVONVolu
 						return false; // This voxel is blocked, oops!
 					}						
 
-					oLink.mySubnodeIndex = leafIndex;
+					oLink.SubnodeIndex = leafIndex;
 
 					return true;
 				}
 
 				// If we've got here, the current node has a child, and isn't a leaf, so lets go down...
-				layerIndex = layer[j].myFirstChild.GetLayerIndex();
-				nodeIndex = layer[j].myFirstChild.GetNodeIndex();
+				layerIndex = layer[j].FirstChild.GetLayerIndex();
+				nodeIndex = layer[j].FirstChild.GetNodeIndex();
 
 				break; //stop iterating this layer
 			}

@@ -15,18 +15,18 @@ class ASVONVolume;
 struct UESVON_API FSVONPathPoint
 {
 	FSVONPathPoint()
-		: myPosition(FVector())
-		, myLayer(-1)
+		: Position(FVector())
+		, Layer(-1)
 	{
 	}
 	FSVONPathPoint(const FVector& aPosition, int aLayer)
-		: myPosition(aPosition)
-		, myLayer(aLayer)
+		: Position(aPosition)
+		, Layer(aLayer)
 	{
 	}
 
-	FVector myPosition; // Position of the point
-	int myLayer;		// Layer that the point came from (so we can infer it's volume)
+	FVector Position; // Position of the point
+	int Layer;		// Layer that the point came from (so we can infer it's volume)
 };
 
 struct UESVON_API FSVONNavigationPath

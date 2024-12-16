@@ -90,12 +90,12 @@ bool USVONNavigationComponent::FindPathAsync(const FVector& StartPosition, const
 		}
 
 		SVONPathFinderSettings Settings;
-		Settings.myUseUnitCost = bUseUnitCost;
-		Settings.myUnitCost = UnitCost;
-		Settings.myEstimateWeight = EstimateWeight;
-		Settings.myNodeSizeCompensation = NodeSizeCompensation;
-		Settings.myPathCostType = PathCostType;
-		Settings.mySmoothingIterations = SmoothingIterations;
+		Settings.UseUnitCost = bUseUnitCost;
+		Settings.UnitCost = UnitCost;
+		Settings.EstimateWeight = EstimateWeight;
+		Settings.NodeSizeCompensation = NodeSizeCompensation;
+		Settings.PathCostType = PathCostType;
+		Settings.SmoothingIterations = SmoothingIterations;
 
 		(new FAutoDeleteAsyncTask<FSVONFindPathTask>(CurrentNavVolume->GetNavData(), Settings, GetWorld(), StartNavLink, TargetNavLink, StartPosition, TargetPosition, OutNavPath, CompleteFlag))->StartBackgroundTask();
 
@@ -140,12 +140,12 @@ bool USVONNavigationComponent::FindPathImmediate(const FVector& StartPosition, c
 		Path->ResetForRepath();
 
 		SVONPathFinderSettings Settings;
-		Settings.myUseUnitCost = bUseUnitCost;
-		Settings.myUnitCost = UnitCost;
-		Settings.myEstimateWeight = EstimateWeight;
-		Settings.myNodeSizeCompensation = NodeSizeCompensation;
-		Settings.myPathCostType = PathCostType;
-		Settings.mySmoothingIterations = SmoothingIterations;
+		Settings.UseUnitCost = bUseUnitCost;
+		Settings.UnitCost = UnitCost;
+		Settings.EstimateWeight = EstimateWeight;
+		Settings.NodeSizeCompensation = NodeSizeCompensation;
+		Settings.PathCostType = PathCostType;
+		Settings.SmoothingIterations = SmoothingIterations;
 
 		SVONPathFinder pathFinder(GetWorld(), CurrentNavVolume->GetNavData(), Settings);
 
@@ -171,7 +171,7 @@ void USVONNavigationComponent::FindPathImmediate(const FVector& StartPosition, c
 
 	for (const FSVONPathPoint& PathPoint : CurrentPath->GetPathPoints())
 	{
-		OutPathPoints.Emplace(PathPoint.myPosition);
+		OutPathPoints.Emplace(PathPoint.Position);
 	}
 }
 

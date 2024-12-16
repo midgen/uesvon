@@ -21,7 +21,7 @@ void FSVONOctreeData::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>&
 {
 	mortoncode_t leafIndex = aLink.GetSubnodeIndex();
 	const SVONNode& node = GetNode(aLink);
-	const SVONLeafNode& leaf = GetLeafNode(node.myFirstChild.GetNodeIndex());
+	const SVONLeafNode& leaf = GetLeafNode(node.FirstChild.GetNodeIndex());
 
 	// Get our starting co-ordinates
 	uint_fast32_t x = 0, y = 0, z = 0;
@@ -55,13 +55,13 @@ void FSVONOctreeData::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>&
 			const SVONNode& neighbourNode = GetNode(neighbourLink);
 
 			// If the neighbour layer 0 has no leaf nodes, just return it
-			if (!neighbourNode.myFirstChild.IsValid())
+			if (!neighbourNode.FirstChild.IsValid())
 			{
 				oNeighbours.Add(neighbourLink);
 				continue;
 			}
 
-			const SVONLeafNode& leafNode = GetLeafNode(neighbourNode.myFirstChild.GetNodeIndex());
+			const SVONLeafNode& leafNode = GetLeafNode(neighbourNode.FirstChild.GetNodeIndex());
 
 			if (leafNode.IsCompletelyBlocked())
 			{
@@ -88,7 +88,7 @@ void FSVONOctreeData::GetLeafNeighbours(const SVONLink& aLink, TArray<SVONLink>&
 				// Only return the neighbour if it isn't blocked!
 				if (!leafNode.GetNode(subNodeCode))
 				{
-					oNeighbours.Emplace(0, neighbourNode.myFirstChild.GetNodeIndex(), subNodeCode);
+					oNeighbours.Emplace(0, neighbourNode.FirstChild.GetNodeIndex(), subNodeCode);
 				}
 			}
 		}
@@ -142,8 +142,8 @@ void FSVONOctreeData::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNe
 				for (const nodeindex_t& childIndex : SVONStatics::dirChildOffsets[i])
 				{
 					// Each of the childnodes
-					SVONLink childLink = thisNode.myFirstChild;
-					childLink.myNodeIndex += childIndex;
+					SVONLink childLink = thisNode.FirstChild;
+					childLink.NodeIndex += childIndex;
 					const SVONNode& childNode = GetNode(childLink);
 
 					if (childNode.HasChildren()) // If it has children, add them to the working set to keep going down
@@ -162,9 +162,9 @@ void FSVONOctreeData::GetNeighbours(const SVONLink& aLink, TArray<SVONLink>& oNe
 				for (const nodeindex_t& leafIndex : SVONStatics::dirLeafChildOffsets[i])
 				{
 					// Each of the childnodes
-					SVONLink link = neighbour.myFirstChild;
-					const SVONLeafNode& leafNode = GetLeafNode(link.myNodeIndex);
-					link.mySubnodeIndex = leafIndex;
+					SVONLink link = neighbour.FirstChild;
+					const SVONLeafNode& leafNode = GetLeafNode(link.NodeIndex);
+					link.SubnodeIndex = leafIndex;
 
 					if (!leafNode.GetNode(leafIndex))
 					{

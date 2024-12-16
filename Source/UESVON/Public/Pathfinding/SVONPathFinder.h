@@ -12,23 +12,23 @@ struct SVONLink;
 
 struct SVONPathFinderSettings
 {
-	bool myDebugOpenNodes;
-	bool myUseUnitCost;
-	float myUnitCost;
-	float myEstimateWeight;
-	float myNodeSizeCompensation;
-	int mySmoothingIterations;
-	ESVONPathCostType myPathCostType;
-	TArray<FVector> myDebugPoints;
+	bool DebugOpenNodes;
+	bool UseUnitCost;
+	float UnitCost;
+	float EstimateWeight;
+	float NodeSizeCompensation;
+	int SmoothingIterations;
+	ESVONPathCostType PathCostType;
+	TArray<FVector> DebugPoints;
 
 	SVONPathFinderSettings()
-		: myDebugOpenNodes(false)
-		, myUseUnitCost(false)
-		, myUnitCost(1.0f)
-		, myEstimateWeight(1.0f)
-		, myNodeSizeCompensation(1.0f)
-		, mySmoothingIterations(0.f)
-		, myPathCostType(ESVONPathCostType::EUCLIDEAN)
+		: DebugOpenNodes(false)
+		, UseUnitCost(false)
+		, UnitCost(1.0f)
+		, EstimateWeight(1.0f)
+		, NodeSizeCompensation(1.0f)
+		, SmoothingIterations(0.f)
+		, PathCostType(ESVONPathCostType::EUCLIDEAN)
 	{
 	}
 };
@@ -36,33 +36,33 @@ struct SVONPathFinderSettings
 class UESVON_API SVONPathFinder
 {
 public:
-	SVONPathFinder(UWorld* aWorld, const FSVONData& Data, SVONPathFinderSettings& aSettings)
+	SVONPathFinder(UWorld* World, const FSVONData& Data, SVONPathFinderSettings& Settings)
 		: NavigationData(Data)
-		, mySettings(aSettings)
-		, myWorld(aWorld){};
+		, Settings(Settings)
+		, World(World){};
 	~SVONPathFinder(){};
 
 	/* Performs an A* search from start to target navlink */
 	int FindPath(const SVONLink& aStart, const SVONLink& aTarget, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath);
 
 private:
-	TArray<SVONLink> myOpenSet;
-	TSet<SVONLink> myClosedSet;
+	TArray<SVONLink> OpenSet;
+	TSet<SVONLink> ClosedSet;
 
-	TMap<SVONLink, SVONLink> myCameFrom;
+	TMap<SVONLink, SVONLink> CameFrom;
 
-	TMap<SVONLink, float> myGScore;
-	TMap<SVONLink, float> myFScore;
+	TMap<SVONLink, float> GScore;
+	TMap<SVONLink, float> FScore;
 
-	SVONLink myStart;
-	SVONLink myCurrent;
-	SVONLink myGoal;
+	SVONLink Start;
+	SVONLink Current;
+	SVONLink Goal;
 
 	const FSVONData& NavigationData;
 
-	SVONPathFinderSettings& mySettings;
+	SVONPathFinderSettings& Settings;
 
-	UWorld* myWorld;
+	UWorld* World;
 
 	/* A* heuristic calculation */
 	float HeuristicScore(const SVONLink& aStart, const SVONLink& aTarget);

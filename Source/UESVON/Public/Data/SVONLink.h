@@ -2,31 +2,31 @@
 
 struct UESVON_API SVONLink
 {
-	unsigned int myLayerIndex:4;
-	unsigned int myNodeIndex:22;
-	unsigned int mySubnodeIndex:6;
+	unsigned int LayerIndex:4;
+	unsigned int NodeIndex:22;
+	unsigned int SubnodeIndex:6;
 
 	SVONLink() : 
-		myLayerIndex(15),
-		myNodeIndex(0),
-		mySubnodeIndex(0) {}
+		LayerIndex(15),
+		NodeIndex(0),
+		SubnodeIndex(0) {}
 
 	SVONLink(uint8 aLayer, uint_fast32_t aNodeIndex, uint8 aSubNodeIndex)
-		: myLayerIndex(aLayer),
-		myNodeIndex(aNodeIndex),
-		mySubnodeIndex(aSubNodeIndex) {}
+		: LayerIndex(aLayer),
+		NodeIndex(aNodeIndex),
+		SubnodeIndex(aSubNodeIndex) {}
 
-	uint8 GetLayerIndex() const { return myLayerIndex; }
-	void SetLayerIndex(const uint8 aLayerIndex) { myLayerIndex = aLayerIndex; }
+	uint8 GetLayerIndex() const { return LayerIndex; }
+	void SetLayerIndex(const uint8 aLayerIndex) { LayerIndex = aLayerIndex; }
 
-	uint_fast32_t GetNodeIndex() const { return myNodeIndex; }
-	void SetNodeIndex(const uint_fast32_t aNodeIndex) { myNodeIndex = aNodeIndex; }
+	uint_fast32_t GetNodeIndex() const { return NodeIndex; }
+	void SetNodeIndex(const uint_fast32_t aNodeIndex) { NodeIndex = aNodeIndex; }
 
-	uint8 GetSubnodeIndex() const { return mySubnodeIndex; }
-	void SetSubnodeIndex(const uint8 aSubnodeIndex) { mySubnodeIndex = aSubnodeIndex; }
+	uint8 GetSubnodeIndex() const { return SubnodeIndex; }
+	void SetSubnodeIndex(const uint8 aSubnodeIndex) { SubnodeIndex = aSubnodeIndex; }
 
-	bool IsValid() const { return myLayerIndex != 15; }
-	void SetInvalid() { myLayerIndex = 15; }
+	bool IsValid() const { return LayerIndex != 15; }
+	void SetInvalid() { LayerIndex = 15; }
 
 	bool operator==(const SVONLink& aOther) const {
 		return memcmp(this, &aOther, sizeof(SVONLink)) == 0;
@@ -36,7 +36,7 @@ struct UESVON_API SVONLink
 
 	FString ToString() 
 	{
-		return FString::Printf(TEXT("%i:%i:%i"), myLayerIndex, myNodeIndex, mySubnodeIndex);
+		return FString::Printf(TEXT("%i:%i:%i"), LayerIndex, NodeIndex, SubnodeIndex);
 	};
 
 };

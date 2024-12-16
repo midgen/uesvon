@@ -35,7 +35,7 @@ struct FSVONOctreeData
 	}
 
 	uint8 NumLayers = 0;
-	int myNumBytes = 0;
+	int NumBytes = 0;
 
 	const uint8 GetNumLayers() const { return NumLayers; }
 	TArray<SVONNode>& GetLayer(layerindex_t aLayer) { return Layers[aLayer]; };

@@ -26,11 +26,11 @@ void FSVONNavigationPath::DebugDraw(UWorld* World, const FSVONData& Data)
 			FVector offSet(0.f);
 			// if (i == 0)
 			// offSet.Z -= 300.f;
-			float Size = point.myLayer == 0 ? Data.GetVoxelSize(point.myLayer) * 0.25f : Data.GetVoxelSize(point.myLayer) * 0.5f;
+			float Size = point.Layer == 0 ? Data.GetVoxelSize(point.Layer) * 0.25f : Data.GetVoxelSize(point.Layer) * 0.5f;
 
-			DrawDebugBox(World, point.myPosition, FVector(Size), SVONStatics::myLinkColors[point.myLayer], true, -1.f, 0, 30.f);
+			DrawDebugBox(World, point.Position, FVector(Size), SVONStatics::myLinkColors[point.Layer], true, -1.f, 0, 30.f);
 
-			DrawDebugSphere(World, point.myPosition + offSet, 30.f, 20, FColor::Cyan, true, -1.f, 0, 100.f);
+			DrawDebugSphere(World, point.Position + offSet, 30.f, 20, FColor::Cyan, true, -1.f, 0, 100.f);
 
 			// DrawDebugLine(aWorld, point.myPosition + offSet, myPoints[i+1].myPosition, FColor::Cyan, true, -1.f, 0, 100.f);
 		}
@@ -41,6 +41,6 @@ void FSVONNavigationPath::CreateNavPath(FNavigationPath& aOutPath)
 {
 	for (const FSVONPathPoint& point : myPoints)
 	{
-		aOutPath.GetPathPoints().Add(point.myPosition);
+		aOutPath.GetPathPoints().Add(point.Position);
 	}
 }

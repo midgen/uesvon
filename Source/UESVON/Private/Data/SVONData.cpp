@@ -75,15 +75,15 @@ bool FSVONData::GetLinkPosition(const SVONLink& Link, FVector& Position) const
 {
 	const SVONNode& Node = OctreeData.GetLayer(Link.GetLayerIndex())[Link.GetNodeIndex()];
 
-	GetNodePosition(Link.GetLayerIndex(), Node.myCode, Position);
+	GetNodePosition(Link.GetLayerIndex(), Node.Code, Position);
 	// If this is layer 0, and there are valid children
-	if (Link.GetLayerIndex() == 0 && Node.myFirstChild.IsValid())
+	if (Link.GetLayerIndex() == 0 && Node.FirstChild.IsValid())
 	{
 		float VoxelSize = GetVoxelSize(0);
 		uint_fast32_t X, Y, Z;
 		morton3D_64_decode(Link.GetSubnodeIndex(), X, Y, Z);
 		Position += FVector(X * VoxelSize * 0.25f, Y * VoxelSize * 0.25f, Z * VoxelSize * 0.25f) - FVector(VoxelSize * 0.375);
-		const SVONLeafNode& LeafNode = OctreeData.GetLeafNode(Node.myFirstChild.myNodeIndex);
+		const SVONLeafNode& LeafNode = OctreeData.GetLeafNode(Node.FirstChild.NodeIndex);
 		bool bIsBlocked = LeafNode.GetNode(Link.GetSubnodeIndex());
 		return !bIsBlocked;
 	}
@@ -132,7 +132,7 @@ bool FSVONData::GetIndexForCode(layerindex_t aLayer, mortoncode_t aCode, nodeind
 
 	for (int i = 0; i < layer.Num(); i++)
 	{
-		if (layer[i].myCode == aCode)
+		if (layer[i].Code == aCode)
 		{
 			oIndex = i;
 			return true;
@@ -153,11 +153,11 @@ void FSVONData::BuildNeighbourLinks(layerindex_t aLayer)
 		SVONNode& node = layer[i];
 		// Get our world co-ordinate
 		uint_fast32_t x, y, z;
-		morton3D_64_decode(node.myCode, x, y, z);
+		morton3D_64_decode(node.Code, x, y, z);
 		nodeindex_t backtrackIndex = -1;
 		nodeindex_t index = i;
 		FVector nodePos;
-		GetNodePosition(aLayer, node.myCode, nodePos);
+		GetNodePosition(aLayer, node.Code, nodePos);
 
 		// For each direction
 		for (int d = 0; d < 6; d++)
@@ -168,16 +168,16 @@ void FSVONData::BuildNeighbourLinks(layerindex_t aLayer)
 
 			while (!FindLinkInDirection(searchLayer, index, d, linkToUpdate, nodePos) && aLayer < OctreeData.Layers.Num() - 2)
 			{
-				SVONLink& parent = OctreeData.GetLayer(searchLayer)[index].myParent;
+				SVONLink& parent = OctreeData.GetLayer(searchLayer)[index].Parent;
 				if (parent.IsValid())
 				{
-					index = parent.myNodeIndex;
-					searchLayer = parent.myLayerIndex;
+					index = parent.NodeIndex;
+					searchLayer = parent.LayerIndex;
 				}
 				else
 				{
 					searchLayer++;
-					GetIndexForCode(searchLayer, node.myCode >> 3, index);
+					GetIndexForCode(searchLayer, node.Code >> 3, index);
 				}
 			}
 			index = backtrackIndex;
@@ -194,7 +194,7 @@ bool FSVONData::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNode
 
 	// Get our world co-ordinate
 	uint_fast32_t x = 0, y = 0, z = 0;
-	morton3D_64_decode(node.myCode, x, y, z);
+	morton3D_64_decode(node.Code, x, y, z);
 	int32 sX = x, sY = y, sZ = z;
 	// Add the direction
 	sX += SVONStatics::dirs[aDir].X;
@@ -208,7 +208,7 @@ bool FSVONData::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNode
 		if (GenerationParameters.ShowNeighbourLinks && IsInDebugRange(aStartPosForDebug))
 		{
 			FVector startPos, endPos;
-			GetNodePosition(aLayer, node.myCode, startPos);
+			GetNodePosition(aLayer, node.Code, startPos);
 			endPos = startPos + (FVector(SVONStatics::dirs[aDir]) * 100.f);
 			// DrawDebugLine(GetWorld(), aStartPosForDebug, endPos, FColor::Red, true, -1.f, 0, .0f);
 		}
@@ -219,29 +219,29 @@ bool FSVONData::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNode
 	z = sZ;
 	// Get the morton code for the direction
 	mortoncode_t thisCode = morton3D_64_encode(x, y, z);
-	bool isHigher = thisCode > node.myCode;
+	bool isHigher = thisCode > node.Code;
 	int32 nodeDelta = (isHigher ? 1 : -1);
 
 	while ((aNodeIndex + nodeDelta) < layer.Num() && aNodeIndex + nodeDelta >= 0)
 	{
 		// This is the node we're looking for
-		if (layer[aNodeIndex + nodeDelta].myCode == thisCode)
+		if (layer[aNodeIndex + nodeDelta].Code == thisCode)
 		{
 			const SVONNode& thisNode = layer[aNodeIndex + nodeDelta];
 			// This is a leaf node
 			if (aLayer == 0 && thisNode.HasChildren())
 			{
 				// Set invalid link if the leaf node is completely blocked, no point linking to it
-				if (OctreeData.GetLeafNode(thisNode.myFirstChild.GetNodeIndex()).IsCompletelyBlocked())
+				if (OctreeData.GetLeafNode(thisNode.FirstChild.GetNodeIndex()).IsCompletelyBlocked())
 				{
 					oLinkToUpdate.SetInvalid();
 					return true;
 				}
 			}
 			// Otherwise, use this link
-			oLinkToUpdate.myLayerIndex = aLayer;
+			oLinkToUpdate.LayerIndex = aLayer;
 			check(aNodeIndex + nodeDelta < layer.Num());
-			oLinkToUpdate.myNodeIndex = aNodeIndex + nodeDelta;
+			oLinkToUpdate.NodeIndex = aNodeIndex + nodeDelta;
 			if (GenerationParameters.ShowNeighbourLinks && IsInDebugRange(aStartPosForDebug))
 			{
 				FVector endPos;
@@ -251,7 +251,7 @@ bool FSVONData::FindLinkInDirection(layerindex_t aLayer, const nodeindex_t aNode
 			return true;
 		}
 		// If we've passed the code we're looking for, it's not on this layer
-		else if ((isHigher && layer[aNodeIndex + nodeDelta].myCode > thisCode) || (!isHigher && layer[aNodeIndex + nodeDelta].myCode < thisCode))
+		else if ((isHigher && layer[aNodeIndex + nodeDelta].Code > thisCode) || (!isHigher && layer[aNodeIndex + nodeDelta].Code < thisCode))
 		{
 			return false;
 		}
@@ -314,10 +314,10 @@ void FSVONData::RasteriseLayer(layerindex_t aLayer, const ISVONCollisionQueryInt
 				SVONNode& node = OctreeData.GetLayer(aLayer)[index];
 
 				// Set my code and position
-				node.myCode = (i);
+				node.Code = (i);
 
 				FVector nodePos;
-				GetNodePosition(aLayer, node.myCode, nodePos);
+				GetNodePosition(aLayer, node.Code, nodePos);
 
 				// Debug stuff
 				if (GenerationParameters.ShowMortonCodes && IsInDebugRange(nodePos))
@@ -346,16 +346,16 @@ void FSVONData::RasteriseLayer(layerindex_t aLayer, const ISVONCollisionQueryInt
 					// Rasterize my leaf nodes
 					FVector leafOrigin = nodePos - (FVector(GetVoxelSize(aLayer) * 0.5f));
 					RasterizeLeafNode(leafOrigin, leafIndex, CollisionInterface, DebugInterface);
-					node.myFirstChild.SetLayerIndex(0);
-					node.myFirstChild.SetNodeIndex(leafIndex);
-					node.myFirstChild.SetSubnodeIndex(0);
+					node.FirstChild.SetLayerIndex(0);
+					node.FirstChild.SetNodeIndex(leafIndex);
+					node.FirstChild.SetSubnodeIndex(0);
 					leafIndex++;
 				}
 				else
 				{
 					OctreeData.LeafNodes.AddDefaulted(1);
 					leafIndex++;
-					node.myFirstChild.SetInvalid();
+					node.FirstChild.SetInvalid();
 				}
 			}
 		}
@@ -376,25 +376,25 @@ void FSVONData::RasteriseLayer(layerindex_t aLayer, const ISVONCollisionQueryInt
 				nodeCounter++;
 				SVONNode& node = OctreeData.GetLayer(aLayer)[index];
 				// Set details
-				node.myCode = i;
+				node.Code = i;
 				nodeindex_t childIndex = 0;
-				if (GetIndexForCode(aLayer - 1, node.myCode << 3, childIndex))
+				if (GetIndexForCode(aLayer - 1, node.Code << 3, childIndex))
 				{
 					// Set parent->child links
-					node.myFirstChild.SetLayerIndex(aLayer - 1);
-					node.myFirstChild.SetNodeIndex(childIndex);
+					node.FirstChild.SetLayerIndex(aLayer - 1);
+					node.FirstChild.SetNodeIndex(childIndex);
 					// Set child->parent links, this can probably be done smarter, as we're duplicating work here
 					for (int iter = 0; iter < 8; iter++)
 					{
-						OctreeData.GetLayer(node.myFirstChild.GetLayerIndex())[node.myFirstChild.GetNodeIndex() + iter].myParent.SetLayerIndex(aLayer);
-						OctreeData.GetLayer(node.myFirstChild.GetLayerIndex())[node.myFirstChild.GetNodeIndex() + iter].myParent.SetNodeIndex(index);
+						OctreeData.GetLayer(node.FirstChild.GetLayerIndex())[node.FirstChild.GetNodeIndex() + iter].Parent.SetLayerIndex(aLayer);
+						OctreeData.GetLayer(node.FirstChild.GetLayerIndex())[node.FirstChild.GetNodeIndex() + iter].Parent.SetNodeIndex(index);
 					}
 
 					if (GenerationParameters.ShowParentChildLinks) // Debug all the things
 					{
 						FVector startPos, endPos;
-						GetNodePosition(aLayer, node.myCode, startPos);
-						GetNodePosition(aLayer - 1, node.myCode << 3, endPos);
+						GetNodePosition(aLayer, node.Code, startPos);
+						GetNodePosition(aLayer - 1, node.Code << 3, endPos);
 						if (IsInDebugRange(startPos))
 						{
 							// TODO: DEBUG
@@ -404,7 +404,7 @@ void FSVONData::RasteriseLayer(layerindex_t aLayer, const ISVONCollisionQueryInt
 				}
 				else
 				{
-					node.myFirstChild.SetInvalid();
+					node.FirstChild.SetInvalid();
 				}
 
 				if (GenerationParameters.ShowMortonCodes || GenerationParameters.ShowVoxels)

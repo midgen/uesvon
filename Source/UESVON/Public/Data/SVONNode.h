@@ -5,27 +5,27 @@
 
 struct UESVON_API SVONNode
 {
-	mortoncode_t myCode;
+	mortoncode_t Code;
 
-	SVONLink myParent;
-	SVONLink myFirstChild;
+	SVONLink Parent;
+	SVONLink FirstChild;
 
 	SVONLink myNeighbours[6];
 
 	SVONNode() :
-		myCode(0),
-		myParent(SVONLink::GetInvalidLink()),
-		myFirstChild(SVONLink::GetInvalidLink()) {}
+		Code(0),
+		Parent(SVONLink::GetInvalidLink()),
+		FirstChild(SVONLink::GetInvalidLink()) {}
 
-	bool HasChildren() const { return myFirstChild.IsValid(); }
+	bool HasChildren() const { return FirstChild.IsValid(); }
 
 };
 
 FORCEINLINE FArchive &operator <<(FArchive &Ar, SVONNode& aSVONNode)
 {
-	Ar << aSVONNode.myCode;
-	Ar << aSVONNode.myParent;
-	Ar << aSVONNode.myFirstChild;
+	Ar << aSVONNode.Code;
+	Ar << aSVONNode.Parent;
+	Ar << aSVONNode.FirstChild;
 
 	for (int i = 0; i < 6; i++)
 	{

@@ -6,61 +6,61 @@
 #include <UESVON/Public/Pathfinding/SVONNavigationPath.h>
 #include <UESVON/Public/UESVON.h>
 
-int SVONPathFinder::FindPath(const SVONLink& aStart, const SVONLink& aGoal, const FVector& aStartPos, const FVector& aTargetPos, FSVONNavPathSharedPtr* oPath)
+int SVONPathFinder::FindPath(const SVONLink& InStart, const SVONLink& InGoal, const FVector& StartPos, const FVector& TargetPos, FSVONNavPathSharedPtr* Path)
 {
-	myOpenSet.Empty();
-	myClosedSet.Empty();
-	myCameFrom.Empty();
-	myFScore.Empty();
-	myGScore.Empty();
-	myCurrent = SVONLink();
-	myGoal = aGoal;
-	myStart = aStart;
+	OpenSet.Empty();
+	ClosedSet.Empty();
+	CameFrom.Empty();
+	FScore.Empty();
+	GScore.Empty();
+	Current = SVONLink();
+	Goal = InGoal;
+	Start = InStart;
 
-	myOpenSet.Add(aStart);
-	myCameFrom.Add(aStart, aStart);
-	myGScore.Add(aStart, 0);
-	myFScore.Add(aStart, HeuristicScore(aStart, myGoal)); // Distance to target
+	OpenSet.Add(InStart);
+	CameFrom.Add(InStart, InStart);
+	GScore.Add(InStart, 0);
+	FScore.Add(InStart, HeuristicScore(InStart, InGoal)); // Distance to target
 
 	int numIterations = 0;
 
-	while (myOpenSet.Num() > 0)
+	while (OpenSet.Num() > 0)
 	{
 
 		float lowestScore = FLT_MAX;
-		for (SVONLink& link : myOpenSet)
+		for (SVONLink& link : OpenSet)
 		{
-			if (!myFScore.Contains(link) || myFScore[link] < lowestScore)
+			if (!FScore.Contains(link) || FScore[link] < lowestScore)
 			{
-				lowestScore = myFScore[link];
-				myCurrent = link;
+				lowestScore = FScore[link];
+				Current = link;
 			}
 		}
 
-		myOpenSet.Remove(myCurrent);
-		myClosedSet.Add(myCurrent);
+		OpenSet.Remove(Current);
+		ClosedSet.Add(Current);
 
-		if (myCurrent == myGoal)
+		if (Current == Goal)
 		{
-			BuildPath(myCameFrom, myCurrent, aStartPos, aTargetPos, oPath);
+			BuildPath(CameFrom, Current, StartPos, TargetPos, Path);
 #if WITH_EDITOR
 			UE_LOG(UESVON, Display, TEXT("Pathfinding complete, iterations : %i"), numIterations);
 #endif
 			return 1;
 		}
 
-		const SVONNode& currentNode = NavigationData.OctreeData.GetNode(myCurrent);
+		const SVONNode& currentNode = NavigationData.OctreeData.GetNode(Current);
 
 		TArray<SVONLink> neighbours;
 
-		if (myCurrent.GetLayerIndex() == 0 && currentNode.myFirstChild.IsValid())
+		if (Current.GetLayerIndex() == 0 && currentNode.FirstChild.IsValid())
 		{
 
-			NavigationData.OctreeData.GetLeafNeighbours(myCurrent, neighbours);
+			NavigationData.OctreeData.GetLeafNeighbours(Current, neighbours);
 		}
 		else
 		{
-			NavigationData.OctreeData.GetNeighbours(myCurrent, neighbours);
+			NavigationData.OctreeData.GetNeighbours(Current, neighbours);
 		}
 
 		for (const SVONLink& neighbour : neighbours)
@@ -84,7 +84,7 @@ float SVONPathFinder::HeuristicScore(const SVONLink& aStart, const SVONLink& aTa
 	FVector startPos, endPos;
 	NavigationData.GetLinkPosition(aStart, startPos);
 	NavigationData.GetLinkPosition(aTarget, endPos);
-	switch (mySettings.myPathCostType)
+	switch (Settings.PathCostType)
 	{
 	case ESVONPathCostType::MANHATTAN:
 		score = FMath::Abs(endPos.X - startPos.X) + FMath::Abs(endPos.Y - startPos.Y) + FMath::Abs(endPos.Z - startPos.Z);
@@ -95,7 +95,7 @@ float SVONPathFinder::HeuristicScore(const SVONLink& aStart, const SVONLink& aTa
 		break;
 	}
 
-	score *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(NavigationData.OctreeData.GetNumLayers())) * mySettings.myNodeSizeCompensation);
+	score *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(NavigationData.OctreeData.GetNumLayers())) * Settings.NodeSizeCompensation);
 
 	return score;
 }
@@ -105,9 +105,9 @@ float SVONPathFinder::GetCost(const SVONLink& aStart, const SVONLink& aTarget)
 	float cost = 0.f;
 
 	// Unit cost implementation
-	if (mySettings.myUseUnitCost)
+	if (Settings.UseUnitCost)
 	{
-		cost = mySettings.myUnitCost;
+		cost = Settings.UnitCost;
 	}
 	else
 	{
@@ -120,7 +120,7 @@ float SVONPathFinder::GetCost(const SVONLink& aStart, const SVONLink& aTarget)
 		cost = (startPos - endPos).Size();
 	}
 
-	cost *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(NavigationData.OctreeData.GetNumLayers())) * mySettings.myNodeSizeCompensation);
+	cost *= (1.0f - (static_cast<float>(aTarget.GetLayerIndex()) / static_cast<float>(NavigationData.OctreeData.GetNumLayers())) * Settings.NodeSizeCompensation);
 
 	return cost;
 }
@@ -129,33 +129,33 @@ void SVONPathFinder::ProcessLink(const SVONLink& aNeighbour)
 {
 	if (aNeighbour.IsValid())
 	{
-		if (myClosedSet.Contains(aNeighbour))
+		if (ClosedSet.Contains(aNeighbour))
 			return;
 
-		if (!myOpenSet.Contains(aNeighbour))
+		if (!OpenSet.Contains(aNeighbour))
 		{
-			myOpenSet.Add(aNeighbour);
+			OpenSet.Add(aNeighbour);
 
-			if (mySettings.myDebugOpenNodes)
+			if (Settings.DebugOpenNodes)
 			{
 				FVector pos;
 				NavigationData.GetLinkPosition(aNeighbour, pos);
-				mySettings.myDebugPoints.Add(pos);
+				Settings.DebugPoints.Add(pos);
 			}
 		}
 
 		float t_gScore = FLT_MAX;
-		if (myGScore.Contains(myCurrent))
-			t_gScore = myGScore[myCurrent] + GetCost(myCurrent, aNeighbour);
+		if (GScore.Contains(Current))
+			t_gScore = GScore[Current] + GetCost(Current, aNeighbour);
 		else
-			myGScore.Add(myCurrent, FLT_MAX);
+			GScore.Add(Current, FLT_MAX);
 
-		if (t_gScore >= (myGScore.Contains(aNeighbour) ? myGScore[aNeighbour] : FLT_MAX))
+		if (t_gScore >= (GScore.Contains(aNeighbour) ? GScore[aNeighbour] : FLT_MAX))
 			return;
 
-		myCameFrom.Add(aNeighbour, myCurrent);
-		myGScore.Add(aNeighbour, t_gScore);
-		myFScore.Add(aNeighbour, myGScore[aNeighbour] + (mySettings.myEstimateWeight * HeuristicScore(aNeighbour, myGoal)));
+		CameFrom.Add(aNeighbour, Current);
+		GScore.Add(aNeighbour, t_gScore);
+		FScore.Add(aNeighbour, GScore[aNeighbour] + (Settings.EstimateWeight * HeuristicScore(aNeighbour, Goal)));
 	}
 }
 
@@ -172,38 +172,38 @@ void SVONPathFinder::BuildPath(TMap<SVONLink, SVONLink>& aCameFrom, SVONLink aCu
 	while (aCameFrom.Contains(aCurrent) && !(aCurrent == aCameFrom[aCurrent]))
 	{
 		aCurrent = aCameFrom[aCurrent];
-		NavigationData.GetLinkPosition(aCurrent, pos.myPosition);
+		NavigationData.GetLinkPosition(aCurrent, pos.Position);
 		points.Add(pos);
 		const SVONNode& node = NavigationData.OctreeData.GetNode(aCurrent);
 		// This is rank. I really should sort the layers out
 		if (aCurrent.GetLayerIndex() == 0)
 		{
 			if (!node.HasChildren())
-				points[points.Num() - 1].myLayer = 1;
+				points[points.Num() - 1].Layer = 1;
 			else
-				points[points.Num() - 1].myLayer = 0;
+				points[points.Num() - 1].Layer = 0;
 		}
 		else
 		{
-			points[points.Num() - 1].myLayer = aCurrent.GetLayerIndex() + 1;
+			points[points.Num() - 1].Layer = aCurrent.GetLayerIndex() + 1;
 		}
 	}
 
 	if (points.Num() > 1)
 	{
-		points[0].myPosition = aTargetPos;
-		points[points.Num() - 1].myPosition = aStartPos;
+		points[0].Position = aTargetPos;
+		points[points.Num() - 1].Position = aStartPos;
 	}
 	else // If start and end are in the same voxel, just use the start and target positions.
 	{
 		if (points.Num() == 0)
 			points.Emplace();
 
-		points[0].myPosition = aTargetPos;
-		points.Emplace(aStartPos, myStart.GetLayerIndex());
+		points[0].Position = aTargetPos;
+		points.Emplace(aStartPos, Start.GetLayerIndex());
 	}
 
-	// Smooth_Chaikin(points, mySettings.mySmoothingIterations);
+	// Smooth_Chaikin(points, Settings.SmoothingIterations);
 
 	for (int i = points.Num() - 1; i >= 0; i--)
 	{

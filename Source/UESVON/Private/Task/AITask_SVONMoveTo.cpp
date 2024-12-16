@@ -417,16 +417,16 @@ void UAITask_SVONMoveTo::LogPathHelper()
 
 				float size = 0.f;
 
-				if (Point.myLayer == 0)
+				if (Point.Layer == 0)
 				{
 					size = svonNavComponent->GetCurrentVolume()->GetNavData().GetVoxelSize(0) * 0.25f;
 				}
 				else
 				{
-					size = svonNavComponent->GetCurrentVolume()->GetNavData().GetVoxelSize(Point.myLayer - 1);
+					size = svonNavComponent->GetCurrentVolume()->GetNavData().GetVoxelSize(Point.Layer - 1);
 				}
 
-				UE_VLOG_BOX(OwnerController->GetPawn(), VUESVON, Verbose, FBox(Point.myPosition + FVector(size * 0.5f), Point.myPosition - FVector(size * 0.5f)), FColor::Black, TEXT_EMPTY);
+				UE_VLOG_BOX(OwnerController->GetPawn(), VUESVON, Verbose, FBox(Point.Position + FVector(size * 0.5f), Point.Position - FVector(size * 0.5f)), FColor::Black, TEXT_EMPTY);
 			}
 		}
 	}
