@@ -36,6 +36,16 @@ const ASVONVolume* USVONSubsystem::GetVolumeForPosition(const FVector& Position)
 	return nullptr;
 }
 
+bool USVONSubsystem::IsBlocked(const FVector& Position, const float VoxelSize, ECollisionChannel CollisionChannel, const float AgentRadius) const
+{
+	FCollisionQueryParams Params;
+	Params.bFindInitialOverlaps = true;
+	Params.bTraceComplex = false;
+	Params.TraceTag = "SVONLeafRasterize";
+
+	return GetWorld()->OverlapBlockingTestByChannel(Position, FQuat::Identity, CollisionChannel, FCollisionShape::MakeBox(FVector(VoxelSize + AgentRadius)), Params);
+}
+
 void USVONSubsystem::Tick(float DeltaTime)
 {
 	for (USVONNavigationComponent* NavComponent : RegisteredNavComponents)

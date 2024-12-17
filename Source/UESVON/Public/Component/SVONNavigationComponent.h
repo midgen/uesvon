@@ -2,6 +2,7 @@
 
 #include <UESVON/Public/Data/SVONLink.h>
 #include <UESVON/Public/Pathfinding/SVONNavigationPath.h>
+#include <UESVON/Public/Interface/SVONSubsystemInterface.h>
 #include <UESVON/Public/Data/SVONTypes.h>
 
 #include <Runtime/Engine/Classes/Components/ActorComponent.h>
@@ -58,6 +59,8 @@ protected:
 	// The current navigation volume that the owned pawn is inside, null if not inside a volume
 	UPROPERTY()
 	const ASVONVolume* CurrentNavVolume;
+	UPROPERTY()
+	TScriptInterface<ISVONSubsystemInterface> SVONSubsystem;
 
 	bool HasNavData() const;
 

@@ -68,7 +68,7 @@ bool ASVONVolume::Generate()
 #endif // WITH_EDITOR
 
 	UpdateBounds();
-	NavigationData.Generate(*GetWorld(), *this, *this);
+	NavigationData.Generate(*GetWorld(), *CollisionQueryInterface.GetInterface(), *this);
 
 #if WITH_EDITOR
 
@@ -110,16 +110,6 @@ void ASVONVolume::UpdateBounds()
 	NavigationData.SetExtents(Origin, Extent);
 }
 
-bool ASVONVolume::IsBlocked(const FVector& Position, const float VoxelSize, ECollisionChannel CollisionChannel, const float AgentRadius) const
-{
-	FCollisionQueryParams Params;
-	Params.bFindInitialOverlaps = true;
-	Params.bTraceComplex = false;
-	Params.TraceTag = "SVONLeafRasterize";
-
-	return GetWorld()->OverlapBlockingTestByChannel(Position, FQuat::Identity, CollisionChannel, FCollisionShape::MakeBox(FVector(VoxelSize + AgentRadius)), Params);
-}
-
 void ASVONVolume::SVONDrawDebugString(const FVector& Position, const FString& String, const FColor& Color) const
 {
 	DrawDebugString(GetWorld(), Position, String, nullptr, Color, -1, false);
@@ -148,6 +138,22 @@ void ASVONVolume::Serialize(FArchive& Ar)
 
 void ASVONVolume::BeginPlay()
 {
+	SVONSubsystemInterface = GetWorld()->GetSubsystem<USVONSubsystem>();
+	if (!SVONSubsystemInterface.GetInterface())
+	{
+		UE_LOG(UESVON, Error, TEXT("No SVONSubsystem with a valid SVONInterface found"));
+	}
+	else
+	{
+		SVONSubsystemInterface->RegisterVolume(this);
+	}
+
+	CollisionQueryInterface = GetWorld()->GetSubsystem<USVONSubsystem>();
+	if (!CollisionQueryInterface.GetInterface())
+	{
+		UE_LOG(UESVON, Error, TEXT("No SVONSubsystem with a valid CollisionQueryInterface found"));
+	}
+
 	if (!bIsReadyForNavigation && GenerationParameters.GenerationStrategy == ESVOGenerationStrategy::GenerateOnBeginPlay)
 	{
 		Generate();
@@ -158,18 +164,17 @@ void ASVONVolume::BeginPlay()
 	}
 
 	bIsReadyForNavigation = true;
-
-	if (USVONSubsystem* SvonSubsystem = GetWorld()->GetSubsystem<USVONSubsystem>())
-	{
-		SvonSubsystem->RegisterVolume(this);
-	}
 }
 
 void ASVONVolume::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (USVONSubsystem* SvonSubsystem = GetWorld()->GetSubsystem<USVONSubsystem>())
+	if (!SVONSubsystemInterface.GetInterface())
 	{
-		SvonSubsystem->UnRegisterVolume(this);
+		UE_LOG(UESVON, Error, TEXT("No SVONSubsystem with a valid SVONInterface found"));
+	}
+	else
+	{
+		SVONSubsystemInterface->UnRegisterVolume(this);
 	}
 
 	Super::EndPlay(EndPlayReason);

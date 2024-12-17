@@ -1,19 +1,18 @@
 #pragma once
 
 #include <UESVON/Public/Data/SVONData.h>
-#include <UESVON/Public/Interface/SVONCollisionQueryInterface.h>
 #include <UESVON/Public/Interface/SVONDebugDrawInterface.h>
+#include <UESVON/Public/Interface/SVONSubsystemInterface.h>
 
 #include <Runtime/Engine/Classes/GameFramework/Volume.h>
 
 #include "SVONVolume.generated.h"
 
 /**
- *  SVONVolume contains the navigation data for the volume, and the methods for generating that data
-		See SVONMediator for public query functions
+ *  SVONVolume contains the navigation data for the volume
  */
 UCLASS(hidecategories = (Tags, Cooking, Actor, HLOD, Mobile, LOD))
-class UESVON_API ASVONVolume : public AVolume, public ISVONCollisionQueryInterface, public ISVONDebugDrawInterface
+class UESVON_API ASVONVolume : public AVolume, public ISVONDebugDrawInterface
 {
 	GENERATED_BODY()
 
@@ -52,12 +51,15 @@ public:
 private:
 	FSVONData NavigationData;
 
+	UPROPERTY()
+	TScriptInterface<ISVONSubsystemInterface> SVONSubsystemInterface;
+	UPROPERTY()
+	TScriptInterface<ISVONCollisionQueryInterface> CollisionQueryInterface;
+
 	void UpdateBounds();
 
-// Inherited via ISVONCollisionQueryInterface
-	bool IsBlocked(const FVector& Position, const float VoxelSize, ECollisionChannel CollisionChannel, const float AgentRadius) const override;
-
-// Inherited via ISVONDebugDrawInterface
+//  ISVONDebugDrawInterface BEGIN
 	void SVONDrawDebugString(const FVector& Position, const FString& String, const FColor& Color) const override;
 	void SVONDrawDebugBox(const FVector& Position, const float Size, const FColor& Color) const override;
+//  ISVONDebugDrawInterface END
 };

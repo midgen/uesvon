@@ -26,18 +26,27 @@ void USVONNavigationComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (USVONSubsystem* SvonSubsystem = GetWorld()->GetSubsystem<USVONSubsystem>())
+	SVONSubsystem = GetWorld()->GetSubsystem<USVONSubsystem>();
+	if (!SVONSubsystem.GetInterface())
 	{
-		SvonSubsystem->RegisterNavComponent(this);
-		CurrentNavVolume = SvonSubsystem->GetVolumeForPosition(GetPawnPosition());
+		UE_LOG(UESVON, Error, TEXT("No SVONSubsystem with a valid SVONInterface found"));
+	}
+	else
+	{
+		SVONSubsystem->RegisterNavComponent(this);
+		CurrentNavVolume = SVONSubsystem->GetVolumeForPosition(GetPawnPosition());
 	}
 }
 
 void USVONNavigationComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (USVONSubsystem* SvonSubsystem = GetWorld()->GetSubsystem<USVONSubsystem>())
+	if (!SVONSubsystem.GetInterface())
 	{
-		SvonSubsystem->UnRegisterNavComponent(this);
+		UE_LOG(UESVON, Error, TEXT("No SVONSubsystem with a valid SVONInterface found"));
+	}
+	else
+	{
+		SVONSubsystem->UnRegisterNavComponent(this);
 	}
 
 	Super::EndPlay(EndPlayReason);
